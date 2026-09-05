@@ -29,22 +29,15 @@ def hello():
 @app.route('/api/new-items')
 def get_new_items():
     items = MovieNewItems.query.all()
-    result = []
-    
-    for item in items:
-        result.append({
-            'id': item.id,
-            'name': item.name,
-            'year': item.year,
-            'poster': item.poster,
-            'genres': item.genres,
-            'countries': item.countries,
-            'actors': item.actors,
-            'directors': item.directors,
-            'time': item.time,
-            'description': item.description,
-            'rating': item.rating, 
-            'page_url': item.page_url 
-        })
-        
+    result = [{
+        'id': item.id, 'name': item.name, 'year': item.year,
+        'poster': item.poster, 'genres': item.genres, 'countries': item.countries,
+        'actors': item.actors, 'directors': item.directors, 'time': item.time,
+        'description': item.description, 'rating': item.rating, 'page_url': item.page_url 
+    } for item in items]
     return jsonify(result)
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, port=5000)
