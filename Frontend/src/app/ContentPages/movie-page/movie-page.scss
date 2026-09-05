@@ -1,0 +1,220 @@
+:host {
+    justify-content: center;
+    width: 51.2%;
+    margin: 20px auto 0;
+    font-family: cursive;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.movie-main-card {
+    width: 100%;
+    background: white;
+    border-radius: 24px;
+    border: 2px solid #b3e0ff;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(135, 206, 235, 0.15);
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.poster-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 3px solid#87CEEB;
+    box-shadow: 0 8px 20px rgba(70, 130, 180, 0.2);
+}
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border: none;
+}
+
+.rating-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #87CEEB, #4682b4);
+    color: white;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.movie-title {
+    font-size: 1.8rem;
+    color: #4682b4;
+    margin: 0 0 20px 0;
+    line-height: 1.2;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex-grow: 1;
+    align-content: stretch;
+}
+
+.info-block {
+    background: #f4faff;
+    border: 1px solid #d6ebff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.info-block.full-width {
+    grid-column: span 2;
+}
+
+.label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #87CEEB;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.value {
+    font-size: 14px;
+    color: #4682b4;
+    line-height: 1.4;
+}
+
+.action-buttons-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    flex-shrink: 0;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #b3e0ff;
+    background: white;
+    color: #4682b4;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(135, 206, 235, 0.3);
+    border-color: #87CEEB;
+    background: #f9fcff;
+}
+
+.btn-action:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(135, 206, 235, 0.2);
+    color: white;
+    border-color: #4682b4;
+    box-shadow: 0 4px 12px rgba(70, 130, 180, 0.3);
+}
+
+.btn-action.active:hover {
+    box-shadow: 0 6px 16px rgba(70, 130, 180, 0.4);
+}
+
+.btn-action img {
+    width: 18px;
+    height: 18px;
+    filter: invert(38%) sepia(98%) saturate(1200%) hue-rotate(170deg) brightness(95%) contrast(90%);
+    transition: transform 0.3s ease;
+}
+
+.btn-action:hover img {
+    transform: scale(1.1);
+}
+
+.player-placeholder-block {
+    width: 100%;
+    margin-top: 15px;
+    background: white;
+    border-radius: 24px;
+    border: 2px solid #b3e0ff;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(135, 206, 235, 0.15);
+}
+
+.player-screen-empty {
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, #f4faff 0%, #e6f2ff 100%);
+    border-radius: 16px;
+    border: 2px dashed #b3e0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    color: #87CEEB;
+    font-weight: 600;
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.description-full-width {
+    grid-column: 1 / -1;
+    background: #f9fcff;
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 4px solid #87CEEB;
+    margin-top: 10px;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    color: #4682b4;
+    font-weight: 700;
+}
+
+.desc-text {
+    color: #5a7d9a;
+    line-height: 1.6;
+    font-size: 14px;
+    text-align: justify;
+}

@@ -1,0 +1,100 @@
+:host {
+    display: block;
+    width: 911px;
+}
+
+.basic-header {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
+    padding: 22px 30px;
+    box-shadow: 0 4px 20px rgba(135, 206, 235, 0.3);
+    border-bottom: 3px solid #b3e0ff;
+    border-radius: 25px;
+    font-family: cursive;
+    width: 100%;
+}
+
+.basic-header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.basic-header-logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4682b4;
+    text-shadow: 2px 2px 4px rgba(135, 206, 235, 0.3);
+    cursor: pointer;
+}
+
+.basic-header-section-search {
+    max-width: 400px;
+    min-width: 250px;
+    width: 100%;
+}
+
+.basic-header-section-search-input {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 25px;
+    padding: 4px 4px;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
+    border: 2px solid #b3e0ff;
+    width: 100%;
+}
+
+.basic-header-section-search-input:focus-within {
+    box-shadow: 0 6px 25px rgba(135, 206, 235, 0.3);
+    border-color: #87CEEB;
+}
+
+.basic-header-input-search {
+    border: none;
+    outline: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #4682b4;
+    width: 100%;
+}
+
+.basic-header-input-search::placeholder {
+    color: #87CEEB;
+}
+
+.basic-header-button-search {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basic-header-section-profile button {
+    outline: none;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
+    border: 2px solid #b3e0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basic-header-section-profile button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(135, 206, 235, 0.4);
+}
+
+.basic-header-section-profile button img {
+    width: 24px;
+    height: 24px;
+}

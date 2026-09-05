@@ -1,0 +1,50 @@
+<div class="basic-new">
+    <div class="basic-new-logo">НОВИНКИ</div>
+
+    <div class="basic-new-container">
+        <div class="basic-new-container-arrows left" [class.disabled]="currentIndex === 0" (click)="onPrev()">
+            <img src="/SVG/basic-new-button-svg-1.svg">
+        </div>
+        <div class="basic-new-section">
+            <div class="basic-new-loading">
+                @if (isLoading || error) {
+                @for (i of [1,2,3,4]; track i) {
+                <div class="basic-new-section-movie-poster empty">
+                    <div class="basic-new-poster">
+                        <div class="empty-poster"></div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="empty-year"></div>
+                    </div>
+                </div>
+                }
+                } @else {
+                @for (movie of visibleMovies; track movie.id) {
+                <div class="basic-new-section-movie-poster" (click)="onSelectMovie(movie)" style="cursor: pointer;">
+                    <div class="basic-new-poster">
+                        <img [src]="movie.poster" [alt]="movie.name">
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-year">{{ movie.year }}</div>
+                    </div>
+                </div>
+                }
+                @for (i of [].constructor(4 - visibleMovies.length); track i) {
+                <div class="basic-new-section-movie-poster empty">
+                    <div class="basic-new-poster">
+                        <div class="empty-poster"></div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="empty-year"></div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+        <div class="basic-new-container-arrows right" [class.disabled]="currentIndex + itemsPerPage >= allMovies.length"
+            (click)="onNext()">
+            <img src="/SVG/basic-new-button-svg-2.svg">
+        </div>
+    </div>
+</div>

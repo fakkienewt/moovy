@@ -1,0 +1,83 @@
+<div class="movie-page">
+    <div class="movie-container">
+        <div class="movie-main-card">
+
+            <div class="left-column">
+                <div class="poster-wrapper">
+                    <img [src]="movie?.poster" class="movie-poster" alt="{{ movie?.name }}">
+                    <div class="rating-badge">{{ movie?.rating || 'N/A' }}</div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <h1 class="movie-title">{{ movie?.name }}</h1>
+
+                <div class="info-grid">
+                    @if (movie?.actors) {
+                    <div class="info-block full-width">
+                        <div class="label">Актеры:</div>
+                        <div class="value">{{ movie?.actors }}</div>
+                    </div>
+                    }
+
+                    @if (movie?.directors) {
+                    <div class="info-block">
+                        <div class="label">Режиссер:</div>
+                        <div class="value">{{ movie?.directors }}</div>
+                    </div>
+                    }
+
+                    <div class="info-block">
+                        <div class="label">Жанры:</div>
+                        <div class="value">{{ movie?.genres || 'Боевик, Триллер, Драма' }}</div>
+                    </div>
+
+                    @if (movie?.countries) {
+                    <div class="info-block">
+                        <div class="label">Страна:</div>
+                        <div class="value">{{ movie?.countries }}</div>
+                    </div>
+                    }
+
+                    @if (movie?.time) {
+                    <div class="info-block">
+                        <div class="label">Время:</div>
+                        <div class="value">{{ movie?.time }}</div>
+                    </div>
+                    }
+                </div>
+                <div class="action-buttons-row">
+                    <button class="btn-action btn-fav" [class.active]="isFavorite">
+                        <img src="/SVG/content-page-button-favorite.svg" alt="fav">
+                        В избранное
+                    </button>
+
+                    <button class="btn-action btn-later" [class.active]="isLater">
+                        <img src="/SVG/content-page-button-time.svg" alt="time">
+                        Смотреть позже
+                    </button>
+                </div>
+            </div>
+
+            @if (movie?.description) {
+            <div class="description-full-width">
+                <h3 class="section-title">Описание</h3>
+                <p class="desc-text">{{ movie?.description }}</p>
+            </div>
+            }
+
+        </div>
+        <div class="player-placeholder-block">
+            <div class="player-screen-empty">
+                <div class="empty-message">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="M10 9l5 3-5 3V9z" fill="#b3e0ff" stroke="none" />
+                    </svg>
+                    <span>Видео временно недоступно</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
