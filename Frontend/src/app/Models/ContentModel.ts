@@ -1,4 +1,4 @@
-export interface MovieNew {
+export interface Content {
     id: number;
     name: string;
     year: number;

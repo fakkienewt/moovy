@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; 
-import { MovieNew } from '../../Models/MovieModel';
+import { Router } from '@angular/router';
 import { ServiceGetData } from '../../Services/service-get-data';
+import { Content } from '../../Models/ContentModel';
 
 @Component({
   selector: 'app-new-items',
@@ -12,23 +12,28 @@ import { ServiceGetData } from '../../Services/service-get-data';
   styleUrl: './new-items.scss'
 })
 export class NewItems implements OnInit {
-  allMovies: MovieNew[] = [];
-  visibleMovies: MovieNew[] = [];
+  allMovies: Content[] = [];
+  newItems2026: Content[] = [];
+  visibleMovies: Content[] = [];
   isLoading = true;
   error = false;
 
   currentIndex = 0;
-  itemsPerPage = 4;
+  itemsPerPage = 4; 
 
   constructor(
     private movieService: ServiceGetData,
-    private router: Router 
-  ) {}
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
-    this.movieService.getNewItems().subscribe({
+    this.movieService.getMovies().subscribe({
       next: (data) => {
         this.allMovies = data;
+        this.newItems2026 = data
+          .filter(m => m.year === 2026)
+          .slice(0, 10);
+
         this.updateVisibleMovies();
         this.isLoading = false;
       },
@@ -40,7 +45,7 @@ export class NewItems implements OnInit {
   }
 
   onNext(): void {
-    if (this.currentIndex + this.itemsPerPage < this.allMovies.length) {
+    if (this.currentIndex + this.itemsPerPage < this.newItems2026.length) {
       this.currentIndex++;
       this.updateVisibleMovies();
     }
@@ -53,14 +58,14 @@ export class NewItems implements OnInit {
     }
   }
 
-  onSelectMovie(movie: MovieNew): void {
+  onSelectMovie(movie: Content): void {
     if (movie?.id) {
-      this.router.navigate(['/movie', movie.id]);
+      this.router.navigate(['/content', movie.id]);
     }
   }
 
   private updateVisibleMovies(): void {
-    this.visibleMovies = this.allMovies.slice(
+    this.visibleMovies = this.newItems2026.slice(
       this.currentIndex,
       this.currentIndex + this.itemsPerPage
     );

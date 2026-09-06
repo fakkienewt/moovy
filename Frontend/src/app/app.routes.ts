@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { Main } from './Basic/main/main';
-import { MoviePage } from './ContentPages/movie-page/movie-page';
+import { ContentPage } from './ContentPages/movie-page/content-page';
 
 export const routes: Routes = [
     { path: '', component: Main },
-    { path: 'movie/:id', component: MoviePage }
+    { path: 'content/:id', component: ContentPage }
 ];

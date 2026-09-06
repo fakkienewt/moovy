@@ -5,6 +5,7 @@
         <div class="basic-new-container-arrows left" [class.disabled]="currentIndex === 0" (click)="onPrev()">
             <img src="/SVG/basic-new-button-svg-1.svg">
         </div>
+
         <div class="basic-new-section">
             <div class="basic-new-loading">
                 @if (isLoading || error) {
@@ -29,6 +30,7 @@
                     </div>
                 </div>
                 }
+
                 @for (i of [].constructor(4 - visibleMovies.length); track i) {
                 <div class="basic-new-section-movie-poster empty">
                     <div class="basic-new-poster">
@@ -42,8 +44,9 @@
                 }
             </div>
         </div>
-        <div class="basic-new-container-arrows right" [class.disabled]="currentIndex + itemsPerPage >= allMovies.length"
-            (click)="onNext()">
+
+        <div class="basic-new-container-arrows right"
+            [class.disabled]="currentIndex + itemsPerPage >= newItems2026.length" (click)="onNext()">
             <img src="/SVG/basic-new-button-svg-2.svg">
         </div>
     </div>

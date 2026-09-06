@@ -8,27 +8,24 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/moovy_content_DB'
 db = SQLAlchemy(app)
 
-class MovieNewItems(db.Model):
+class Movies(db.Model):
+    __tablename__ = 'movies'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255)) 
-    year = db.Column(db.Integer)  
-    genres = db.Column(db.Text)  
-    countries = db.Column(db.Text)
-    actors = db.Column(db.Text)
-    directors = db.Column(db.Text)
-    time = db.Column(db.String(50)) 
-    description = db.Column(db.Text)
-    poster = db.Column(db.String(500))
-    rating = db.Column(db.String(10))  
-    page_url = db.Column(db.String(500)) 
+    name = db.Column(db.String(255), nullable=False) 
+    year = db.Column(db.Integer, nullable=False)  
+    genres = db.Column(db.Text, nullable=False)  
+    countries = db.Column(db.Text, nullable=False)
+    actors = db.Column(db.Text, nullable=False)
+    directors = db.Column(db.Text, nullable=False)
+    time = db.Column(db.String(50), nullable=False) 
+    description = db.Column(db.Text, nullable=False)
+    poster = db.Column(db.String(500), nullable=False)
+    rating = db.Column(db.String(10), nullable=False)  
+    page_url = db.Column(db.String(500), nullable=False) 
 
-@app.route('/')
-def hello():
-    return 'Backend работает!'
-
-@app.route('/api/new-items')
-def get_new_items():
-    items = MovieNewItems.query.all()
+@app.route('/api/movies')
+def get_movies():
+    items = Movies.query.all()
     result = [{
         'id': item.id, 'name': item.name, 'year': item.year,
         'poster': item.poster, 'genres': item.genres, 'countries': item.countries,

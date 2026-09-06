@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ServiceGetData } from '../../Services/service-get-data';
-import { MovieNew } from '../../Models/MovieModel';
+import { Content } from '../../Models/ContentModel';
 
 @Component({
-  selector: 'app-movie-page',
+  selector: 'app-content-page',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './movie-page.html',
-  styleUrl: './movie-page.scss'
+  templateUrl: './content-page.html',
+  styleUrl: './content-page.scss'
 })
-export class MoviePage implements OnInit {
-  movie: MovieNew | null = null;
+export class ContentPage implements OnInit {
+  content: Content | null = null;
   isFavorite = false;
   isLater = false;
 
@@ -23,25 +23,29 @@ export class MoviePage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private movieService: ServiceGetData,
+    private contentService: ServiceGetData,
     private sanitizer: DomSanitizer
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      const movieId = +id;
-      this.movieService.getNewItems().subscribe(items => {
-        this.movie = items.find(m => m.id === movieId) || null;
-        if (this.movie) {
-          this.loadPlayer(movieId);
+      const contentId = +id;
+
+      this.contentService.getMovies().subscribe(items => {
+        this.content = items.find(m => m.id === contentId) || null;
+
+        if (this.content) {
+          this.loadPlayer(contentId);
+        } else {
+          console.error(`Фильм с ID ${contentId} не найден в базе`);
         }
       });
     }
   }
 
-  loadPlayer(movieId: number): void {
-    this.movieService.getPlayerLink(movieId).subscribe(res => {
+  loadPlayer(contentId: number): void {
+    this.contentService.getPlayerLink(contentId).subscribe(res => {
       const url = res?.primary_player || (res?.players && res.players.length > 0 ? res.players[0] : null);
       if (url) {
         this.playerUrl = url;
@@ -65,9 +69,9 @@ export class MoviePage implements OnInit {
     this.isLater = !this.isLater;
   }
 
-  onSelectMovie(movie: MovieNew): void {
-    if (movie?.id) {
-      this.router.navigate(['/movie', movie.id]);
+  onSelectContent(content: Content): void {
+    if (content?.id) {
+      this.router.navigate(['/content', content.id]);
     }
   }
 }

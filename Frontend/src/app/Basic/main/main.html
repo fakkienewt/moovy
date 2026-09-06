@@ -4,8 +4,8 @@
     <div class="basic-main-section">
         <div class="basic-main-left-tabs">
             <div class="basic-main-tab-item active">Фильмы</div>
-            <div class="basic-main-tab-item">Сериалы </div>
-            <div class="basic-main-tab-item">Аниме</div>
+            <div class="basic-main-tab-item" (click)="onTabClick()">Сериалы</div>
+            <div class="basic-main-tab-item" (click)="onTabClick()">Аниме</div>
         </div>
         <div class="basic-main-right-tabs">
             <div class="basic-main-tab-item">Фильтрация</div>
@@ -15,7 +15,9 @@
 
 <div class="basic-main-section-content">
     <div class="basic-main-content">
-        <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]" class="basic-main-poster-card skeleton">
+        @if (isLoading) {
+        @for (i of [].constructor(16); track i) {
+        <div class="basic-main-poster-card skeleton">
             <div class="basic-main-poster">
                 <div class="skeleton-poster-card"></div>
             </div>
@@ -24,5 +26,27 @@
                 <div class="basic-main-skeleton-year"></div>
             </div>
         </div>
+        }
+        } @else {
+        @for (movie of paginatedMovies; track movie.id) {
+        <div class="basic-main-poster-card" (click)="onSelectMovie(movie)">
+            <div class="basic-main-poster">
+                <img [src]="movie.poster" [alt]="movie.name">
+            </div>
+            <div class="basic-main-info">
+                <div class="basic-main-title">{{ movie.name }}</div>
+                <div class="basic-main-year">{{ movie.year }}</div>
+            </div>
+        </div>
+        }
+        }
     </div>
+
+    @if (!isLoading && totalPages > 1) {
+    <div class="pagination">
+        <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
+        <span>{{ currentPage }} / {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
+    </div>
+    }
 </div>

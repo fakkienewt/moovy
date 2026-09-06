@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-from DataBase.UpdateDB import db, MovieNewItems, app
+from DataBase.UpdateDB import db, Movies, app
 
 CORS(app)
 
@@ -21,7 +21,7 @@ HEADERS = {
 
 @app.route('/api/get-iframe/<int:movie_id>')
 def get_iframe(movie_id):
-    movie = db.session.get(MovieNewItems, movie_id)
+    movie = db.session.get(Movies, movie_id)
     
     if not movie or not movie.page_url:
         return jsonify({'error': 'Movie not found or page_url is empty'}), 404

@@ -1,6 +1,7 @@
 :host {
     display: block;
     width: 900px;
+    margin: 0 auto;
 }
 
 .basic-main {
@@ -72,6 +73,7 @@
     width: 100%;
 }
 
+/* Скелетоны */
 .basic-main-poster-card.skeleton {
     background: white;
     border: 2px solid #b3e0ff;
@@ -115,3 +117,110 @@
     margin: 0 auto;
 }
 
+.basic-main-poster-card:not(.skeleton) {
+    background: white;
+    border: 2px solid #b3e0ff;
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    height: 100%;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
+    }
+
+    .basic-main-poster {
+        overflow: hidden;
+        background: #fff;
+        flex-shrink: 0;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    .basic-main-info {
+        margin-top: 12px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 45px;
+    }
+
+    .basic-main-title {
+        font-family: cursive;
+        font-size: 14px;
+        color: #4682b4;
+        font-weight: bold;
+        margin-bottom: 4px;
+        text-align: center;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.2;
+        max-height: 2.4em;
+    }
+
+    .basic-main-year {
+        font-family: cursive;
+        font-size: 13px;
+        color: #87CEEB;
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px dashed #d6ebff;
+
+    button {
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+        color: #4682b4;
+        border: 2px solid #b3e0ff;
+        border-radius: 20px;
+        font-family: cursive;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(135, 206, 235, 0.3);
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            color: white;
+        }
+    }
+
+    span {
+        font-family: cursive;
+        font-size: 15px;
+        font-weight: bold;
+        color: #4682b4;
+        padding: 8px 20px;
+        background: white;
+        border-radius: 15px;
+        border: 2px solid #b3e0ff;
+        box-shadow: 0 2px 8px rgba(135, 206, 235, 0.2);
+        min-width: 80px;
+        text-align: center;
+    }
+}
