@@ -1,10 +1,11 @@
 :host {
     display: block;
-    width: 900px;
+    width: 100%;
 }
 
 .basic-new {
     width: 100%;
+    position: relative;
 }
 
 .basic-new-logo {
@@ -20,45 +21,47 @@
         4px 4px 0px rgba(160, 216, 255, 0.3),
         6px 6px 0px rgba(160, 216, 255, 0.2);
     box-shadow: 0 -4px 15px rgba(135, 206, 235, 0.3);
-    width: 900px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .basic-new-container {
     position: relative;
-    width: 915px;
-}
-
-.basic-new-container-arrows {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    cursor: pointer;
-}
-
-.basic-new-container-arrows.left {
-    left: -20px;
-}
-
-.basic-new-container-arrows.right {
-    right: -80px;
+    width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
 }
 
 .basic-new-container-arrows img {
     width: 20px;
-    height: 35px;
+    height: 20px;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
     border: 2px solid #b3e0ff;
-    border-radius: 40%;
+    border-radius: 50%;
     padding: 15px;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
     transition: all 0.3s ease;
 }
 
-.basic-new-container-arrows:hover img {
-    background: linear-gradient(135deg, #a0d8ff 0%, #6bc8ff 100%);
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(135, 206, 235, 0.4);
+.basic-new-container-arrows {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    z-index: 20;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.basic-new-container-arrows.left {
+    left: -35px;
+}
+
+.basic-new-container-arrows.right {
+    right: -35px;
 }
 
 .basic-new-section {
@@ -66,14 +69,15 @@
     background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
     border: 2px solid #b3e0ff;
     border-radius: 0 0 25px 25px;
-    padding: 20px;
+    padding: 25px 20px;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
+    box-sizing: border-box;
 }
 
 .basic-new-loading {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
+    gap: 20px;
     width: 100%;
 }
 
@@ -87,58 +91,81 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.2s ease;
+    height: 100%;
+    box-sizing: border-box;
+
+    &:hover:not(.empty) {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
+        border-color: #87CEEB;
+    }
 }
 
 .basic-new-poster {
-    width: 140px;
-    height: 200px;
+    width: 100%;
+    aspect-ratio: 2/3;
     margin: 0 auto 12px;
-    border: 2px solid #b3e0ff;
+    border: 2px solid #d6ebff;
     border-radius: 15px;
     overflow: hidden;
     background: #fff;
-}
+    flex-shrink: 0;
 
-.basic-new-poster img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
-    display: block;
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
 }
 
 .empty-poster {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    background: linear-gradient(135deg, #e6f2ff 0%, #f0f8ff 100%);
     border-radius: 13px;
+    border: 2px dashed #b3e0ff;
 }
 
 .movie-info {
     text-align: center;
     width: 100%;
+    margin-top: auto;
 }
 
 .empty-year {
-    width: 80%;
-    height: 20px;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    width: 60%;
+    height: 16px;
+    background: #e6f2ff;
     border-radius: 8px;
     margin: 0 auto;
 }
 
 .movie-year {
     font-family: cursive;
-    width: 80%;
-    height: 20px;
+    width: auto;
+    min-width: 60px;
+    padding: 4px 12px;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    border-radius: 8px;
+    border-radius: 12px;
     margin: 0 auto;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(135, 206, 235, 0.3);
+}
+
+@media (max-width: 600px) {
+    .basic-new-loading {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .basic-new-container-arrows {
+        display: none;
+    }
 }

@@ -33,10 +33,10 @@
                         <div class="value">{{ content?.countries }}</div>
                     </div>
                     }
-                    @if (content?.time) {
+                    @if (content?.year) {
                     <div class="info-block">
-                        <div class="label">Время:</div>
-                        <div class="value">{{ content?.time }}</div>
+                        <div class="label">Год:</div>
+                        <div class="value">{{ content?.year }}</div>
                     </div>
                     }
                 </div>
@@ -73,22 +73,24 @@
             }
         </div>
 
+        @if (similarMovies.length > 0) {
         <div class="similar-section">
             <h3 class="section-title similar-title">Похожие фильмы</h3>
             <div class="basic-main-content">
-                @for (i of [1,2,3,4]; track i) {
-                <div class="basic-main-poster-card skeleton">
+                @for (movie of similarMovies; track movie.id) {
+                <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
                     <div class="basic-main-poster">
-                        <div class="skeleton-poster-card shimmer"></div>
+                        <img [src]="movie.poster" [alt]="movie.name">
                     </div>
                     <div class="basic-main-info">
-                        <div class="basic-main-skeleton-title shimmer"></div>
-                        <div class="basic-main-skeleton-year shimmer"></div>
+                        <div class="basic-main-title">{{ movie.name }}</div>
+                        <div class="basic-main-year">{{ movie.year }}</div>
                     </div>
                 </div>
                 }
             </div>
         </div>
+        }
 
         <div class="comments-section">
             <h3 class="section-title">Комментарии</h3>
@@ -97,7 +99,6 @@
                 <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
                 <button class="btn-comment">Отправить</button>
             </div>
-
             <div class="comments-list"></div>
         </div>
 

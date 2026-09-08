@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-content-page',
@@ -12,13 +13,17 @@ import { Content } from '../../Models/ContentModel';
   templateUrl: './content-page.html',
   styleUrl: './content-page.scss'
 })
-export class ContentPage implements OnInit {
+export class ContentPage implements OnInit, OnDestroy {
   content: Content | null = null;
+  similarMovies: Content[] = [];
   isFavorite = false;
   isLater = false;
 
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
+
+  private routeSub!: Subscription;
+  private allMoviesCache: Content[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -28,20 +33,57 @@ export class ContentPage implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      const contentId = +id;
+    this.contentService.getMovies().subscribe(items => {
+      this.allMoviesCache = items;
 
-      this.contentService.getMovies().subscribe(items => {
-        this.content = items.find(m => m.id === contentId) || null;
-
-        if (this.content) {
-          this.loadPlayer(contentId);
-        } else {
-          console.error(`Фильм с ID ${contentId} не найден в базе`);
+      this.routeSub = this.route.paramMap.subscribe(params => {
+        const id = params.get('id');
+        if (id) {
+          this.loadContent(+id);
         }
       });
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
     }
+  }
+
+  loadContent(contentId: number): void {
+    window.scrollTo(0, 0);
+
+    this.content = this.allMoviesCache.find(m => m.id === contentId) || null;
+
+    if (this.content) {
+      this.loadPlayer(contentId);
+      this.findSimilarMovies(this.content, this.allMoviesCache);
+    } else {
+      console.error(`Фильм с ID ${contentId} не найден в базе`);
+    }
+  }
+
+  findSimilarMovies(currentMovie: Content, allMovies: Content[]): void {
+    if (!currentMovie.genres) {
+      this.similarMovies = [];
+      return;
+    }
+
+    const currentGenres = currentMovie.genres.toLowerCase().split(',').map(g => g.trim());
+
+    const scoredMovies = allMovies
+      .filter(m => m.id !== currentMovie.id && m.genres)
+      .map(movie => {
+        const movieGenres = movie.genres!.toLowerCase().split(',').map(g => g.trim());
+        const matchCount = movieGenres.filter(g => currentGenres.includes(g)).length;
+        return { movie, score: matchCount };
+      })
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4);
+
+    this.similarMovies = scoredMovies.map(item => item.movie);
   }
 
   loadPlayer(contentId: number): void {

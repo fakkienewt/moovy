@@ -13,10 +13,17 @@ import { Content } from '../../Models/ContentModel';
   styleUrl: './main.scss',
 })
 export class Main implements OnInit {
-  allMovies: Content[] = [];
-  paginatedMovies: Content[] = [];
-  isLoading = true;
+  activeTab: string = 'movie';
 
+  allMovies: Content[] = [];
+  allSeries: Content[] = [];
+  allAnime: Content[] = [];
+
+  paginatedMovies: Content[] = [];
+  paginatedSeries: Content[] = [];
+  paginatedAnime: Content[] = [];
+
+  isLoading = true;
   currentPage = 1;
   itemsPerPage = 16;
   totalPages = 1;
@@ -27,23 +34,38 @@ export class Main implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
+
     this.movieService.getMovies().subscribe({
       next: (data) => {
-        this.allMovies = data;
-        this.totalPages = Math.ceil(this.allMovies.length / this.itemsPerPage);
-        this.updatePage();
+        this.allMovies = data || [];
+
+        this.allAnime = this.allMovies.filter(m =>
+          m.genres && m.genres.toLowerCase().includes('аниме')
+        );
+
+        this.allSeries = [];
+
+        this.updatePagination();
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Ошибка загрузки:', err);
         this.isLoading = false;
       }
     });
   }
 
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.updatePage();
+      this.updatePagination();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -51,22 +73,42 @@ export class Main implements OnInit {
   backPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updatePage();
+      this.updatePagination();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   onSelectMovie(movie: Content): void {
-    if (movie?.id) {
-      this.router.navigate(['/content', movie.id]);
-    }
+    if (movie?.id) this.router.navigate(['/content', movie.id]);
   }
 
-  onTabClick(): void { }
+  onSelectSeries(series: Content): void {
+    if (series?.id) this.router.navigate(['/content', series.id]);
+  }
 
-  private updatePage(): void {
+  onSelectAnime(anime: Content): void {
+    if (anime?.id) this.router.navigate(['/content', anime.id]);
+  }
+
+  private updatePagination(): void {
+    let currentList: Content[] = [];
+
+    switch (this.activeTab) {
+      case 'movie': currentList = this.allMovies; break;
+      case 'tvSeries': currentList = this.allSeries; break;
+      case 'anime': currentList = this.allAnime; break;
+    }
+
+    this.totalPages = Math.ceil(currentList.length / this.itemsPerPage);
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    this.paginatedMovies = this.allMovies.slice(start, end);
+
+    this.paginatedMovies = [];
+    this.paginatedSeries = [];
+    this.paginatedAnime = [];
+
+    if (this.activeTab === 'movie') this.paginatedMovies = currentList.slice(start, end);
+    if (this.activeTab === 'tvSeries') this.paginatedSeries = currentList.slice(start, end);
+    if (this.activeTab === 'anime') this.paginatedAnime = currentList.slice(start, end);
   }
 }

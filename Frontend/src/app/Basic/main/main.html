@@ -3,9 +3,12 @@
 <div class="basic-main">
     <div class="basic-main-section">
         <div class="basic-main-left-tabs">
-            <div class="basic-main-tab-item active">Фильмы</div>
-            <div class="basic-main-tab-item" (click)="onTabClick()">Сериалы</div>
-            <div class="basic-main-tab-item" (click)="onTabClick()">Аниме</div>
+            <div class="basic-main-tab-item" [class.active]="activeTab === 'movie'" (click)="setActiveTab('movie')">
+                Фильмы</div>
+            <div class="basic-main-tab-item" [class.active]="activeTab === 'tvSeries'"
+                (click)="setActiveTab('tvSeries')">Сериалы</div>
+            <div class="basic-main-tab-item" [class.active]="activeTab === 'anime'" (click)="setActiveTab('anime')">
+                Аниме</div>
         </div>
         <div class="basic-main-right-tabs">
             <div class="basic-main-tab-item">Фильтрация</div>
@@ -14,7 +17,8 @@
 </div>
 
 <div class="basic-main-section-content">
-    <div class="basic-main-content">
+
+    <div class="basic-main-content" *ngIf="activeTab === 'movie'">
         @if (isLoading) {
         @for (i of [].constructor(16); track i) {
         <div class="basic-main-poster-card skeleton">
@@ -27,7 +31,7 @@
             </div>
         </div>
         }
-        } @else {
+        } @else if (paginatedMovies.length > 0) {
         @for (movie of paginatedMovies; track movie.id) {
         <div class="basic-main-poster-card" (click)="onSelectMovie(movie)">
             <div class="basic-main-poster">
@@ -39,6 +43,85 @@
             </div>
         </div>
         }
+        } @else {
+        <div class="empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 15h8M9 9h.01M15 9h.01" />
+            </svg>
+            <p>Ой! Фильмы пока не найдены</p>
+        </div>
+        }
+    </div>
+
+    <div class="basic-main-content" *ngIf="activeTab === 'tvSeries'">
+        @if (isLoading) {
+        @for (i of [].constructor(16); track i) {
+        <div class="basic-main-poster-card skeleton">
+            <div class="basic-main-poster">
+                <div class="skeleton-poster-card"></div>
+            </div>
+            <div class="basic-main-info">
+                <div class="basic-main-skeleton-title"></div>
+                <div class="basic-main-skeleton-year"></div>
+            </div>
+        </div>
+        }
+        } @else if (paginatedSeries.length > 0) {
+        @for (series of paginatedSeries; track series.id) {
+        <div class="basic-main-poster-card" (click)="onSelectSeries(series)">
+            <div class="basic-main-poster">
+                <img [src]="series.poster" [alt]="series.name">
+            </div>
+            <div class="basic-main-info">
+                <div class="basic-main-title">{{ series.name }}</div>
+                <div class="basic-main-year">{{ series.year }}</div>
+            </div>
+        </div>
+        }
+        } @else {
+        <div class="empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
+                <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                <polyline points="17 2 12 7 7 2" />
+            </svg>
+            <p>Упс! Сериалы еще не добавлены</p>
+        </div>
+        }
+    </div>
+
+    <div class="basic-main-content" *ngIf="activeTab === 'anime'">
+        @if (isLoading) {
+        @for (i of [].constructor(16); track i) {
+        <div class="basic-main-poster-card skeleton">
+            <div class="basic-main-poster">
+                <div class="skeleton-poster-card"></div>
+            </div>
+            <div class="basic-main-info">
+                <div class="basic-main-skeleton-title"></div>
+                <div class="basic-main-skeleton-year"></div>
+            </div>
+        </div>
+        }
+        } @else if (paginatedAnime.length > 0) {
+        @for (anime of paginatedAnime; track anime.id) {
+        <div class="basic-main-poster-card" (click)="onSelectAnime(anime)">
+            <div class="basic-main-poster">
+                <img [src]="anime.poster" [alt]="anime.name">
+            </div>
+            <div class="basic-main-info">
+                <div class="basic-main-title">{{ anime.name }}</div>
+                <div class="basic-main-year">{{ anime.year }}</div>
+            </div>
+        </div>
+        }
+        } @else {
+        <div class="empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            <p>Хмм... Аниме пока пусто</p>
+        </div>
         }
     </div>
 

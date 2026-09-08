@@ -6,3 +6,7 @@ export const routes: Routes = [
     { path: '', component: Main },
     { path: 'content/:id', component: ContentPage }
 ];
+
+export const routerOptions = {
+    scrollPositionRestoration: 'top' as const
+};
