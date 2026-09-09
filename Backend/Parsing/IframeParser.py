@@ -2,13 +2,13 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-from DataBase.UpdateDB import db, Movies, app
+from DataBase.UpdateDB import db, Movies, TvSeries, app
 
 CORS(app)
 
@@ -19,15 +19,21 @@ HEADERS = {
     'Origin': 'https://baskino.my'
 }
 
-@app.route('/api/get-iframe/<int:movie_id>')
-def get_iframe(movie_id):
-    movie = db.session.get(Movies, movie_id)
+@app.route('/api/get-iframe/<int:content_id>')
+def get_iframe(content_id):
+    source = request.args.get('source', 'movies')
     
-    if not movie or not movie.page_url:
-        return jsonify({'error': 'Movie not found or page_url is empty'}), 404
+    content_item = None
+    if source == 'tv-series':
+        content_item = db.session.get(TvSeries, content_id)
+    else:
+        content_item = db.session.get(Movies, content_id)
+    
+    if not content_item or not content_item.page_url:
+        return jsonify({'error': f'Content not found in {source}'}), 404
         
     try:
-        resp = requests.get(movie.page_url, headers=HEADERS, timeout=15)
+        resp = requests.get(content_item.page_url, headers=HEADERS, timeout=15)
         soup = BeautifulSoup(resp.text, 'html.parser')
         
         panels = soup.find('div', class_='panels')
@@ -39,13 +45,12 @@ def get_iframe(movie_id):
             src = iframe.get('src') or iframe.get('data-src')
             
             if not src: continue
-            
             if 'youtube' in src.lower() or 'youtu.be' in src.lower(): continue
                 
             if src.startswith('//'):
                 src = 'https:' + src
             elif src.startswith('/'):
-                src = urljoin(movie.page_url, src)
+                src = urljoin(content_item.page_url, src)
                 
             players.append(src)
                 
@@ -54,7 +59,8 @@ def get_iframe(movie_id):
             return jsonify({
                 'players': players, 
                 'primary_player': primary,
-                'movie_name': movie.name
+                'content_name': content_item.name,
+                'source': source
             })
         else:
             return jsonify({'error': 'No valid players found'}), 404
@@ -66,3 +72,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5001)
+

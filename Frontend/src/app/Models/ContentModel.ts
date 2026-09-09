@@ -10,4 +10,5 @@ export interface Content {
     genres?: string;
     time?: string;
     description?: string;
+    type?: 'movie' | 'tv-series';
 }

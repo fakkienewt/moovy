@@ -77,10 +77,4 @@
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(135, 206, 235, 0.4);
     background-color: white;
-    border-color: #87CEEB;
-    color: #87CEEB;
-
-    img {
-        filter: brightness(0) saturate(100%) invert(76%) sepia(29%) saturate(1202%) hue-rotate(152deg) brightness(93%) contrast(91%);
-    }
 }

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { NewItems } from '../new-items/new-items';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
@@ -36,15 +37,37 @@ export class Main implements OnInit {
   ngOnInit(): void {
     this.isLoading = true;
 
-    this.movieService.getMovies().subscribe({
+    forkJoin({
+      movies: this.movieService.getMovies(),
+      series: this.movieService.getTVSeries()
+    }).subscribe({
       next: (data) => {
-        this.allMovies = data || [];
+        const rawMovies = data.movies || [];
+        const rawSeries = data.series || [];
 
-        this.allAnime = this.allMovies.filter(m =>
-          m.genres && m.genres.toLowerCase().includes('аниме')
+        const isValidItem = (item: any) => {
+          const hasName = item.name && typeof item.name === 'string' && item.name.trim().length > 3;
+          const hasPoster = item.poster && typeof item.poster === 'string' &&
+            item.poster.trim().length > 10 &&
+            !item.poster.includes('base64') &&
+            !item.poster.includes('poster_none');
+          return hasName && hasPoster;
+        };
+
+        this.allMovies = rawMovies.filter(isValidItem);
+
+        this.allSeries = rawSeries.filter(s =>
+          isValidItem(s) &&
+          !(s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
         );
 
-        this.allSeries = [];
+        const animeMovies = rawMovies.filter(m =>
+          isValidItem(m) && m.genres && m.genres.toLowerCase().includes('аниме')
+        );
+        const animeSeries = rawSeries.filter(s =>
+          isValidItem(s) && s.genres && s.genres.toLowerCase().includes('аниме сериалы')
+        );
+        this.allAnime = [...animeMovies, ...animeSeries];
 
         this.updatePagination();
         this.isLoading = false;
@@ -79,11 +102,11 @@ export class Main implements OnInit {
   }
 
   onSelectMovie(movie: Content): void {
-    if (movie?.id) this.router.navigate(['/content', movie.id]);
+    if (movie?.id && movie.type === 'movie') this.router.navigate(['/content', movie.id]);
   }
 
   onSelectSeries(series: Content): void {
-    if (series?.id) this.router.navigate(['/content', series.id]);
+    if (series?.id && series.type === 'tv-series') this.router.navigate(['/content', series.id]);
   }
 
   onSelectAnime(anime: Content): void {

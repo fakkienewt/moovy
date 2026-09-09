@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { forkJoin } from 'rxjs';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { Subscription } from 'rxjs';
@@ -23,7 +24,7 @@ export class ContentPage implements OnInit, OnDestroy {
   safePlayerUrl: SafeResourceUrl | null = null;
 
   private routeSub!: Subscription;
-  private allMoviesCache: Content[] = [];
+  private allContentCache: Content[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -33,15 +34,21 @@ export class ContentPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.contentService.getMovies().subscribe(items => {
-      this.allMoviesCache = items;
-
-      this.routeSub = this.route.paramMap.subscribe(params => {
-        const id = params.get('id');
-        if (id) {
-          this.loadContent(+id);
-        }
-      });
+    forkJoin({
+      movies: this.contentService.getMovies(),
+      series: this.contentService.getTVSeries()
+    }).subscribe({
+      next: (data) => {
+        this.allContentCache = [...(data.movies || []), ...(data.series || [])];
+        
+        this.routeSub = this.route.paramMap.subscribe(params => {
+          const id = params.get('id');
+          if (id) {
+            this.loadContent(+id);
+          }
+        });
+      },
+      error: (err) => console.error('Ошибка загрузки контента:', err)
     });
   }
 
@@ -53,41 +60,36 @@ export class ContentPage implements OnInit, OnDestroy {
 
   loadContent(contentId: number): void {
     window.scrollTo(0, 0);
+    
+    const foundItem = this.allContentCache.find(m => m.id === contentId);
+    
+    if (foundItem) {
+      this.content = { ...foundItem };
 
-    this.content = this.allMoviesCache.find(m => m.id === contentId) || null;
+      if (!this.content.directors?.trim()) this.content.directors = 'Неизвестно';
+      if (!this.content.actors?.trim()) this.content.actors = 'Неизвестно';
+      if (!this.content.countries?.trim()) this.content.countries = 'Неизвестно';
+      if (!this.content.genres?.trim()) this.content.genres = 'Неизвестно';
+      if (!this.content.year) this.content.year = 0;
 
-    if (this.content) {
-      this.loadPlayer(contentId);
-      this.findSimilarMovies(this.content, this.allMoviesCache);
+      const isSeries = this.content.type === 'tv-series' || 
+                       this.content.genres?.toLowerCase().includes('сериал') || 
+                       this.content.name?.toLowerCase().includes('сезон');
+                       
+      this.loadPlayer(contentId, isSeries ? 'tv-series' : 'movies');
+      this.findSimilarMovies(this.content, this.allContentCache);
     } else {
-      console.error(`Фильм с ID ${contentId} не найден в базе`);
+      console.error(`Контент с ID ${contentId} не найден`);
     }
   }
 
-  findSimilarMovies(currentMovie: Content, allMovies: Content[]): void {
-    if (!currentMovie.genres) {
-      this.similarMovies = [];
-      return;
-    }
-
-    const currentGenres = currentMovie.genres.toLowerCase().split(',').map(g => g.trim());
-
-    const scoredMovies = allMovies
-      .filter(m => m.id !== currentMovie.id && m.genres)
-      .map(movie => {
-        const movieGenres = movie.genres!.toLowerCase().split(',').map(g => g.trim());
-        const matchCount = movieGenres.filter(g => currentGenres.includes(g)).length;
-        return { movie, score: matchCount };
-      })
-      .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 4);
-
-    this.similarMovies = scoredMovies.map(item => item.movie);
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) img.style.display = 'none';
   }
 
-  loadPlayer(contentId: number): void {
-    this.contentService.getPlayerLink(contentId).subscribe(res => {
+  loadPlayer(contentId: number, source: string = 'movies'): void {
+    this.contentService.getPlayerLink(contentId, source).subscribe(res => {
       const url = res?.primary_player || (res?.players && res.players.length > 0 ? res.players[0] : null);
       if (url) {
         this.playerUrl = url;
@@ -97,23 +99,51 @@ export class ContentPage implements OnInit, OnDestroy {
         this.safePlayerUrl = null;
       }
     }, error => {
-      console.error('Ошибка загрузки плеера:', error);
+      console.error('Ошибка плеера:', error);
       this.playerUrl = null;
       this.safePlayerUrl = null;
     });
   }
 
-  toggleFavorite(): void {
-    this.isFavorite = !this.isFavorite;
+  findSimilarMovies(currentMovie: Content, allContent: Content[]): void {
+    if (!currentMovie.genres || currentMovie.genres === 'Неизвестно') {
+      this.similarMovies = [];
+      return;
+    }
+
+    const currentGenres = currentMovie.genres.toLowerCase().split(',').map(g => g.trim());
+    const currentType = currentMovie.type; 
+
+    const shuffle = (array: any[]) => {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    };
+
+    const scoredMovies = allContent
+      .filter(m => 
+        m.id !== currentMovie.id && 
+        m.type === currentType && 
+        m.genres && 
+        m.genres !== 'Неизвестно'
+      )
+      .map(movie => {
+        const movieGenres = movie.genres!.toLowerCase().split(',').map(g => g.trim());
+        const matchCount = movieGenres.filter(g => currentGenres.includes(g)).length;
+        return { movie, score: matchCount };
+      })
+      .filter(item => item.score > 0);
+
+    const shuffled = shuffle(scoredMovies);
+    this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
   }
 
-  toggleLater(): void {
-    this.isLater = !this.isLater;
-  }
+  toggleFavorite(): void { this.isFavorite = !this.isFavorite; }
+  toggleLater(): void { this.isLater = !this.isLater; }
 
   onSelectContent(content: Content): void {
-    if (content?.id) {
-      this.router.navigate(['/content', content.id]);
-    }
+    if (content?.id) this.router.navigate(['/content', content.id]);
   }
 }

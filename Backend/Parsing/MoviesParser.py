@@ -15,10 +15,17 @@ HEADERS = {
     'Accept-Language': 'ru-RU,ru;q=0.9'
 }
 
-def parse_and_update_movies(target_count=400):
-    print(f"🎬 Запуск обновления каталога фильмов (цель: {target_count})...")
+def parse_and_update_movies(target_count=1000):
+    print(f"Запуск обновления каталога ФИЛЬМОВ (цель: {target_count})...")
     
-    print("🔍 Этап 1: Поиск новых фильмов в каталоге...")
+    print("Этап 1: Очистка таблицы movies и поиск новых фильмов...")
+    
+    with app.app_context():
+        count_before = Movies.query.count()
+        Movies.query.delete()
+        db.session.commit()
+        print(f"Удалено старых записей из movies: {count_before}")
+    
     added_count = 0
     page = 1
     
@@ -30,7 +37,9 @@ def parse_and_update_movies(target_count=400):
             soup = BeautifulSoup(resp.text, 'html.parser')
             posts = soup.find_all('div', class_='shortpost')
             
-            if not posts: break
+            if not posts: 
+                print("Больше постов не найдено.")
+                break
             
             for post in posts:
                 if added_count >= target_count: break
@@ -40,7 +49,7 @@ def parse_and_update_movies(target_count=400):
                 if not link: continue
                 
                 name_raw = title_tag.get_text(strip=True)
-                name = re.sub(r'\s*\(\d{4}\)\s*$', '', name_raw)
+                name = re.sub(r'\s*\(\d{4}\)\s*$', '', name_raw).strip()
                 
                 year_match = re.search(r'\((\d{4})\)', name_raw)
                 year = int(year_match.group(1)) if year_match else None
@@ -54,40 +63,52 @@ def parse_and_update_movies(target_count=400):
                 img_tag = post.find('img')
                 poster = None
                 if img_tag:
-                    src = img_tag.get('src', '') or img_tag.get('data-src', '')
-                    if src and 'base64' not in src:
+                    src = img_tag.get('data-src', '') or img_tag.get('src', '')
+                    if src and 'base64' not in src and len(src) > 20:
                         poster = src if src.startswith('http') else urljoin(BASE_URL, src)
 
                 page_url = urljoin(BASE_URL, link)
 
                 existing = Movies.query.filter_by(name=name).first()
                 if not existing:
-                    if name and year and poster and rating:
+                    if name and year and poster and rating and page_url:
                         new_movie = Movies(
-                            name=name, year=year, rating=rating, 
-                            poster=poster, page_url=page_url,
-                            genres='', countries='', directors='', 
-                            actors='', time='', description=''
+                            name=name, 
+                            year=year, 
+                            rating=rating, 
+                            poster=poster, 
+                            page_url=page_url,
+                            genres='',
+                            countries='',
+                            directors='',
+                            actors='',
+                            time='',
+                            description=''
                         )
                         db.session.add(new_movie)
                         added_count += 1
+                        print(f"[+] Добавлен: {name} ({year})")
+                    else:
+                        print(f"[-] Пропущен (пустые поля): {name}")
             
             page += 1
-            if added_count % 20 == 0: db.session.commit()
+            if added_count % 20 == 0: 
+                db.session.commit()
+                print(f"... сохранено {added_count} записей")
                 
         except Exception as e:
             print(f"Ошибка сканирования страницы {page}: {e}")
             break
             
     db.session.commit()
-    print(f"Этап 1 завершен. Добавлено новых: {added_count}")
+    print(f"Этап 1 завершен. Добавлено новых фильмов: {added_count}")
 
-    print("🔧 Этап 2: Сбор полных данных (жанры, страны, описание)...")
+    print("Этап 2: Сбор полных данных (жанры, страны, описание)...")
     all_movies = Movies.query.all()
     updated_count = 0
     
     for movie in all_movies:
-        if movie.genres and movie.countries and movie.directors and movie.actors and movie.time and movie.description:
+        if all([movie.genres, movie.countries, movie.directors, movie.actors, movie.time, movie.description]):
             continue
             
         if not movie.page_url: continue
@@ -111,7 +132,8 @@ def parse_and_update_movies(target_count=400):
                     
                 if is_updated:
                     updated_count += 1
-                    if updated_count % 10 == 0: db.session.commit()
+                    if updated_count % 10 == 0: 
+                        db.session.commit()
                     
         except Exception as e:
             print(f"Ошибка обновления {movie.name}: {e}")
@@ -131,7 +153,7 @@ def fetch_movie_details(url):
                 ld = json.loads(json_ld.string)
                 if ld.get('genre'):
                     g_list = ld['genre'] if isinstance(ld['genre'], list) else [ld['genre']]
-                    clean_g = [g.strip() for g in g_list if g.strip() not in ['Фильмы', 'Сериалы']]
+                    clean_g = [g.strip() for g in g_list if g.strip() not in ['Фильмы', 'Сериалы', 'TV Series']]
                     data['genres'] = ', '.join(clean_g[:5])
                 if ld.get('director'):
                     d_list = ld['director'] if isinstance(ld['director'], list) else [ld['director']]
@@ -184,4 +206,4 @@ def fetch_movie_details(url):
 
 if __name__ == '__main__':
     with app.app_context():
-        parse_and_update_movies(target_count=400)
+        parse_and_update_movies(target_count=1000)

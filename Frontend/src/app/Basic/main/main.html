@@ -4,11 +4,15 @@
     <div class="basic-main-section">
         <div class="basic-main-left-tabs">
             <div class="basic-main-tab-item" [class.active]="activeTab === 'movie'" (click)="setActiveTab('movie')">
-                Фильмы</div>
+                Фильмы
+            </div>
             <div class="basic-main-tab-item" [class.active]="activeTab === 'tvSeries'"
-                (click)="setActiveTab('tvSeries')">Сериалы</div>
+                (click)="setActiveTab('tvSeries')">
+                Сериалы
+            </div>
             <div class="basic-main-tab-item" [class.active]="activeTab === 'anime'" (click)="setActiveTab('anime')">
-                Аниме</div>
+                Аниме
+            </div>
         </div>
         <div class="basic-main-right-tabs">
             <div class="basic-main-tab-item">Фильтрация</div>
@@ -17,9 +21,8 @@
 </div>
 
 <div class="basic-main-section-content">
-
-    <div class="basic-main-content" *ngIf="activeTab === 'movie'">
-        @if (isLoading) {
+    @if (isLoading) {
+    <div class="basic-main-content">
         @for (i of [].constructor(16); track i) {
         <div class="basic-main-poster-card skeleton">
             <div class="basic-main-poster">
@@ -31,11 +34,16 @@
             </div>
         </div>
         }
-        } @else if (paginatedMovies.length > 0) {
+    </div>
+    } @else {
+
+    @if (activeTab === 'movie') {
+    <div class="basic-main-content">
+        @if (paginatedMovies.length > 0) {
         @for (movie of paginatedMovies; track movie.id) {
         <div class="basic-main-poster-card" (click)="onSelectMovie(movie)">
             <div class="basic-main-poster">
-                <img [src]="movie.poster" [alt]="movie.name">
+                <img [src]="movie.poster">
             </div>
             <div class="basic-main-info">
                 <div class="basic-main-title">{{ movie.name }}</div>
@@ -45,33 +53,19 @@
         }
         } @else {
         <div class="empty-state">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 15h8M9 9h.01M15 9h.01" />
-            </svg>
             <p>Ой! Фильмы пока не найдены</p>
         </div>
         }
     </div>
+    }
 
-    <div class="basic-main-content" *ngIf="activeTab === 'tvSeries'">
-        @if (isLoading) {
-        @for (i of [].constructor(16); track i) {
-        <div class="basic-main-poster-card skeleton">
-            <div class="basic-main-poster">
-                <div class="skeleton-poster-card"></div>
-            </div>
-            <div class="basic-main-info">
-                <div class="basic-main-skeleton-title"></div>
-                <div class="basic-main-skeleton-year"></div>
-            </div>
-        </div>
-        }
-        } @else if (paginatedSeries.length > 0) {
+    @if (activeTab === 'tvSeries') {
+    <div class="basic-main-content">
+        @if (paginatedSeries.length > 0) {
         @for (series of paginatedSeries; track series.id) {
         <div class="basic-main-poster-card" (click)="onSelectSeries(series)">
             <div class="basic-main-poster">
-                <img [src]="series.poster" [alt]="series.name">
+                <img [src]="series.poster">
             </div>
             <div class="basic-main-info">
                 <div class="basic-main-title">{{ series.name }}</div>
@@ -81,33 +75,19 @@
         }
         } @else {
         <div class="empty-state">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
-                <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
-                <polyline points="17 2 12 7 7 2" />
-            </svg>
             <p>Упс! Сериалы еще не добавлены</p>
         </div>
         }
     </div>
+    }
 
-    <div class="basic-main-content" *ngIf="activeTab === 'anime'">
-        @if (isLoading) {
-        @for (i of [].constructor(16); track i) {
-        <div class="basic-main-poster-card skeleton">
-            <div class="basic-main-poster">
-                <div class="skeleton-poster-card"></div>
-            </div>
-            <div class="basic-main-info">
-                <div class="basic-main-skeleton-title"></div>
-                <div class="basic-main-skeleton-year"></div>
-            </div>
-        </div>
-        }
-        } @else if (paginatedAnime.length > 0) {
+    @if (activeTab === 'anime') {
+    <div class="basic-main-content">
+        @if (paginatedAnime.length > 0) {
         @for (anime of paginatedAnime; track anime.id) {
         <div class="basic-main-poster-card" (click)="onSelectAnime(anime)">
             <div class="basic-main-poster">
-                <img [src]="anime.poster" [alt]="anime.name">
+                <img [src]="anime.poster">
             </div>
             <div class="basic-main-info">
                 <div class="basic-main-title">{{ anime.name }}</div>
@@ -117,19 +97,18 @@
         }
         } @else {
         <div class="empty-state">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#b3e0ff" stroke-width="1.5">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
             <p>Хмм... Аниме пока пусто</p>
         </div>
         }
     </div>
+    }
 
-    @if (!isLoading && totalPages > 1) {
+    @if (totalPages > 1) {
     <div class="pagination">
         <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
         <span>{{ currentPage }} / {{ totalPages }}</span>
         <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
     </div>
+    }
     }
 </div>
