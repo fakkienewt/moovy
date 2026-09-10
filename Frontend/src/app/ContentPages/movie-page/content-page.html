@@ -22,19 +22,19 @@
     } @else {
     <div class="content-container">
         <div class="content-main-card">
-            <div class="left-column">
-                <div class="poster-wrapper">
-                    @if (content.poster && content.poster.length > 0) {
-                    <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
-                    } @else {
-                    <div class="skeleton-poster-placeholder"></div>
-                    }
-                    <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
-                </div>
+
+            <div class="poster-wrapper">
+                @if (content.poster && content.poster.length > 0) {
+                <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
+                } @else {
+                <div class="skeleton-poster-placeholder"></div>
+                }
+                <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
             </div>
 
-            <div class="right-column">
+            <div class="content-right-side">
                 <h1 class="content-title">{{ content.name }}</h1>
+
                 <div class="info-grid">
                     <div class="info-block full-width">
                         <div class="label">Актеры:</div>
@@ -59,6 +59,7 @@
                     </div>
                     }
                 </div>
+
                 <div class="action-buttons-row">
                     <button class="btn-action btn-fav" [class.active]="isFavorite">
                         <img src="/SVG/content-page-button-favorite.svg"> В избранное
