@@ -15,13 +15,13 @@ export class ServiceGetData {
 
   getMovies(): Observable<Content[]> {
     return this.http.get<Content[]>(this.apiUrlMovies).pipe(
-      map(items => items.map(item => ({ ...item, type: 'movie' })))
+      map(items => items.map(item => ({ ...item, type: 'movie' as const })))
     );
   }
 
   getTVSeries(): Observable<Content[]> {
     return this.http.get<Content[]>(this.apiUrlTVSeries).pipe(
-      map(items => items.map(item => ({ ...item, type: 'tv-series' })))
+      map(items => items.map(item => ({ ...item, type: 'tv-series' as const })))
     );
   }
 

@@ -1,4 +1,4 @@
- <div class="content-page">
+<div class="content-page">
     @if (!content) {
     <div class="skeleton-card-wrapper">
         <div class="skeleton-poster-area"></div>
@@ -96,7 +96,7 @@
         <div class="similar-section">
             <h3 class="section-title similar-title">Похожие фильмы</h3>
             <div class="basic-main-content">
-                @for (movie of similarMovies; track movie.id || $index) {
+                @for (movie of similarMovies; track movie.id) {
                 <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
                     <div class="basic-main-poster">
                         @if (movie.poster && movie.poster.length > 0) {
@@ -125,4 +125,4 @@
         </div>
     </div>
     }
-</div> 
+</div>

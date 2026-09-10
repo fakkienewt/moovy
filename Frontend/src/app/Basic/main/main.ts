@@ -15,7 +15,6 @@ import { Content } from '../../Models/ContentModel';
 })
 export class Main implements OnInit {
   activeTab: string = 'movie';
-
   allMovies: Content[] = [];
   allSeries: Content[] = [];
   allAnime: Content[] = [];
@@ -28,6 +27,7 @@ export class Main implements OnInit {
   currentPage = 1;
   itemsPerPage = 16;
   totalPages = 1;
+  skeletonItems = Array.from({ length: 16 }, (_, i) => i);
 
   constructor(
     private movieService: ServiceGetData,
@@ -54,19 +54,25 @@ export class Main implements OnInit {
           return hasName && hasPoster;
         };
 
-        this.allMovies = rawMovies.filter(isValidItem);
+        this.allMovies = rawMovies
+          .filter(isValidItem)
+          .map(m => ({ ...m, type: 'movie' as const }));
 
-        this.allSeries = rawSeries.filter(s =>
-          isValidItem(s) &&
-          !(s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
-        );
+        this.allSeries = rawSeries
+          .filter(s =>
+            isValidItem(s) &&
+            !(s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
+          )
+          .map(s => ({ ...s, type: 'tv-series' as const }));
 
-        const animeMovies = rawMovies.filter(m =>
-          isValidItem(m) && m.genres && m.genres.toLowerCase().includes('аниме')
-        );
-        const animeSeries = rawSeries.filter(s =>
-          isValidItem(s) && s.genres && s.genres.toLowerCase().includes('аниме сериалы')
-        );
+        const animeMovies = rawMovies
+          .filter(m => isValidItem(m) && m.genres && m.genres.toLowerCase().includes('аниме'))
+          .map(m => ({ ...m, type: 'movie' as const }));
+
+        const animeSeries = rawSeries
+          .filter(s => isValidItem(s) && s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
+          .map(s => ({ ...s, type: 'tv-series' as const }));
+
         this.allAnime = [...animeMovies, ...animeSeries];
 
         this.updatePagination();
@@ -101,16 +107,19 @@ export class Main implements OnInit {
     }
   }
 
-  onSelectMovie(movie: Content): void {
-    if (movie?.id && movie.type === 'movie') this.router.navigate(['/content', movie.id]);
+  onSelectMovie(m: Content): void {
+    if (m?.id) this.router.navigate(['/content', 'movie', m.id]);
   }
 
-  onSelectSeries(series: Content): void {
-    if (series?.id && series.type === 'tv-series') this.router.navigate(['/content', series.id]);
+  onSelectSeries(s: Content): void {
+    if (s?.id) this.router.navigate(['/content', 'tv-series', s.id]);
   }
 
-  onSelectAnime(anime: Content): void {
-    if (anime?.id) this.router.navigate(['/content', anime.id]);
+  onSelectAnime(a: Content): void {
+    if (a?.id) {
+      const type = a.type === 'tv-series' ? 'tv-series' : 'movie';
+      this.router.navigate(['/content', type, a.id]);
+    }
   }
 
   private updatePagination(): void {

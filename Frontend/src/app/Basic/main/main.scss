@@ -7,11 +7,10 @@
     background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
     padding: 22px 30px;
     box-shadow: 0 4px 20px rgba(135, 206, 235, 0.3);
-    border-bottom: 3px solid #b3e0ff;
+    border: 2px solid #b3e0ff;
     border-radius: 25px;
     font-family: cursive;
     margin: 20px 0;
-    border: 2px solid #b3e0ff;
     box-sizing: border-box;
 }
 
@@ -99,7 +98,7 @@
     }
 }
 
-.basic-main-poster-card.skeleton {
+.basic-main-poster-card {
     background: white;
     border: 2px solid #b3e0ff;
     border-radius: 20px;
@@ -110,49 +109,10 @@
     box-sizing: border-box;
 }
 
-.basic-main-poster {
-    width: 100%;
-    aspect-ratio: 2/3;
-    margin: 0 auto 12px;
-    border: 2px solid #b3e0ff;
-    border-radius: 15px;
-}
-
-.skeleton-poster-card {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    border-radius: 15px;
-}
-
-.basic-main-skeleton-title {
-    width: 100%;
-    height: 20px;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-.basic-main-skeleton-year {
-    width: 140px;
-    height: 16px;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    border-radius: 10px;
-    margin-bottom: 8px;
-    margin: 0 auto;
-}
-
 .basic-main-poster-card:not(.skeleton) {
-    background: white;
-    border: 2px solid #b3e0ff;
-    border-radius: 20px;
-    padding: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
-    width: 100%;
-    box-sizing: border-box;
     cursor: pointer;
     transition: transform 0.2s ease;
     height: 100%;
@@ -160,16 +120,6 @@
     &:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
-    }
-
-    .basic-main-poster {
-        overflow: hidden;
-        background: #fff;
-
-        img {
-            width: 100%;
-            height: 100%;
-        }
     }
 
     .basic-main-info {
@@ -200,6 +150,45 @@
     }
 }
 
+.basic-main-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    margin: 0 auto 12px;
+    border: 2px solid #b3e0ff;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #fff;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.skeleton-poster-card {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border-radius: 15px;
+}
+
+.basic-main-skeleton-title {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.basic-main-skeleton-year {
+    width: 140px;
+    height: 16px;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border-radius: 10px;
+    margin: 0 auto 8px;
+}
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -207,7 +196,6 @@
     gap: 20px;
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 2px dashed #d6ebff;
     flex-wrap: wrap;
 
     button {

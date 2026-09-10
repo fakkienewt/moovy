@@ -23,7 +23,7 @@
 <div class="basic-main-section-content">
     @if (isLoading) {
     <div class="basic-main-content">
-        @for (i of [].constructor(16); track i) {
+        @for (i of skeletonItems; track i) {
         <div class="basic-main-poster-card skeleton">
             <div class="basic-main-poster">
                 <div class="skeleton-poster-card"></div>

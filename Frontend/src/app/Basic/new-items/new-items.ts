@@ -19,7 +19,7 @@ export class NewItems implements OnInit {
   error = false;
 
   currentIndex = 0;
-  itemsPerPage = 4; 
+  itemsPerPage = 4;
 
   constructor(
     private movieService: ServiceGetData,
@@ -60,7 +60,7 @@ export class NewItems implements OnInit {
 
   onSelectMovie(movie: Content): void {
     if (movie?.id) {
-      this.router.navigate(['/content', movie.id]);
+      this.router.navigate(['/content', 'movie', movie.id]);
     }
   }
 
