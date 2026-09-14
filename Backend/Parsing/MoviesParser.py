@@ -2,7 +2,9 @@ import sys
 import os
 import re
 import json
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
 import requests
 from bs4 import BeautifulSoup
@@ -15,21 +17,18 @@ HEADERS = {
     'Accept-Language': 'ru-RU,ru;q=0.9'
 }
 
-def parse_and_update_movies(target_count=1000):
-    print(f"Запуск обновления каталога ФИЛЬМОВ (цель: {target_count})...")
-    
-    print("Этап 1: Очистка таблицы movies и поиск новых фильмов...")
+def parse_and_update_movies():
+    print("ЗАПУСК ПАРСЕРА ФИЛЬМОВ")
     
     with app.app_context():
-        count_before = Movies.query.count()
-        Movies.query.delete()
-        db.session.commit()
-        print(f"Удалено старых записей из movies: {count_before}")
-    
+        Movies.__table__.drop(db.engine, checkfirst=True)
+        db.create_all()
+        print("[!] Таблица movies удалена и создана заново.")
+        
     added_count = 0
     page = 1
     
-    while added_count < target_count and page <= 800:
+    while page <= 800:
         url = f'{BASE_URL}/filmy/page/{page}/' if page > 1 else f'{BASE_URL}/filmy/'
         
         try:
@@ -38,12 +37,10 @@ def parse_and_update_movies(target_count=1000):
             posts = soup.find_all('div', class_='shortpost')
             
             if not posts: 
-                print("Больше постов не найдено.")
+                print(f"Страница {page}: постов не найдено. Завершение.")
                 break
             
             for post in posts:
-                if added_count >= target_count: break
-                
                 title_tag = post.find('div', class_='posttitle').find('a')
                 link = title_tag['href'] if title_tag else None
                 if not link: continue
@@ -70,78 +67,50 @@ def parse_and_update_movies(target_count=1000):
                 page_url = urljoin(BASE_URL, link)
 
                 existing = Movies.query.filter_by(name=name).first()
-                if not existing:
-                    if name and year and poster and rating and page_url:
-                        new_movie = Movies(
-                            name=name, 
-                            year=year, 
-                            rating=rating, 
-                            poster=poster, 
-                            page_url=page_url,
-                            genres='',
-                            countries='',
-                            directors='',
-                            actors='',
-                            time='',
-                            description=''
-                        )
-                        db.session.add(new_movie)
-                        added_count += 1
-                        print(f"[+] Добавлен: {name} ({year})")
-                    else:
-                        print(f"[-] Пропущен (пустые поля): {name}")
+                if not existing and name and year and poster and rating and page_url:
+                    new_movie = Movies(
+                        name=name, year=year, rating=rating, poster=poster, 
+                        page_url=page_url, genres='', countries='', directors='',
+                        actors='', time='', description=''
+                    )
+                    db.session.add(new_movie)
+                    added_count += 1
+                    print(f"[+] Фильм: {name} ({year})")
             
             page += 1
-            if added_count % 20 == 0: 
+            if added_count % 50 == 0: 
                 db.session.commit()
-                print(f"... сохранено {added_count} записей")
+                print(f"... сохранено {added_count} фильмов")
                 
         except Exception as e:
-            print(f"Ошибка сканирования страницы {page}: {e}")
+            print(f"Ошибка на странице {page}: {e}")
             break
             
     db.session.commit()
-    print(f"Этап 1 завершен. Добавлено новых фильмов: {added_count}")
+    print(f"Этап 1 завершен. Найдено фильмов: {added_count}")
 
-    print("Этап 2: Сбор полных данных (жанры, страны, описание)...")
+    print("Сбор деталей...")
     all_movies = Movies.query.all()
-    updated_count = 0
-    
+    updated = 0
     for movie in all_movies:
-        if all([movie.genres, movie.countries, movie.directors, movie.actors, movie.time, movie.description]):
-            continue
-            
-        if not movie.page_url: continue
-
-        try:
-            details = fetch_movie_details(movie.page_url)
-            if details:
-                is_updated = False
-                if not movie.genres and details.get('genres'):
-                    movie.genres = details['genres']; is_updated = True
-                if not movie.countries and details.get('countries'):
-                    movie.countries = details['countries']; is_updated = True
-                if not movie.directors and details.get('directors'):
-                    movie.directors = details['directors']; is_updated = True
-                if not movie.actors and details.get('actors'):
-                    movie.actors = details['actors']; is_updated = True
-                if not movie.time and details.get('time'):
-                    movie.time = details['time']; is_updated = True
-                if not movie.description and details.get('description'):
-                    movie.description = details['description']; is_updated = True
-                    
-                if is_updated:
-                    updated_count += 1
-                    if updated_count % 10 == 0: 
-                        db.session.commit()
-                    
-        except Exception as e:
-            print(f"Ошибка обновления {movie.name}: {e}")
+        if all([movie.genres, movie.countries, movie.directors]): continue
+        details = fetch_details(movie.page_url)
+        if details:
+            if not movie.genres and details.get('genres'): 
+                genres_list = [g for g in details['genres'].split(', ') if 'аниме' not in g.lower()]
+                if genres_list: movie.genres = ', '.join(genres_list[:5])
+            if not movie.countries and details.get('countries'): movie.countries = details['countries']
+            if not movie.directors and details.get('directors'): movie.directors = details['directors']
+            if not movie.actors and details.get('actors'): movie.actors = details['actors']
+            if not movie.time and details.get('time'): movie.time = details['time']
+            if not movie.description and details.get('description'): movie.description = details['description']
+            updated += 1
+            if updated % 20 == 0: db.session.commit()
             
     db.session.commit()
-    print(f"Этап 2 завершен. Обновлено записей: {updated_count}")
+    print(f"Готово. Обновлено: {updated}")
 
-def fetch_movie_details(url):
+def fetch_details(url):
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
         soup = BeautifulSoup(resp.text, 'html.parser')
@@ -201,9 +170,8 @@ def fetch_movie_details(url):
 
         return data
     except Exception as e:
-        print(f"Ошибка парсинга деталей {url}: {e}")
         return None
 
 if __name__ == '__main__':
     with app.app_context():
-        parse_and_update_movies(target_count=1000)
+        parse_and_update_movies()

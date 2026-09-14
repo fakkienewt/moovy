@@ -1,7 +1,10 @@
 import sys
 import os
 import re
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import json
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
 import requests
 from bs4 import BeautifulSoup
@@ -14,14 +17,18 @@ HEADERS = {
     'Accept-Language': 'ru-RU,ru;q=0.9'
 }
 
-def parse_and_update_series(target_count=1000):
-    print(f"Запуск обновления каталога СЕРИАЛОВ (цель: {target_count})...")
+def parse_and_update_series():
+    print("ЗАПУСК ПАРСЕРА СЕРИАЛОВ")
     
-    print("Этап 1: Поиск новых сериалов...")
+    with app.app_context():
+        TvSeries.__table__.drop(db.engine, checkfirst=True)
+        db.create_all()
+        print("[!] Таблица tv_series удалена и создана заново.")
+        
     added_count = 0
     page = 1
     
-    while added_count < target_count and page <= 800:
+    while page <= 800:
         url = f'{BASE_URL}/serialy/page/{page}/' if page > 1 else f'{BASE_URL}/serialy/'
         
         try:
@@ -30,12 +37,10 @@ def parse_and_update_series(target_count=1000):
             posts = soup.find_all('div', class_='shortpost')
             
             if not posts: 
-                print("Больше постов не найдено.")
+                print(f"Страница {page}: постов не найдено. Завершение.")
                 break
             
             for post in posts:
-                if added_count >= target_count: break
-                
                 title_tag = post.find('div', class_='posttitle').find('a')
                 link = title_tag['href'] if title_tag else None
                 if not link: continue
@@ -62,78 +67,50 @@ def parse_and_update_series(target_count=1000):
                 page_url = urljoin(BASE_URL, link)
 
                 existing = TvSeries.query.filter_by(name=name).first()
-                if not existing:
-                    if name and year and poster and rating and page_url:
-                        new_series = TvSeries(
-                            name=name, 
-                            year=year, 
-                            rating=rating, 
-                            poster=poster, 
-                            page_url=page_url,
-                            genres='',
-                            countries='',
-                            directors='',
-                            actors='',
-                            time='',
-                            description=''
-                        )
-                        db.session.add(new_series)
-                        added_count += 1
-                        print(f"[+] Добавлен: {name} ({year})")
-                    else:
-                        print(f"[-] Пропущен (пустые поля): {name}")
+                if not existing and name and year and poster and rating and page_url:
+                    new_series = TvSeries(
+                        name=name, year=year, rating=rating, poster=poster, 
+                        page_url=page_url, genres='', countries='', directors='',
+                        actors='', time='', description=''
+                    )
+                    db.session.add(new_series)
+                    added_count += 1
+                    print(f"[+] Сериал: {name} ({year})")
             
             page += 1
-            if added_count % 20 == 0: 
+            if added_count % 50 == 0: 
                 db.session.commit()
-                print(f"... сохранено {added_count} записей")
+                print(f"... сохранено {added_count} сериалов")
                 
         except Exception as e:
-            print(f"Ошибка сканирования страницы {page}: {e}")
+            print(f"Ошибка на странице {page}: {e}")
             break
             
     db.session.commit()
-    print(f"Этап 1 завершен. Добавлено новых сериалов: {added_count}")
+    print(f"Этап 1 завершен. Найдено сериалов: {added_count}")
 
-    print("Этап 2: Сбор полных данных (жанры, страны, описание)...")
+    print("Сбор деталей...")
     all_series = TvSeries.query.all()
-    updated_count = 0
-    
+    updated = 0
     for series in all_series:
-        if all([series.genres, series.countries, series.directors, series.actors, series.time, series.description]):
-            continue
-            
-        if not series.page_url: continue
-
-        try:
-            details = fetch_series_details(series.page_url)
-            if details:
-                is_updated = False
-                if not series.genres and details.get('genres'):
-                    series.genres = details['genres']; is_updated = True
-                if not series.countries and details.get('countries'):
-                    series.countries = details['countries']; is_updated = True
-                if not series.directors and details.get('directors'):
-                    series.directors = details['directors']; is_updated = True
-                if not series.actors and details.get('actors'):
-                    series.actors = details['actors']; is_updated = True
-                if not series.time and details.get('time'):
-                    series.time = details['time']; is_updated = True
-                if not series.description and details.get('description'):
-                    series.description = details['description']; is_updated = True
-                    
-                if is_updated:
-                    updated_count += 1
-                    if updated_count % 10 == 0: 
-                        db.session.commit()
-                    
-        except Exception as e:
-            print(f"Ошибка обновления {series.name}: {e}")
+        if all([series.genres, series.countries, series.directors]): continue
+        details = fetch_details(series.page_url)
+        if details:
+            if not series.genres and details.get('genres'): 
+                genres_list = [g for g in details['genres'].split(', ') if 'аниме' not in g.lower()]
+                if genres_list: series.genres = ', '.join(genres_list[:5])
+            if not series.countries and details.get('countries'): series.countries = details['countries']
+            if not series.directors and details.get('directors'): series.directors = details['directors']
+            if not series.actors and details.get('actors'): series.actors = details['actors']
+            if not series.time and details.get('time'): series.time = details['time']
+            if not series.description and details.get('description'): series.description = details['description']
+            updated += 1
+            if updated % 20 == 0: db.session.commit()
             
     db.session.commit()
-    print(f"Этап 2 завершен. Обновлено записей: {updated_count}")
+    print(f"Готово. Обновлено: {updated}")
 
-def fetch_series_details(url):
+def fetch_details(url):
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
         soup = BeautifulSoup(resp.text, 'html.parser')
@@ -193,9 +170,8 @@ def fetch_series_details(url):
 
         return data
     except Exception as e:
-        print(f"Ошибка парсинга деталей {url}: {e}")
         return None
 
 if __name__ == '__main__':
     with app.app_context():
-        parse_and_update_series(target_count=1000)
+        parse_and_update_series()

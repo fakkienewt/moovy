@@ -15,6 +15,7 @@ import { Content } from '../../Models/ContentModel';
 })
 export class Main implements OnInit {
   activeTab: string = 'movie';
+  
   allMovies: Content[] = [];
   allSeries: Content[] = [];
   allAnime: Content[] = [];
@@ -30,21 +31,19 @@ export class Main implements OnInit {
   skeletonItems = Array.from({ length: 16 }, (_, i) => i);
 
   constructor(
-    private movieService: ServiceGetData,
+    private contentService: ServiceGetData,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
 
     forkJoin({
-      movies: this.movieService.getMovies(),
-      series: this.movieService.getTVSeries()
+      movies: this.contentService.getMovies(),
+      series: this.contentService.getTVSeries(),
+      anime: this.contentService.getAnime()
     }).subscribe({
       next: (data) => {
-        const rawMovies = data.movies || [];
-        const rawSeries = data.series || [];
-
         const isValidItem = (item: any) => {
           const hasName = item.name && typeof item.name === 'string' && item.name.trim().length > 3;
           const hasPoster = item.poster && typeof item.poster === 'string' &&
@@ -54,32 +53,15 @@ export class Main implements OnInit {
           return hasName && hasPoster;
         };
 
-        this.allMovies = rawMovies
-          .filter(isValidItem)
-          .map(m => ({ ...m, type: 'movie' as const }));
-
-        this.allSeries = rawSeries
-          .filter(s =>
-            isValidItem(s) &&
-            !(s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
-          )
-          .map(s => ({ ...s, type: 'tv-series' as const }));
-
-        const animeMovies = rawMovies
-          .filter(m => isValidItem(m) && m.genres && m.genres.toLowerCase().includes('аниме'))
-          .map(m => ({ ...m, type: 'movie' as const }));
-
-        const animeSeries = rawSeries
-          .filter(s => isValidItem(s) && s.genres && s.genres.toLowerCase().includes('аниме сериалы'))
-          .map(s => ({ ...s, type: 'tv-series' as const }));
-
-        this.allAnime = [...animeMovies, ...animeSeries];
+        this.allMovies = (data.movies || []).filter(isValidItem);
+        this.allSeries = (data.series || []).filter(isValidItem);
+        this.allAnime = (data.anime || []).filter(isValidItem);
 
         this.updatePagination();
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Ошибка загрузки:', err);
+        console.error('Ошибка загрузки данных:', err);
         this.isLoading = false;
       }
     });
@@ -116,10 +98,7 @@ export class Main implements OnInit {
   }
 
   onSelectAnime(a: Content): void {
-    if (a?.id) {
-      const type = a.type === 'tv-series' ? 'tv-series' : 'movie';
-      this.router.navigate(['/content', type, a.id]);
-    }
+    if (a?.id) this.router.navigate(['/content', 'anime', a.id]);
   }
 
   private updatePagination(): void {
@@ -131,7 +110,7 @@ export class Main implements OnInit {
       case 'anime': currentList = this.allAnime; break;
     }
 
-    this.totalPages = Math.ceil(currentList.length / this.itemsPerPage);
+    this.totalPages = Math.max(1, Math.ceil(currentList.length / this.itemsPerPage));
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
 
