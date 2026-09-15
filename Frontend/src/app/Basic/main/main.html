@@ -1,106 +1,191 @@
 <app-new-items></app-new-items>
 
-<div class="basic-main">
-    <div class="basic-main-section">
-        <div class="basic-main-left-tabs">
-            <div class="basic-main-tab-item" [class.active]="activeTab === 'movie'" (click)="setActiveTab('movie')">
-                Фильмы
-            </div>
-            <div class="basic-main-tab-item" [class.active]="activeTab === 'tvSeries'"
-                (click)="setActiveTab('tvSeries')">
-                Сериалы
-            </div>
-            <div class="basic-main-tab-item" [class.active]="activeTab === 'anime'" (click)="setActiveTab('anime')">
-                Аниме
-            </div>
+<div class="nav-container">
+    <div class="nav-section">
+        <div class="nav-tabs">
+            <div class="nav-tab" [class.active]="activeTab === 'movie' && !isFilterOpen"
+                (click)="setActiveTab('movie')">Фильмы</div>
+            <div class="nav-tab" [class.active]="activeTab === 'tvSeries' && !isFilterOpen"
+                (click)="setActiveTab('tvSeries')">Сериалы</div>
+            <div class="nav-tab" [class.active]="activeTab === 'anime' && !isFilterOpen"
+                (click)="setActiveTab('anime')">Аниме</div>
         </div>
-        <div class="basic-main-right-tabs">
-            <div class="basic-main-tab-item">Фильтрация</div>
+        <div class="nav-actions">
+            <div class="nav-tab filter-trigger" [class.active]="isFilterOpen" (click)="toggleFilter()">Фильтрация</div>
         </div>
     </div>
+
+    @if (isFilterOpen) {
+    <div class="filter-panel">
+        <div class="filter-row-full">
+            <select class="form-select full-width" [(ngModel)]="filterType"
+                (ngModelChange)="updateFilterOptions(); applyFilters()">
+                <option value="">Все типы</option>
+                <option value="movie">Фильмы</option>
+                <option value="tv-series">Сериалы</option>
+                <option value="anime">Аниме</option>
+            </select>
+        </div>
+
+        <div class="filter-grid">
+            <select class="form-select" [(ngModel)]="selectedGenre" (ngModelChange)="applyFilters()">
+                <option value="">Все жанры</option>
+                <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
+            </select>
+            <select class="form-select" [(ngModel)]="selectedYear" (ngModelChange)="applyFilters()">
+                <option value="">Все годы</option>
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+            </select>
+            <select class="form-select" [(ngModel)]="selectedCountry" (ngModelChange)="applyFilters()">
+                <option value="">Все страны</option>
+                <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+            </select>
+        </div>
+
+        <div class="filter-grid input-grid">
+            <div class="input-group">
+                <input type="text" class="form-input" placeholder="Режиссер..." [ngModel]="directorSearch"
+                    (ngModelChange)="onDirectorInput($event)">
+                @if (filteredDirectorSuggestions.length > 0) {
+                <ul class="suggestions">
+                    @for (d of filteredDirectorSuggestions; track $index) {
+                    <li (click)="selectSuggestion('director', d)">{{ d }}</li>
+                    }
+                </ul>
+                }
+            </div>
+
+            <div class="input-group">
+                <input type="text" class="form-input" placeholder="Актер..." [ngModel]="actorSearch"
+                    (ngModelChange)="onActorInput($event)">
+                @if (filteredActorSuggestions.length > 0) {
+                <ul class="suggestions">
+                    @for (a of filteredActorSuggestions; track $index) {
+                    <li (click)="selectSuggestion('actor', a)">{{ a }}</li>
+                    }
+                </ul>
+                }
+            </div>
+        </div>
+
+        <div class="filter-buttons">
+            <button class="btn-secondary" (click)="resetFilters()">Сбросить</button>
+            <button class="btn-primary" (click)="applyFilters()">Найти</button>
+        </div>
+    </div>
+    }
 </div>
 
-<div class="basic-main-section-content">
+<div class="content-container">
     @if (isLoading) {
-    <div class="basic-main-content">
+    <div class="grid-layout">
         @for (i of skeletonItems; track i) {
-        <div class="basic-main-poster-card skeleton">
-            <div class="basic-main-poster">
-                <div class="skeleton-poster-card"></div>
+        <div class="card skeleton">
+            <div class="card-poster">
+                <div class="skeleton-img"></div>
             </div>
-            <div class="basic-main-info">
-                <div class="basic-main-skeleton-title"></div>
-                <div class="basic-main-skeleton-year"></div>
+            <div class="card-info">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line year"></div>
             </div>
         </div>
         }
     </div>
     } @else {
 
+    @if (!isFilterOpen) {
     @if (activeTab === 'movie') {
-    <div class="basic-main-content">
+    <div class="grid-layout">
         @if (paginatedMovies.length > 0) {
-        @for (movie of paginatedMovies; track movie.id) {
-        <div class="basic-main-poster-card" (click)="onSelectMovie(movie)">
-            <div class="basic-main-poster">
-                <img [src]="movie.poster">
+        @for (item of paginatedMovies; track item.id) {
+        <div class="card" (click)="onSelectItem(item)">
+            <div class="card-poster">
+                <img [src]="item.poster">
+                <span class="rating-badge">{{ item.rating || '0' }}</span>
             </div>
-            <div class="basic-main-info">
-                <div class="basic-main-title">{{ movie.name }}</div>
-                <div class="basic-main-year">{{ movie.year }}</div>
+            <div class="card-info">
+                <div class="card-title">{{ item.name }}</div>
+                <div class="card-year">{{ item.year }}</div>
             </div>
         </div>
         }
-        } @else {
-        <div class="empty-state">
+        } @else { <div class="empty-state">
             <p>Ой! Фильмы пока не найдены</p>
-        </div>
-        }
+        </div> }
     </div>
     }
-
     @if (activeTab === 'tvSeries') {
-    <div class="basic-main-content">
+    <div class="grid-layout">
         @if (paginatedSeries.length > 0) {
-        @for (series of paginatedSeries; track series.id) {
-        <div class="basic-main-poster-card" (click)="onSelectSeries(series)">
-            <div class="basic-main-poster">
-                <img [src]="series.poster">
+        @for (item of paginatedSeries; track item.id) {
+        <div class="card" (click)="onSelectItem(item)">
+            <div class="card-poster">
+                <img [src]="item.poster">
+                <span class="rating-badge">{{ item.rating || '0' }}</span>
             </div>
-            <div class="basic-main-info">
-                <div class="basic-main-title">{{ series.name }}</div>
-                <div class="basic-main-year">{{ series.year }}</div>
+            <div class="card-info">
+                <div class="card-title">{{ item.name }}</div>
+                <div class="card-year">{{ item.year }}</div>
             </div>
         </div>
         }
-        } @else {
-        <div class="empty-state">
+        } @else { <div class="empty-state">
             <p>Упс! Сериалы еще не добавлены</p>
-        </div>
-        }
+        </div> }
     </div>
     }
-
     @if (activeTab === 'anime') {
-    <div class="basic-main-content">
+    <div class="grid-layout">
         @if (paginatedAnime.length > 0) {
-        @for (anime of paginatedAnime; track anime.id) {
-        <div class="basic-main-poster-card" (click)="onSelectAnime(anime)">
-            <div class="basic-main-poster">
-                <img [src]="anime.poster">
+        @for (item of paginatedAnime; track item.id) {
+        <div class="card" (click)="onSelectItem(item)">
+            <div class="card-poster">
+                <img [src]="item.poster">
+                <span class="rating-badge">{{ item.rating || '0' }}</span>
             </div>
-            <div class="basic-main-info">
-                <div class="basic-main-title">{{ anime.name }}</div>
-                <div class="basic-main-year">{{ anime.year }}</div>
+            <div class="card-info">
+                <div class="card-title">{{ item.name }}</div>
+                <div class="card-year">{{ item.year }}</div>
             </div>
         </div>
         }
-        } @else {
-        <div class="empty-state">
+        } @else { <div class="empty-state">
             <p>Хмм... Аниме пока пусто</p>
+        </div> }
+    </div>
+    }
+    } @else {
+
+    @if (filteredResults.length > 0) {
+    <div class="sort-bar">
+        <span class="sort-label">Сортировка:</span>
+        <select class="sort-select" [(ngModel)]="sortType" (ngModelChange)="applyFilters()">
+            <option value="default">По умолчанию</option>
+            <option value="rating_desc">По возрастанию</option>
+            <option value="rating_asc">По убыванию</option>
+        </select>
+    </div>
+
+    <div class="grid-layout">
+        @for (item of paginatedFiltered; track item.id) {
+        <div class="card" (click)="onSelectItem(item)">
+            <div class="card-poster">
+                <img [src]="item.poster">
+                <span class="rating-badge">{{ item.rating || '0' }}</span>
+            </div>
+            <div class="card-info">
+                <div class="card-title">{{ item.name }}</div>
+                <div class="card-year">{{ item.year }}</div>
+            </div>
         </div>
         }
     </div>
+    } @else {
+    <div class="empty-state empty-clean">
+        <p>Упс! Ничего не найдено</p>
+        <span>Попробуй изменить параметры поиска</span>
+    </div>
+    }
     }
 
     @if (totalPages > 1) {

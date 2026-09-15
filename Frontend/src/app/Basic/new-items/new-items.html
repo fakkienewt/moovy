@@ -21,7 +21,7 @@
                 }
                 } @else {
                 @for (movie of visibleMovies; track movie.id) {
-                <div class="basic-new-section-movie-poster" (click)="onSelectMovie(movie)" style="cursor: pointer;">
+                <div class="basic-new-section-movie-poster" (click)="onSelectMovie(movie)">
                     <div class="basic-new-poster">
                         <img [src]="movie.poster" [alt]="movie.name">
                     </div>
