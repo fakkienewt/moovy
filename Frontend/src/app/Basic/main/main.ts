@@ -216,9 +216,15 @@ export class Main implements OnInit {
       default: list = [...this.allMovies, ...this.allSeries, ...this.allAnime];
     }
 
-    if (this.selectedGenre) list = list.filter(i => i.genres?.toLowerCase().includes(this.selectedGenre.toLowerCase()));
-    if (this.selectedYear) list = list.filter(i => String(i.year) === this.selectedYear);
-    if (this.selectedCountry) list = list.filter(i => i.countries?.toLowerCase().includes(this.selectedCountry.toLowerCase()));
+    if (this.selectedGenre) {
+      list = list.filter(i => i.genres?.toLowerCase().includes(this.selectedGenre.toLowerCase()));
+    }
+    if (this.selectedYear) {
+      list = list.filter(i => String(i.year) === this.selectedYear);
+    }
+    if (this.selectedCountry) {
+      list = list.filter(i => i.countries?.toLowerCase().includes(this.selectedCountry.toLowerCase()));
+    }
 
     if (this.directorSearch.trim()) {
       const dSearch = this.directorSearch.toLowerCase();

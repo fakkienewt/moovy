@@ -19,12 +19,12 @@ HEADERS = {
 
 
 def parse_and_update_anime():
-    print("=== ЗАПУСК ПАРСЕРА АНИМЕ ===")
+    print("ЗАПУСК ПАРСЕРА АНИМЕ")
 
     with app.app_context():
         Anime.__table__.drop(db.engine, checkfirst=True)
         db.create_all()
-        print("[!] Таблица anime удалена и создана заново.")
+        print("Таблица anime удалена и создана заново.")
 
     added_count = 0
     page = 1
@@ -79,7 +79,7 @@ def parse_and_update_anime():
                     added_count += 1
                     consecutive_duplicates = 0
                     new_found = True
-                    print(f"[+] Аниме: {name} ({year})")
+                    print(f"Аниме: {name} ({year})")
                 else:
                     consecutive_duplicates += 1
                     if consecutive_duplicates >= 50:

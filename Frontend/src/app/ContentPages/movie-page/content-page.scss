@@ -6,8 +6,13 @@
 }
 
 @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .skeleton-card-wrapper,
@@ -34,13 +39,14 @@
     background: linear-gradient(90deg, #e6f2ff 25%, #f0f8ff 50%, #e6f2ff 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+    border-radius: 12px;
+    border: 2px solid #d6ebff;
 }
 
 .skeleton-poster-area {
     width: 100%;
     aspect-ratio: 2/3;
     border-radius: 24px;
-    border: 3px solid #87CEEB;
     overflow: hidden;
 }
 
@@ -52,8 +58,7 @@
 
 .skeleton-title-line {
     height: 40px;
-    width: 60%;
-    border-radius: 8px;
+    width: 100%;
 }
 
 .skeleton-grid {
@@ -63,23 +68,22 @@
 }
 
 .skeleton-block {
-    height: 60px;
-    border-radius: 12px;
-    border: 2px solid #d6ebff;
-    &.full { grid-column: span 2; }
+    height: 85px;
+
+    &.full-width {
+        grid-column: span 2;
+    }
 }
 
 .skeleton-buttons-row {
     display: flex;
     gap: 12px;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 .skeleton-btn {
     flex: 1;
     height: 45px;
-    border-radius: 12px;
-    border: 2px solid #b3e0ff;
 }
 
 .skeleton-player-area {
@@ -93,11 +97,15 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+
     &::after {
         content: '';
         position: absolute;
         inset: 30px;
         border-radius: 16px;
+        background: linear-gradient(90deg, #e6f2ff 25%, #f0f8ff 50%, #e6f2ff 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
     }
 }
 
@@ -126,7 +134,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    &.small { border-radius: 15px; }
 }
 
 .rating-badge {
@@ -177,7 +184,10 @@
     gap: 4px;
     height: 100%;
     box-sizing: border-box;
-    &.full-width { grid-column: span 2; }
+
+    &.full-width {
+        grid-column: span 2;
+    }
 }
 
 .label {
@@ -196,7 +206,6 @@
 .action-buttons-row {
     display: flex;
     gap: 12px;
-    margin-top: 0; 
     width: 100%;
 }
 
@@ -373,7 +382,6 @@
                 font-family: cursive;
                 font-size: 13px;
                 color: #87CEEB;
-                font-weight: 600;
             }
         }
     }

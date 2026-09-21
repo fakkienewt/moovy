@@ -8,5 +8,5 @@ export const routes: Routes = [
 ];
 
 export const routerOptions = {
-    scrollPositionRestoration: 'top' as const
+    scrollPositionRestoration: 'top' 
 };

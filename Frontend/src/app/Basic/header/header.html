@@ -4,13 +4,31 @@
             <div class="basic-header-logo" (click)="onLogoClick()">Moovy</div>
         </div>
 
-        <div class="basic-header-section-search">
+        <div class="basic-header-section-search input-group">
             <div class="basic-header-section-search-input">
-                <input class="basic-header-input-search" type="text" placeholder="Найти фильм, сериал">
+                <input class="basic-header-input-search" type="text" placeholder="Найти фильм, сериал..."
+                    [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput($event)">
                 <button class="basic-header-button-search">
                     <img src="/SVG/basic-header-button-svg-1.svg">
                 </button>
             </div>
+
+            @if (searchResults.length > 0) {
+            <ul class="suggestions">
+                @for (item of searchResults; track item.id) {
+                <li (click)="selectSearchResult(item)">
+                    <div class="search-poster">
+                        <img [src]="item.poster" [alt]="item.name">
+                    </div>
+
+                    <div class="search-info">
+                        <span class="search-name">{{ item.name }}</span>
+                        <span class="search-year">{{ item.year }}</span>
+                    </div>
+                </li>
+                }
+            </ul>
+            }
         </div>
 
         <div class="basic-header-section-profile">

@@ -102,11 +102,10 @@
     width: 100%;
     aspect-ratio: 2/3;
     margin: 0 auto 12px;
-    border: 2px solid #d6ebff;
+    border: 2px solid #b3e0ff;
     border-radius: 15px;
     overflow: hidden;
     background: #fff;
-    flex-shrink: 0;
 
     img {
         width: 100%;
@@ -118,9 +117,8 @@
 .empty-poster {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #e6f2ff 0%, #f0f8ff 100%);
-    border-radius: 13px;
-    border: 2px solid #b3e0ff;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border-radius: 15px;
 }
 
 .movie-info {
@@ -133,7 +131,7 @@
     width: 60%;
     height: 16px;
     background: #e6f2ff;
-    border-radius: 8px;
+    border-radius: 20px;
     margin: 0 auto;
 }
 

@@ -4,14 +4,16 @@
         <div class="skeleton-poster-area"></div>
         <div class="skeleton-info-area">
             <div class="skeleton-title-line"></div>
-            <div class="skeleton-grid">
-                <div class="skeleton-block full"></div>
+
+            <div class="info-grid skeleton-grid">
+                <div class="skeleton-block full-width"></div>
                 <div class="skeleton-block"></div>
                 <div class="skeleton-block"></div>
                 <div class="skeleton-block"></div>
                 <div class="skeleton-block"></div>
             </div>
-            <div class="skeleton-buttons-row">
+
+            <div class="action-buttons-row skeleton-buttons-row">
                 <div class="skeleton-btn"></div>
                 <div class="skeleton-btn"></div>
             </div>
@@ -22,7 +24,6 @@
     } @else {
     <div class="content-container">
         <div class="content-main-card">
-
             <div class="poster-wrapper">
                 @if (content.poster && content.poster.length > 0) {
                 <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
@@ -81,8 +82,7 @@
         <div class="player-placeholder-block">
             @if (playerUrl) {
             <iframe [src]="safePlayerUrl" width="100%" height="500" frameborder="0" allowfullscreen
-                referrerpolicy="origin" class="content-player-iframe">
-            </iframe>
+                referrerpolicy="origin" class="content-player-iframe"></iframe>
             } @else {
             <div class="player-screen-empty">
                 <div class="empty-message">
