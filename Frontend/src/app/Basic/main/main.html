@@ -28,15 +28,18 @@
         </div>
 
         <div class="filter-grid">
-            <select class="form-select" [(ngModel)]="selectedGenre" (ngModelChange)="applyFilters()">
+            <select class="form-select" [(ngModel)]="selectedGenre" (ngModelChange)="applyFilters()"
+                (mousedown)="closeDropdowns()">
                 <option value="">Все жанры</option>
                 <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
             </select>
-            <select class="form-select" [(ngModel)]="selectedYear" (ngModelChange)="applyFilters()">
+            <select class="form-select" [(ngModel)]="selectedYear" (ngModelChange)="applyFilters()"
+                (mousedown)="closeDropdowns()">
                 <option value="">Все годы</option>
                 <option *ngFor="let y of years" [value]="y">{{ y }}</option>
             </select>
-            <select class="form-select" [(ngModel)]="selectedCountry" (ngModelChange)="applyFilters()">
+            <select class="form-select" [(ngModel)]="selectedCountry" (ngModelChange)="applyFilters()"
+                (mousedown)="closeDropdowns()">
                 <option value="">Все страны</option>
                 <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
             </select>
@@ -45,7 +48,7 @@
         <div class="filter-grid input-grid">
             <div class="input-group">
                 <input type="text" class="form-input" placeholder="Режиссер..." [ngModel]="directorSearch"
-                    (ngModelChange)="onDirectorInput($event)">
+                    (ngModelChange)="onDirectorInput($event)" (focus)="filteredActorSuggestions = []">
                 @if (filteredDirectorSuggestions.length > 0) {
                 <ul class="suggestions">
                     @for (d of filteredDirectorSuggestions; track $index) {
@@ -57,7 +60,7 @@
 
             <div class="input-group">
                 <input type="text" class="form-input" placeholder="Актер..." [ngModel]="actorSearch"
-                    (ngModelChange)="onActorInput($event)">
+                    (ngModelChange)="onActorInput($event)" (focus)="filteredDirectorSuggestions = []">
                 @if (filteredActorSuggestions.length > 0) {
                 <ul class="suggestions">
                     @for (a of filteredActorSuggestions; track $index) {

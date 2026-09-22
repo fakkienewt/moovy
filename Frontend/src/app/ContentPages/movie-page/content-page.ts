@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 
@@ -22,7 +23,8 @@ export class ContentPage implements OnInit, OnDestroy {
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
 
-  private routeSub!: Subscription;
+  private navSub!: Subscription;
+  private cacheLoaded = false;
   private allContentCache: Content[] = [];
 
   constructor(
@@ -33,6 +35,12 @@ export class ContentPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.navSub = this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.handleRoute();
+    });
+
     forkJoin({
       movies: this.contentService.getMovies(),
       series: this.contentService.getTVSeries(),
@@ -44,27 +52,45 @@ export class ContentPage implements OnInit, OnDestroy {
           ...(data.series || []),
           ...(data.anime || [])
         ];
-
-        this.routeSub = this.route.paramMap.subscribe(params => {
-          const id = params.get('id');
-          const type = params.get('type');
-          if (id) this.loadContent(+id, type);
-        });
+        this.cacheLoaded = true;
+        this.handleRoute();
       },
       error: (err) => console.error('Ошибка загрузки кэша:', err)
     });
   }
 
   ngOnDestroy(): void {
-    if (this.routeSub) this.routeSub.unsubscribe();
+    if (this.navSub) {
+      this.navSub.unsubscribe()
+    };
+  }
+
+  private handleRoute(): void {
+    if (!this.cacheLoaded) {
+      return;
+    }
+
+    const urlParts = this.router.url.split('/');
+    if (urlParts[1] === 'content' && urlParts[3]) {
+      const type = urlParts[2];
+      const id = +urlParts[3];
+      if (!isNaN(id)) {
+        this.loadContent(id, type)
+      };
+    }
   }
 
   loadContent(contentId: number, typeFromRoute: string | null): void {
     window.scrollTo(0, 0);
 
     let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
-    if (typeFromRoute === 'tv-series') wantedType = 'tv-series';
-    else if (typeFromRoute === 'anime') wantedType = 'anime';
+    
+    if (typeFromRoute === 'tv-series') {
+      wantedType = 'tv-series'
+    }
+    else if (typeFromRoute === 'anime') {
+      wantedType = 'anime'
+    };
 
     const foundItem = this.allContentCache.find(
       m => m.id === contentId && m.type === wantedType
@@ -80,15 +106,29 @@ export class ContentPage implements OnInit, OnDestroy {
 
     this.content = { ...foundItem };
 
-    if (!this.content.directors?.trim()) this.content.directors = 'Неизвестно';
-    if (!this.content.actors?.trim()) this.content.actors = 'Неизвестно';
-    if (!this.content.countries?.trim()) this.content.countries = 'Неизвестно';
-    if (!this.content.genres?.trim()) this.content.genres = 'Неизвестно';
-    if (!this.content.year) this.content.year = 0;
+    if (!this.content.directors?.trim()) {
+      this.content.directors = 'Неизвестно'
+    };
+    if (!this.content.actors?.trim()) {
+      this.content.actors = 'Неизвестно'
+    };
+    if (!this.content.countries?.trim()) {
+      this.content.countries = 'Неизвестно'
+    };
+    if (!this.content.genres?.trim()) {
+      this.content.genres = 'Неизвестно'
+    };
+    if (!this.content.year) {
+      this.content.year = 0
+    };
 
     let apiSource = 'movies';
-    if (wantedType === 'tv-series') apiSource = 'tv-series';
-    else if (wantedType === 'anime') apiSource = 'anime';
+    if (wantedType === 'tv-series') {
+      apiSource = 'tv-series'
+    }
+    else if (wantedType === 'anime') {
+      apiSource = 'anime'
+    };
 
     this.loadPlayer(contentId, apiSource);
     this.findSimilarMovies(this.content, this.allContentCache);
@@ -96,7 +136,9 @@ export class ContentPage implements OnInit, OnDestroy {
 
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    if (img) img.style.display = 'none';
+    if (img) {
+      img.style.display = 'none'
+    };
   }
 
   loadPlayer(contentId: number, source: string): void {
@@ -159,13 +201,14 @@ export class ContentPage implements OnInit, OnDestroy {
   toggleLater(): void { this.isLater = !this.isLater; }
 
   onSelectContent(content: Content): void {
-    if (content?.id) {
-      let type = 'movie';
-      if (content.type === 'tv-series') type = 'tv-series';
-      else if (content.type === 'anime') type = 'anime';
-
-      this.router.navigate(['/content', type, content.id]);
+    let type = 'movie';
+    if (content.type === 'tv-series') {
+      type = 'tv-series';
     }
+    else if (content.type === 'anime') {
+      type = 'anime'
+    };
+    this.router.navigate(['/content', type, content.id]);
   }
 }
 

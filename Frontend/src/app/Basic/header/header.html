@@ -18,7 +18,7 @@
                 @for (item of searchResults; track item.id) {
                 <li (click)="selectSearchResult(item)">
                     <div class="search-poster">
-                        <img [src]="item.poster" [alt]="item.name">
+                        <img [src]="item.poster" (error)="handlePosterError($event)">
                     </div>
 
                     <div class="search-info">

@@ -124,7 +124,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
 }
 
 .skeleton-poster-placeholder {
@@ -279,7 +278,7 @@
     height: 400px;
     background: linear-gradient(135deg, #f4faff 0%, #e6f2ff 100%);
     border-radius: 16px;
-    border: 2px dashed #b3e0ff;
+    border: 2px solid #b3e0ff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -353,13 +352,11 @@
             border: 2px solid #d6ebff;
             margin-bottom: 15px;
             background: #f9fcff;
-            flex-shrink: 0;
 
             img {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-                display: block;
             }
         }
 

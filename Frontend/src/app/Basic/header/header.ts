@@ -51,7 +51,9 @@ export class Header implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.routerSub) this.routerSub.unsubscribe();
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
   }
 
   @HostListener('document:click', ['$event.target'])
@@ -99,5 +101,13 @@ export class Header implements OnInit, OnDestroy {
   private clearSearch(): void {
     this.searchQuery = '';
     this.searchResults = [];
+  }
+
+  handlePosterError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    if (img.parentElement) {
+      img.parentElement.style.background = 'linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%)';
+    }
   }
 }
