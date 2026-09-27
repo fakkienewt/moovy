@@ -3,7 +3,6 @@
 }
 
 .basic-new {
-    width: 100%;
     position: relative;
 }
 
@@ -18,14 +17,11 @@
     border-radius: 20px 20px 0 0;
     text-shadow: 2px 2px 0px #a0d8ff, 4px 4px 0px rgba(160, 216, 255, 0.3), 6px 6px 0px rgba(160, 216, 255, 0.2);
     box-shadow: 0 -4px 15px rgba(135, 206, 235, 0.3);
-    width: 100%;
     box-sizing: border-box;
 }
 
 .basic-new-container {
     position: relative;
-    width: 100%;
-    overflow: visible;
     box-sizing: border-box;
 }
 
@@ -40,29 +36,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
 
-    &.left {
-        left: -25px;
-    }
+.basic-new-container-arrows.left {
+    left: -25px;
+}
 
-    &.right {
-        right: -25px;
-    }
+.basic-new-container-arrows.right {
+    right: -25px;
+}
 
-    img {
-        width: 20px;
-        height: 20px;
-        background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-        border: 2px solid #b3e0ff;
-        border-radius: 50%;
-        padding: 15px;
-        box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
-        transition: all 0.3s ease;
-    }
+.basic-new-container-arrows img {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border: 2px solid #b3e0ff;
+    border-radius: 50%;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
+    transition: all 0.3s ease;
 }
 
 .basic-new-section {
-    width: 100%;
     background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
     border: 2px solid #b3e0ff;
     border-radius: 0 0 25px 25px;
@@ -75,7 +70,6 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    width: 100%;
 }
 
 .basic-new-section-movie-poster {
@@ -91,11 +85,11 @@
     transition: transform 0.2s ease;
     height: 100%;
     box-sizing: border-box;
+}
 
-    &:hover:not(.empty) {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
-    }
+.basic-new-section-movie-poster:hover:not(.empty) {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
 }
 
 .basic-new-poster {
@@ -106,12 +100,12 @@
     border-radius: 15px;
     overflow: hidden;
     background: #fff;
+}
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.basic-new-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .empty-poster {
@@ -130,8 +124,8 @@
 .empty-year {
     width: 60%;
     height: 16px;
-    background: #e6f2ff;
-    border-radius: 20px;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    border-radius: 10px;
     margin: 0 auto;
 }
 
