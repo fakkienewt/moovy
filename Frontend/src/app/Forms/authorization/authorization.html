@@ -1,0 +1,30 @@
+<div class="auth-page">
+    <div class="auth-card">
+        <button class="auth-close" (click)="onClose()" type="button">✕</button>
+        <h1 class="auth-title">Регистрация</h1>
+        <form class="auth-form">
+            <div class="auth-field">
+                <label class="auth-label">Имя пользователя</label>
+                <input type="text" class="auth-input" placeholder="Введите имя...">
+            </div>
+            <div class="auth-field">
+                <label class="auth-label">Email</label>
+                <input type="email" class="auth-input" placeholder="example@mail.com">
+            </div>
+            <div class="auth-field">
+                <label class="auth-label">Пароль</label>
+                <input type="password" class="auth-input" placeholder="Минимум 8 символов">
+            </div>
+            <div class="auth-field">
+                <label class="auth-label">Повторите пароль</label>
+                <input type="password" class="auth-input" placeholder="Ещё раз">
+            </div>
+
+            <button type="submit" class="auth-btn">Зарегистрироваться</button>
+        </form>
+        <div class="auth-footer">
+            Уже есть аккаунт?
+            <a routerLink="/login" class="auth-link">Войти</a>
+        </div>
+    </div>
+</div>

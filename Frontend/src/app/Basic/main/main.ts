@@ -40,10 +40,7 @@ export class Main implements OnInit {
   allSeries: Content[] = [];
   allAnime: Content[] = [];
 
-  paginatedMovies: Content[] = [];
-  paginatedSeries: Content[] = [];
-  paginatedAnime: Content[] = [];
-  paginatedFiltered: Content[] = [];
+  paginatedList: Content[] = [];
   filteredResults: Content[] = [];
 
   isLoading = true;
@@ -51,8 +48,6 @@ export class Main implements OnInit {
   itemsPerPage = 16;
   totalPages = 1;
   skeletonItems = Array.from({ length: 16 }, (_, i) => i);
-
-  private isRestoring = false;
 
   constructor(
     private contentService: ServiceGetData,
@@ -64,20 +59,39 @@ export class Main implements OnInit {
   ngOnInit(): void {
     const saved = this.stateService.load();
 
-    this.isRestoring = true;
-
-    if (saved.activeTab) this.activeTab = saved.activeTab;
-    if (saved.currentPage && saved.currentPage > 0) this.currentPage = saved.currentPage;
-    if (typeof saved.isFilterOpen === 'boolean') this.isFilterOpen = saved.isFilterOpen;
-    if (saved.sortType) this.sortType = saved.sortType;
-    if (saved.filterType) this.filterType = saved.filterType;
-    if (saved.selectedGenre) this.selectedGenre = saved.selectedGenre;
-    if (saved.selectedYear) this.selectedYear = saved.selectedYear;
-    if (saved.selectedCountry) this.selectedCountry = saved.selectedCountry;
-    if (saved.directorSearch) this.directorSearch = saved.directorSearch;
-    if (saved.actorSearch) this.actorSearch = saved.actorSearch;
+    if (saved.activeTab) {
+      this.activeTab = saved.activeTab;
+    };
+    if (saved.currentPage && saved.currentPage > 0) {
+      this.currentPage = saved.currentPage;
+    };
+    if (typeof saved.isFilterOpen === 'boolean') {
+      this.isFilterOpen = saved.isFilterOpen;
+    };
+    if (saved.sortType) {
+      this.sortType = saved.sortType;
+    };
+    if (saved.filterType) {
+      this.filterType = saved.filterType;
+    };
+    if (saved.selectedGenre) {
+      this.selectedGenre = saved.selectedGenre;
+    };
+    if (saved.selectedYear) {
+      this.selectedYear = saved.selectedYear;
+    };
+    if (saved.selectedCountry) {
+      this.selectedCountry = saved.selectedCountry;
+    };
+    if (saved.directorSearch) {
+      this.directorSearch = saved.directorSearch;
+    };
+    if (saved.actorSearch) {
+      this.actorSearch = saved.actorSearch;
+    };
 
     this.isLoading = true;
+
     forkJoin({
       movies: this.contentService.getMovies(),
       series: this.contentService.getTVSeries(),
@@ -102,12 +116,10 @@ export class Main implements OnInit {
         }
 
         this.isLoading = false;
-        this.isRestoring = false;
       },
       error: (err) => {
         console.error(err);
         this.isLoading = false;
-        this.isRestoring = false;
       }
     });
   }
@@ -178,32 +190,36 @@ export class Main implements OnInit {
     this.allActors = Array.from(aS).sort();
   }
 
+  private getSourceList(): Content[] {
+    switch (this.filterType) {
+      case 'movie': return this.allMovies;
+      case 'tv-series': return this.allSeries;
+      case 'anime': return this.allAnime;
+      default: return [...this.allMovies, ...this.allSeries, ...this.allAnime];
+    }
+  }
+
   updateFilterOptions(): void {
     this.closeDropdowns();
-    let sourceList: Content[] = [];
-
-    switch (this.filterType) {
-      case 'movie': sourceList = this.allMovies; break;
-      case 'tv-series': sourceList = this.allSeries; break;
-      case 'anime': sourceList = this.allAnime; break;
-      default: sourceList = [...this.allMovies, ...this.allSeries, ...this.allAnime];
-    }
+    const sourceList = this.getSourceList();
 
     const gS = new Set<string>(), yS = new Set<string>(), cS = new Set<string>();
 
     sourceList.forEach(i => {
       if (i.year) {
         yS.add(String(i.year));
-      }
+      };
+
       if (i.genres) i.genres.split(',').forEach(g => {
         const t = g.trim();
         if (t && !['Фильмы', 'Сериалы'].includes(t)) gS.add(t);
       });
+
       if (i.countries) i.countries.split(',').forEach(c => {
         const t = c.trim();
         if (t) {
           cS.add(t);
-        }
+        };
       });
     });
 
@@ -228,23 +244,12 @@ export class Main implements OnInit {
       this.filteredDirectorSuggestions = []; return;
     }
 
-    let sourceList: Content[] = [];
-    switch (this.filterType) {
-      case 'movie': sourceList = this.allMovies; break;
-      case 'tv-series': sourceList = this.allSeries; break;
-      case 'anime': sourceList = this.allAnime; break;
-      default: sourceList = [...this.allMovies, ...this.allSeries, ...this.allAnime];
-    }
-
-    const availableDirectors = new Set<string>();
-
-    sourceList.forEach(i => {
-      if (i.directors) {
-        i.directors.split(',').forEach(d => { const t = d.trim(); if (t) availableDirectors.add(t); });
-      }
+    const available = new Set<string>();
+    this.getSourceList().forEach(i => {
+      if (i.directors) i.directors.split(',').forEach(d => { const t = d.trim(); if (t) available.add(t); });
     });
 
-    this.filteredDirectorSuggestions = Array.from(availableDirectors)
+    this.filteredDirectorSuggestions = Array.from(available)
       .filter(d => d.toLowerCase().includes(val.toLowerCase()))
       .sort()
       .slice(0, 5);
@@ -256,20 +261,12 @@ export class Main implements OnInit {
       this.filteredActorSuggestions = []; return;
     }
 
-    let sourceList: Content[] = [];
-    switch (this.filterType) {
-      case 'movie': sourceList = this.allMovies; break;
-      case 'tv-series': sourceList = this.allSeries; break;
-      case 'anime': sourceList = this.allAnime; break;
-      default: sourceList = [...this.allMovies, ...this.allSeries, ...this.allAnime];
-    }
-
-    const availableActors = new Set<string>();
-    sourceList.forEach(i => {
-      if (i.actors) i.actors.split(',').forEach(a => { const t = a.trim(); if (t) availableActors.add(t); });
+    const available = new Set<string>();
+    this.getSourceList().forEach(i => {
+      if (i.actors) i.actors.split(',').forEach(a => { const t = a.trim(); if (t) available.add(t); });
     });
 
-    this.filteredActorSuggestions = Array.from(availableActors)
+    this.filteredActorSuggestions = Array.from(available)
       .filter(a => a.toLowerCase().includes(val.toLowerCase()))
       .sort()
       .slice(0, 5);
@@ -299,14 +296,7 @@ export class Main implements OnInit {
       this.currentPage = 1;
     }
 
-    let list: Content[] = [];
-
-    switch (this.filterType) {
-      case 'movie': list = [...this.allMovies]; break;
-      case 'tv-series': list = [...this.allSeries]; break;
-      case 'anime': list = [...this.allAnime]; break;
-      default: list = [...this.allMovies, ...this.allSeries, ...this.allAnime];
-    }
+    let list = this.getSourceList();
 
     if (this.selectedGenre) {
       list = list.filter(i => i.genres?.toLowerCase().includes(this.selectedGenre.toLowerCase()));
@@ -317,12 +307,10 @@ export class Main implements OnInit {
     if (this.selectedCountry) {
       list = list.filter(i => i.countries?.toLowerCase().includes(this.selectedCountry.toLowerCase()));
     }
-
     if (this.directorSearch.trim()) {
       const dSearch = this.directorSearch.toLowerCase();
       list = list.filter(i => i.directors?.toLowerCase().includes(dSearch));
     }
-
     if (this.actorSearch.trim()) {
       const aSearch = this.actorSearch.toLowerCase();
       list = list.filter(i => i.actors?.toLowerCase().includes(aSearch));
@@ -371,13 +359,7 @@ export class Main implements OnInit {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      if (this.isFilterOpen) {
-        this.updatePaginatedFiltered();
-      }
-      else {
-        this.updatePagination();
-      }
-
+      this.isFilterOpen ? this.updatePaginatedFiltered() : this.updatePagination();
       this.persist();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -386,13 +368,7 @@ export class Main implements OnInit {
   backPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      if (this.isFilterOpen) {
-        this.updatePaginatedFiltered();
-      }
-      else {
-        this.updatePagination();
-      }
-
+      this.isFilterOpen ? this.updatePaginatedFiltered() : this.updatePagination();
       this.persist();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -410,15 +386,14 @@ export class Main implements OnInit {
       case 'tvSeries': src = this.allSeries; break;
       case 'anime': src = this.allAnime; break;
     }
+
     this.totalPages = Math.max(1, Math.ceil(src.length / this.itemsPerPage));
     if (this.currentPage > this.totalPages) {
       this.currentPage = this.totalPages;
     }
 
     const s = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedMovies = this.activeTab === 'movie' ? src.slice(s, s + this.itemsPerPage) : [];
-    this.paginatedSeries = this.activeTab === 'tvSeries' ? src.slice(s, s + this.itemsPerPage) : [];
-    this.paginatedAnime = this.activeTab === 'anime' ? src.slice(s, s + this.itemsPerPage) : [];
+    this.paginatedList = src.slice(s, s + this.itemsPerPage);
   }
 
   private updatePaginatedFiltered(): void {
@@ -428,6 +403,27 @@ export class Main implements OnInit {
     }
 
     const s = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedFiltered = this.filteredResults.slice(s, s + this.itemsPerPage);
+    this.paginatedList = this.filteredResults.slice(s, s + this.itemsPerPage);
+  }
+
+  get currentList(): Content[] {
+    return this.paginatedList;
+  }
+
+  get emptyMessage(): string {
+    switch (this.activeTab) {
+      case 'movie': return 'Ой! Фильмы пока не найдены';
+      case 'tvSeries': return 'Упс! Сериалы еще не добавлены';
+      case 'anime': return 'Хмм... Аниме пока пусто';
+      default: return 'Ничего не найдено';
+    }
+  }
+
+  onDirectorFocus(): void {
+    this.filteredActorSuggestions = [];
+  }
+
+  onActorFocus(): void {
+    this.filteredDirectorSuggestions = [];
   }
 }

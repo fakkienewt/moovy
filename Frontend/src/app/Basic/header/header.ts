@@ -1,10 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, Subscription } from 'rxjs';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
-import { HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 
 @Component({
   selector: 'app-header',
@@ -24,6 +23,10 @@ export class Header implements OnInit, OnDestroy {
     private router: Router,
     private contentService: ServiceGetData
   ) { }
+
+  onProfileClick(): void {
+    this.router.navigate(['/auth']);
+  }
 
   ngOnInit(): void {
     forkJoin({
@@ -106,6 +109,7 @@ export class Header implements OnInit, OnDestroy {
   handlePosterError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
+    
     if (img.parentElement) {
       img.parentElement.style.background = 'linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%)';
     }

@@ -1,150 +1,139 @@
-<div class="content-page">
-    @if (!content) {
-    <div class="skeleton-card-wrapper">
-        <div class="skeleton-poster-area"></div>
-        <div class="skeleton-info-area">
-            <div class="skeleton-title-line"></div>
-
-            <div class="info-grid skeleton-grid">
-                <div class="skeleton-block full-width"></div>
-                <div class="skeleton-block"></div>
-                <div class="skeleton-block"></div>
-                <div class="skeleton-block"></div>
-                <div class="skeleton-block"></div>
-            </div>
-
-            <div class="action-buttons-row skeleton-buttons-row">
-                <div class="skeleton-btn"></div>
-                <div class="skeleton-btn"></div>
+<div class="page-wrap">
+    <div class="content-page">
+        @if (!content) {
+        <div class="skeleton-card-wrapper">
+            <div class="skeleton-poster-area"></div>
+            <div class="skeleton-info-area">
+                <div class="skeleton-title-line"></div>
+                <div class="info-grid skeleton-grid">
+                    <div class="skeleton-block full-width"></div>
+                    <div class="skeleton-block"></div>
+                    <div class="skeleton-block"></div>
+                    <div class="skeleton-block"></div>
+                    <div class="skeleton-block"></div>
+                </div>
+                <div class="action-buttons-row skeleton-buttons-row">
+                    <div class="skeleton-btn"></div>
+                    <div class="skeleton-btn"></div>
+                </div>
             </div>
         </div>
-    </div>
+        <div class="skeleton-player-area"></div>
+        } @else {
+        <div class="content-container">
+            <div class="content-main-card">
+                <div class="poster-wrapper">
+                    @if (content.poster && content.poster.length > 0) {
+                    <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
+                    } @else {
+                    <div class="skeleton-poster-placeholder"></div>
+                    }
+                    <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
+                        <img src="/SVG/content-page-watched-badge.svg">
+                    </div>
 
-    <div class="skeleton-player-area"></div>
-    } @else {
-    <div class="content-container">
-        <div class="content-main-card">
-            <div class="poster-wrapper">
-                @if (content.poster && content.poster.length > 0) {
-                <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
-                } @else {
-                <div class="skeleton-poster-placeholder"></div>
-                }
-
-                <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
-                    <img src="/SVG/content-page-watched-badge.svg">
+                    <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
                 </div>
-
-                <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
+                <div class="content-right-side">
+                    <h1 class="content-title">{{ content.name }}</h1>
+                    <div class="info-grid">
+                        <div class="info-block full-width">
+                            <div class="label">Актеры:</div>
+                            <div class="value">{{ content.actors }}</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="label">Режиссер:</div>
+                            <div class="value">{{ content.directors }}</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="label">Жанры:</div>
+                            <div class="value">{{ content.genres }}</div>
+                        </div>
+                        <div class="info-block">
+                            <div class="label">Страна:</div>
+                            <div class="value">{{ content.countries }}</div>
+                        </div>
+                        @if (content.year && content.year > 0) {
+                        <div class="info-block">
+                            <div class="label">Год:</div>
+                            <div class="value">{{ content.year }}</div>
+                        </div>
+                        }
+                    </div>
+                    <div class="action-buttons-row">
+                        <button type="button" class="btn-action btn-fav" [class.active]="isFavorite"
+                            (click)="toggleFavorite()">
+                            <img src="/SVG/content-page-button-favorite2.svg"> В избранное
+                        </button>
+                        <button type="button" class="btn-action btn-later" [class.active]="isLater"
+                            (click)="toggleLater()">
+                            <img src="/SVG/content-page-button-time.svg"> Смотреть позже
+                        </button>
+                    </div>
+                </div>
+                @if (content.description && content.description !== 'Неизвестно') {
+                <div class="description-full-width">
+                    <h3 class="section-title">Описание</h3>
+                    <p class="desc-text">{{ content.description }}</p>
+                </div>
+                }
             </div>
-
-            <div class="content-right-side">
-                <h1 class="content-title">{{ content.name }}</h1>
-
-                <div class="info-grid">
-                    <div class="info-block full-width">
-                        <div class="label">Актеры:</div>
-                        <div class="value">{{ content.actors }}</div>
+            <div class="player-placeholder-block">
+                @if (playerUrl) {
+                <iframe [src]="safePlayerUrl" allowfullscreen referrerpolicy="origin"
+                    class="content-player-iframe"></iframe>
+                } @else {
+                <div class="player-screen-empty">
+                    <div class="empty-message">
+                        <img src="/SVG/content-page-icon-video.svg" />
+                        <span>Видео временно недоступно</span>
                     </div>
-                    <div class="info-block">
-                        <div class="label">Режиссер:</div>
-                        <div class="value">{{ content.directors }}</div>
-                    </div>
-                    <div class="info-block">
-                        <div class="label">Жанры:</div>
-                        <div class="value">{{ content.genres }}</div>
-                    </div>
-                    <div class="info-block">
-                        <div class="label">Страна:</div>
-                        <div class="value">{{ content.countries }}</div>
-                    </div>
-                    @if (content.year && content.year > 0) {
-                    <div class="info-block">
-                        <div class="label">Год:</div>
-                        <div class="value">{{ content.year }}</div>
+                </div>
+                }
+            </div>
+            @if (similarMovies && similarMovies.length > 0) {
+            <div class="similar-section">
+                <h3 class="section-title similar-title">Похожее:</h3>
+                <div class="basic-main-content">
+                    @for (movie of similarMovies; track movie.id) {
+                    <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
+                        <div class="basic-main-poster">
+                            @if (movie.poster && movie.poster.length > 0) {
+                            <img [src]="movie.poster" (error)="handleImageError($event)">
+                            } @else {
+                            <div class="skeleton-poster-placeholder small"></div>
+                            }
+                        </div>
+                        <div class="basic-main-info">
+                            <div class="basic-main-title">{{ movie.name }}</div>
+                            <div class="basic-main-year">{{ movie.year || 'Неизвестно' }}</div>
+                        </div>
                     </div>
                     }
                 </div>
-
-                <div class="action-buttons-row">
-                    <button class="btn-action btn-fav" [class.active]="isFavorite" (click)="toggleFavorite()">
-                        <img src="/SVG/content-page-button-favorite2.svg"> В избранное
-                    </button>
-                    <button class="btn-action btn-later" [class.active]="isLater" (click)="toggleLater()">
-                        <img src="/SVG/content-page-button-time.svg"> Смотреть позже
-                    </button>
-                </div>
-            </div>
-
-            @if (content.description && content.description !== 'Неизвестно') {
-            <div class="description-full-width">
-                <h3 class="section-title">Описание</h3>
-                <p class="desc-text">{{ content.description }}</p>
             </div>
             }
-        </div>
-
-        <div class="player-placeholder-block">
-            @if (playerUrl) {
-            <iframe [src]="safePlayerUrl" width="100%" height="500" frameborder="0" allowfullscreen
-                referrerpolicy="origin" class="content-player-iframe"></iframe>
-            } @else {
-            <div class="player-screen-empty">
-                <div class="empty-message">
-                    <img src="/SVG/content-page-icon-video.svg" />
-                    <span>Видео временно недоступно</span>
+            <div class="comments-section">
+                <h3 class="section-title">Комментарии</h3>
+                <div class="comment-form">
+                    <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
+                    <button type="button" class="btn-comment">Отправить</button>
                 </div>
-            </div>
-            }
-        </div>
-
-        @if (similarMovies.length > 0) {
-        <div class="similar-section">
-            <h3 class="section-title similar-title">Похожее:</h3>
-            <div class="basic-main-content">
-                @for (movie of similarMovies; track movie.id) {
-                <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
-                    <div class="basic-main-poster">
-                        @if (movie.poster && movie.poster.length > 0) {
-                        <img [src]="movie.poster" (error)="handleImageError($event)">
-                        } @else {
-                        <div class="skeleton-poster-placeholder small"></div>
-                        }
-                    </div>
-                    <div class="basic-main-info">
-                        <div class="basic-main-title">{{ movie.name }}</div>
-                        <div class="basic-main-year">{{ movie.year || 'Неизвестно' }}</div>
-                    </div>
-                </div>
-                }
+                <div class="comments-list"></div>
             </div>
         </div>
         }
-
-        <div class="comments-section">
-            <h3 class="section-title">Комментарии</h3>
-            <div class="comment-form">
-                <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
-                <button class="btn-comment">Отправить</button>
+        <div class="auth-notice" [class.show]="showAuthNotice">
+            <div class="auth-notice-header">
+                <span class="auth-notice-title">Стоп, а ты кто?</span>
+                <button type="button" class="auth-notice-close" (click)="closeAuthNotice()">
+                    ✕
+                </button>
             </div>
-            <div class="comments-list"></div>
-        </div>
-    </div>
-    }
-
-    <div class="auth-notice" [class.show]="showAuthNotice">
-        <div class="auth-notice-header">
-            <span class="auth-notice-title">Стоп,а ты кто?</span>
-            <button class="auth-notice-close" (click)="closeAuthNotice()">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
-            </button>
-        </div>
-        <div class="auth-notice-text">
-            Похоже, ты ещё не в клубе. Загляни в аккаунт, чтобы сохранять любимое, откладывать на вечер и вести список
-            просмотренного!
+            <div class="auth-notice-text">
+                Похоже, ты ещё не в клубе. Загляни в аккаунт, чтобы сохранять любимое, откладывать на вечер и вести
+                список просмотренного!
+            </div>
         </div>
     </div>
 </div>

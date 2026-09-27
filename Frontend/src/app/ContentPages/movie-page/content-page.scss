@@ -27,14 +27,12 @@
     gap: 30px;
     margin-bottom: 20px;
     box-sizing: border-box;
-    align-items: stretch;
 }
 
 .skeleton-poster-area,
 .skeleton-title-line,
 .skeleton-block,
-.skeleton-btn,
-.skeleton-player-area::after {
+.skeleton-btn {
     background: linear-gradient(90deg, #e6f2ff 25%, #f0f8ff 50%, #e6f2ff 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -72,10 +70,10 @@
     grid-column: span 2;
 }
 
+.action-buttons-row,
 .skeleton-buttons-row {
     display: flex;
     gap: 12px;
-    margin-top: 0;
 }
 
 .skeleton-btn {
@@ -105,6 +103,7 @@
     animation: shimmer 1.5s infinite;
 }
 
+
 .poster-wrapper {
     position: relative;
     aspect-ratio: 2/3;
@@ -125,9 +124,6 @@
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .skeleton-poster-placeholder.small {
@@ -205,7 +201,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     flex-grow: 1;
-    align-content: stretch;
 }
 
 .info-block {
@@ -238,11 +233,6 @@
     line-height: 1.4;
 }
 
-.action-buttons-row {
-    display: flex;
-    gap: 12px;
-}
-
 .btn-action {
     flex: 1;
     padding: 12px;
@@ -257,7 +247,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
     min-height: 45px;
 }
 
@@ -313,9 +303,8 @@
     background: linear-gradient(135deg, #f4faff 0%, #e6f2ff 100%);
     border-radius: 16px;
     border: 2px solid #b3e0ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 }
 
 .empty-message {
@@ -329,8 +318,10 @@
 }
 
 .content-player-iframe {
-    border-radius: 16px;
     width: 100%;
+    height: 500px;
+    border: none;
+    border-radius: 16px;
 }
 
 .similar-section {
@@ -343,11 +334,11 @@
     box-sizing: border-box;
 }
 
-.similar-section .similar-title {
+.similar-section .section-title,
+.comments-section .section-title {
     font-size: 1.4rem;
-    color: #4682b4;
     font-weight: 800;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     padding-left: 5px;
 }
 
@@ -355,7 +346,6 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    align-items: stretch;
 }
 
 .similar-section .basic-main-poster-card {
@@ -365,7 +355,7 @@
     padding: 10px;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -395,7 +385,7 @@
 
 .similar-section .basic-main-poster-card .basic-main-info {
     text-align: center;
-    margin-top: auto;
+    // margin-top: auto;
 }
 
 .similar-section .basic-main-poster-card .basic-main-info .basic-main-title {
@@ -424,14 +414,6 @@
     box-sizing: border-box;
 }
 
-.comments-section .section-title {
-    font-size: 1.4rem;
-    color: #4682b4;
-    font-weight: 800;
-    margin-bottom: 20px;
-    padding-left: 5px;
-}
-
 .comments-section .comment-form {
     display: flex;
     gap: 12px;
@@ -448,13 +430,17 @@
     font-size: 14px;
     outline: none;
     font-family: cursive;
-    transition: all 0.2s;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .comments-section .comment-form .comment-input::placeholder {
     color: #87CEEB;
     font-family: cursive;
     opacity: 1;
+}
+
+.comments-section .comment-form .comment-input:focus {
+    box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.2);
 }
 
 .comments-section .comment-form .btn-comment {
@@ -466,7 +452,7 @@
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     font-family: cursive;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
 }
@@ -488,18 +474,13 @@
     padding: 18px 20px;
     box-shadow: 0 10px 30px rgba(135, 206, 235, 0.4);
     font-family: cursive;
-    z-index: 1000;
     box-sizing: border-box;
-    opacity: 0;
     transform: translateX(120%);
-    pointer-events: none;
     transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .auth-notice.show {
-    opacity: 1;
     transform: translateX(0);
-    pointer-events: auto;
 }
 
 .auth-notice-header {
@@ -516,15 +497,12 @@
 }
 
 .auth-notice-close {
-    background: none;
     border: none;
     cursor: pointer;
     color: #4682b4;
-    padding: 5px;
+    margin-bottom: 10px;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-weight: 600;
     transition: transform 0.2s ease;
 }
 

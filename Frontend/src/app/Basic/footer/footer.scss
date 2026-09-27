@@ -27,13 +27,16 @@
     color: #4682b4;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    padding: 0px 0 10px 0;
+    padding: 0 0 10px 0;
     border-bottom: 2px dashed #b3e0ff;
     width: 100%;
     text-shadow: 2px 2px 4px rgba(135, 206, 235, 0.3);
 }
 
 .footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
     color: #4682b4;
     text-decoration: none;
@@ -47,10 +50,14 @@
     padding-left: 4px;
 }
 
+.footer-icon {
+    width: 16px;
+    height: 16px;
+}
+
 @media (max-width: 700px) {
     .footer {
         padding: 22px 18px 18px;
-        border-radius: 20px;
     }
 
     .footer-container {
@@ -58,4 +65,3 @@
         gap: 18px;
     }
 }
-

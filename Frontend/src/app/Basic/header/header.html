@@ -1,40 +1,39 @@
-<header class="basic-header">
-    <div class="basic-header-container">
-        <div class="basic-header-section-logo">
-            <div class="basic-header-logo" (click)="onLogoClick()">Moovy</div>
-        </div>
+<div class="page-wrap">
+    <header class="basic-header">
+        <div class="basic-header-container">
+            <div class="basic-header-section-logo">
+                <div class="basic-header-logo" (click)="onLogoClick()">Moovy</div>
+            </div>
+            <div class="basic-header-section-search input-group">
+                <div class="basic-header-section-search-input">
+                    <input class="basic-header-input-search" type="text" placeholder="Найти фильм, сериал..."
+                        [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput($event)">
+                    <button class="basic-header-button-search">
+                        <img src="/SVG/basic-header-button-svg-1.svg">
+                    </button>
+                </div>
+                @if (searchResults.length > 0) {
+                <ul class="suggestions">
+                    @for (item of searchResults; track item.id) {
+                    <li (click)="selectSearchResult(item)">
+                        <div class="search-poster">
+                            <img [src]="item.poster" (error)="handlePosterError($event)">
+                        </div>
 
-        <div class="basic-header-section-search input-group">
-            <div class="basic-header-section-search-input">
-                <input class="basic-header-input-search" type="text" placeholder="Найти фильм, сериал..."
-                    [(ngModel)]="searchQuery" (ngModelChange)="onSearchInput($event)">
-                <button class="basic-header-button-search">
-                    <img src="/SVG/basic-header-button-svg-1.svg">
+                        <div class="search-info">
+                            <span class="search-name">{{ item.name }}</span>
+                            <span class="search-year">{{ item.year }}</span>
+                        </div>
+                    </li>
+                    }
+                </ul>
+                }
+            </div>
+            <div class="basic-header-section-profile">
+                <button (click)="onProfileClick()">
+                    <img src="/SVG/basic-header-button-svg-2.svg">
                 </button>
             </div>
-
-            @if (searchResults.length > 0) {
-            <ul class="suggestions">
-                @for (item of searchResults; track item.id) {
-                <li (click)="selectSearchResult(item)">
-                    <div class="search-poster">
-                        <img [src]="item.poster" (error)="handlePosterError($event)">
-                    </div>
-
-                    <div class="search-info">
-                        <span class="search-name">{{ item.name }}</span>
-                        <span class="search-year">{{ item.year }}</span>
-                    </div>
-                </li>
-                }
-            </ul>
-            }
         </div>
-
-        <div class="basic-header-section-profile">
-            <button>
-                <img src="/SVG/basic-header-button-svg-2.svg">
-            </button>
-        </div>
-    </div>
-</header>
+    </header>
+</div>
