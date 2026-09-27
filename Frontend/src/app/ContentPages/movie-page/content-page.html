@@ -30,6 +30,11 @@
                 } @else {
                 <div class="skeleton-poster-placeholder"></div>
                 }
+
+                <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
+                    <img src="/SVG/content-page-watched-badge.svg">
+                </div>
+
                 <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
             </div>
 
@@ -62,10 +67,10 @@
                 </div>
 
                 <div class="action-buttons-row">
-                    <button class="btn-action btn-fav" [class.active]="isFavorite">
+                    <button class="btn-action btn-fav" [class.active]="isFavorite" (click)="toggleFavorite()">
                         <img src="/SVG/content-page-button-favorite2.svg"> В избранное
                     </button>
-                    <button class="btn-action btn-later" [class.active]="isLater">
+                    <button class="btn-action btn-later" [class.active]="isLater" (click)="toggleLater()">
                         <img src="/SVG/content-page-button-time.svg"> Смотреть позже
                     </button>
                 </div>
@@ -95,7 +100,7 @@
 
         @if (similarMovies.length > 0) {
         <div class="similar-section">
-            <h3 class="section-title similar-title">Похожие фильмы</h3>
+            <h3 class="section-title similar-title">Похожее:</h3>
             <div class="basic-main-content">
                 @for (movie of similarMovies; track movie.id) {
                 <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
@@ -126,4 +131,20 @@
         </div>
     </div>
     }
+
+    <div class="auth-notice" [class.show]="showAuthNotice">
+        <div class="auth-notice-header">
+            <span class="auth-notice-title">Стоп,а ты кто?</span>
+            <button class="auth-notice-close" (click)="closeAuthNotice()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="auth-notice-text">
+            Похоже, ты ещё не в клубе. Загляни в аккаунт, чтобы сохранять любимое, откладывать на вечер и вести список
+            просмотренного!
+        </div>
+    </div>
 </div>

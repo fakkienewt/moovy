@@ -19,11 +19,14 @@ export class ContentPage implements OnInit, OnDestroy {
   similarMovies: Content[] = [];
   isFavorite = false;
   isLater = false;
+  isWatched = false;
+  showAuthNotice = false;
 
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
 
   private navSub!: Subscription;
+  private authNoticeTimer: any = null;
   private cacheLoaded = false;
   private allContentCache: Content[] = [];
 
@@ -63,6 +66,9 @@ export class ContentPage implements OnInit, OnDestroy {
     if (this.navSub) {
       this.navSub.unsubscribe()
     };
+    if (this.authNoticeTimer) {
+      clearTimeout(this.authNoticeTimer);
+    }
   }
 
   private handleRoute(): void {
@@ -74,6 +80,7 @@ export class ContentPage implements OnInit, OnDestroy {
     if (urlParts[1] === 'content' && urlParts[3]) {
       const type = urlParts[2];
       const id = +urlParts[3];
+
       if (!isNaN(id)) {
         this.loadContent(id, type)
       };
@@ -84,7 +91,7 @@ export class ContentPage implements OnInit, OnDestroy {
     window.scrollTo(0, 0);
 
     let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
-    
+
     if (typeFromRoute === 'tv-series') {
       wantedType = 'tv-series'
     }
@@ -136,6 +143,7 @@ export class ContentPage implements OnInit, OnDestroy {
 
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
+
     if (img) {
       img.style.display = 'none'
     };
@@ -197,8 +205,39 @@ export class ContentPage implements OnInit, OnDestroy {
     this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
   }
 
-  toggleFavorite(): void { this.isFavorite = !this.isFavorite; }
-  toggleLater(): void { this.isLater = !this.isLater; }
+  toggleFavorite(): void {
+    this.showAuthNoticeWithTimer();
+  }
+
+  toggleLater(): void {
+    this.showAuthNoticeWithTimer();
+  }
+
+  toggleWatched(event: Event): void {
+    event.stopPropagation();
+    this.showAuthNoticeWithTimer();
+  }
+
+  closeAuthNotice(): void {
+    this.showAuthNotice = false;
+    if (this.authNoticeTimer) {
+      clearTimeout(this.authNoticeTimer);
+      this.authNoticeTimer = null;
+    }
+  }
+
+  private showAuthNoticeWithTimer(): void {
+    this.showAuthNotice = true;
+
+    if (this.authNoticeTimer) {
+      clearTimeout(this.authNoticeTimer);
+    }
+
+    this.authNoticeTimer = setTimeout(() => {
+      this.showAuthNotice = false;
+      this.authNoticeTimer = null;
+    }, 10000);
+  }
 
   onSelectContent(content: Content): void {
     let type = 'movie';
@@ -211,4 +250,3 @@ export class ContentPage implements OnInit, OnDestroy {
     this.router.navigate(['/content', type, content.id]);
   }
 }
-
