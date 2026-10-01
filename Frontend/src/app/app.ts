@@ -1,19 +1,3 @@
-// import { Component, signal } from '@angular/core';
-// import { RouterOutlet } from '@angular/router';
-// import { Header } from './Basic/header/header';
-// import { Footer } from './Basic/footer/footer';
-// import { Authorization } from './Forms/authorization/authorization';
-
-// @Component({
-//   selector: 'app-root',
-//   imports: [RouterOutlet, Header, Footer, Authorization],
-//   templateUrl: './app.html',
-//   styleUrl: './app.scss'
-// })
-// export class App {
-//   protected readonly title = signal('Frontend');
-// }
-
 import { Component } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';

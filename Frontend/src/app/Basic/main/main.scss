@@ -1,6 +1,13 @@
 :host {
     width: 100%;
     font-family: cursive;
+    color: #4682b4;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box
 }
 
 .nav-container {
@@ -10,7 +17,6 @@
     border: 2px solid #b3e0ff;
     border-radius: 25px;
     margin: 20px 0;
-    box-sizing: border-box;
 }
 
 .nav-section {
@@ -29,7 +35,6 @@
 .nav-tab {
     padding: 10px 25px;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    color: #4682b4;
     border-radius: 20px;
     font-size: 16px;
     cursor: pointer;
@@ -53,7 +58,6 @@
 .nav-tab.filter-trigger {
     background: #ffffff;
     border: 2px solid #b3e0ff;
-    color: #4682b4;
     text-shadow: none;
 }
 
@@ -100,20 +104,24 @@
 }
 
 .form-select,
-.form-input {
-    width: 100%;
-    padding: 12px 18px;
+.form-input,
+.sort-select {
     background: white;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
     color: #4682b4;
     font-family: cursive;
-    font-size: 14px;
     font-weight: bold;
     outline: none;
-    appearance: none;
-    box-sizing: border-box;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-select,
+.form-input {
+    width: 100%;
+    padding: 12px 18px;
+    font-size: 14px;
+    appearance: none;
 }
 
 .form-select:focus,
@@ -150,8 +158,6 @@
 .suggestions li {
     padding: 8px 15px;
     cursor: pointer;
-    color: #4682b4;
-    font-family: cursive;
     font-size: 13px;
     transition: background 0.2s ease;
 }
@@ -195,14 +201,17 @@
     transform: translateY(-1px);
 }
 
+.nav-container,
 .content-container {
     background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
-    border: 3px solid #b3e0ff;
     border-radius: 25px;
+}
+
+.content-container {
+    border: 3px solid #b3e0ff;
     padding: 25px;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
     margin-bottom: 30px;
-    box-sizing: border-box;
 }
 
 .grid-layout {
@@ -221,7 +230,6 @@
     justify-content: center;
     padding: 80px 40px;
     color: #87CEEB;
-    font-family: cursive;
     font-size: 18px;
     text-align: center;
 }
@@ -250,7 +258,6 @@
     padding: 15px;
     text-align: center;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -275,19 +282,15 @@
 }
 
 .card .card-title {
-    font-family: cursive;
     font-size: 14px;
-    color: #4682b4;
     font-weight: bold;
     margin-bottom: 4px;
-    text-align: center;
     overflow: hidden;
     line-height: 1.2;
     max-height: 2.4em;
 }
 
 .card .card-year {
-    font-family: cursive;
     font-size: 13px;
     color: #87CEEB;
 }
@@ -300,7 +303,6 @@
     color: white;
     padding: 3px 6px;
     border-radius: 8px;
-    font-family: cursive;
     font-size: 11px;
     font-weight: bold;
     z-index: 2;
@@ -360,24 +362,14 @@
 }
 
 .sort-label {
-    font-family: cursive;
     font-size: 14px;
-    color: #4682b4;
     font-weight: bold;
 }
 
 .sort-select {
     padding: 8px 15px;
-    background: white;
-    border: 2px solid #b3e0ff;
-    border-radius: 15px;
-    color: #4682b4;
-    font-family: cursive;
     font-size: 13px;
-    font-weight: bold;
-    outline: none;
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pagination {
@@ -409,10 +401,8 @@
 }
 
 .pagination span {
-    font-family: cursive;
     font-size: 15px;
     font-weight: bold;
-    color: #4682b4;
     padding: 8px 20px;
     background: white;
     border-radius: 15px;

@@ -117,23 +117,26 @@
                 <h3 class="section-title">Комментарии</h3>
                 <div class="comment-form">
                     <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
-                    <button type="button" class="btn-comment">Отправить</button>
+                    <button type="button" class="btn-comment" (click)="toggleSendComment()">Отправить</button>
                 </div>
                 <div class="comments-list"></div>
             </div>
         </div>
         }
-        <div class="auth-notice" [class.show]="showAuthNotice">
-            <div class="auth-notice-header">
-                <span class="auth-notice-title">Стоп, а ты кто?</span>
-                <button type="button" class="auth-notice-close" (click)="closeAuthNotice()">
-                    ✕
-                </button>
+        <div class="auth-notice-stack">
+            @for (notice of authNotices; track notice.id) {
+            <div class="auth-notice" [class.show]="notice.visible" [class.leaving]="notice.leaving">
+                <div class="auth-notice-header">
+                    <span class="auth-notice-title">{{ notice.title }}</span>
+                    <button type="button" class="auth-notice-close" (click)="closeAuthNotice(notice.id)">
+                        ✕
+                    </button>
+                </div>
+                <div class="auth-notice-text">
+                    {{ notice.text }}
+                </div>
             </div>
-            <div class="auth-notice-text">
-                Похоже, ты ещё не в клубе. Загляни в аккаунт, чтобы сохранять любимое, откладывать на вечер и вести
-                список просмотренного!
-            </div>
+            }
         </div>
     </div>
 </div>

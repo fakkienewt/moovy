@@ -7,6 +7,14 @@ import { filter } from 'rxjs/operators';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 
+interface AuthNotice {
+  id: number;
+  title: string;
+  text: string;
+  visible: boolean;
+  leaving: boolean;
+}
+
 @Component({
   selector: 'app-content-page',
   standalone: true,
@@ -20,15 +28,23 @@ export class ContentPage implements OnInit, OnDestroy {
   isFavorite = false;
   isLater = false;
   isWatched = false;
-  showAuthNotice = false;
+
+  authNotices: AuthNotice[] = [];
 
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
 
   private navSub!: Subscription;
-  private authNoticeTimer: any = null;
+  private noticeTimers = new Map<number, any>();
+  private noticeIdCounter = 0;
   private cacheLoaded = false;
   private allContentCache: Content[] = [];
+
+  private pendingNotice: { title: string; text: string } | null = null;
+
+  private readonly NOTICE_LIMIT = 5;
+  private readonly NOTICE_LIFETIME = 10000;
+  private readonly NOTICE_LEAVE_DELAY = 280;
 
   constructor(
     private route: ActivatedRoute,
@@ -64,11 +80,10 @@ export class ContentPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.navSub) {
-      this.navSub.unsubscribe()
-    };
-    if (this.authNoticeTimer) {
-      clearTimeout(this.authNoticeTimer);
+      this.navSub.unsubscribe();
     }
+    this.noticeTimers.forEach(t => clearTimeout(t));
+    this.noticeTimers.clear();
   }
 
   private handleRoute(): void {
@@ -82,22 +97,27 @@ export class ContentPage implements OnInit, OnDestroy {
       const id = +urlParts[3];
 
       if (!isNaN(id)) {
-        this.loadContent(id, type)
-      };
+        this.loadContent(id, type);
+      }
     }
   }
 
   loadContent(contentId: number, typeFromRoute: string | null): void {
     window.scrollTo(0, 0);
 
+    this.noticeTimers.forEach(t => clearTimeout(t));
+    this.noticeTimers.clear();
+    this.authNotices = [];
+    this.pendingNotice = null;
+
     let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
 
     if (typeFromRoute === 'tv-series') {
-      wantedType = 'tv-series'
+      wantedType = 'tv-series';
     }
     else if (typeFromRoute === 'anime') {
-      wantedType = 'anime'
-    };
+      wantedType = 'anime';
+    }
 
     const foundItem = this.allContentCache.find(
       m => m.id === contentId && m.type === wantedType
@@ -114,28 +134,28 @@ export class ContentPage implements OnInit, OnDestroy {
     this.content = { ...foundItem };
 
     if (!this.content.directors?.trim()) {
-      this.content.directors = 'Неизвестно'
-    };
+      this.content.directors = 'Неизвестно';
+    }
     if (!this.content.actors?.trim()) {
-      this.content.actors = 'Неизвестно'
-    };
+      this.content.actors = 'Неизвестно';
+    }
     if (!this.content.countries?.trim()) {
-      this.content.countries = 'Неизвестно'
-    };
+      this.content.countries = 'Неизвестно';
+    }
     if (!this.content.genres?.trim()) {
-      this.content.genres = 'Неизвестно'
-    };
+      this.content.genres = 'Неизвестно';
+    }
     if (!this.content.year) {
-      this.content.year = 0
-    };
+      this.content.year = 0;
+    }
 
     let apiSource = 'movies';
     if (wantedType === 'tv-series') {
-      apiSource = 'tv-series'
+      apiSource = 'tv-series';
     }
     else if (wantedType === 'anime') {
-      apiSource = 'anime'
-    };
+      apiSource = 'anime';
+    }
 
     this.loadPlayer(contentId, apiSource);
     this.findSimilarMovies(this.content, this.allContentCache);
@@ -145,8 +165,8 @@ export class ContentPage implements OnInit, OnDestroy {
     const img = event.target as HTMLImageElement;
 
     if (img) {
-      img.style.display = 'none'
-    };
+      img.style.display = 'none';
+    }
   }
 
   loadPlayer(contentId: number, source: string): void {
@@ -206,37 +226,74 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   toggleFavorite(): void {
-    this.showAuthNoticeWithTimer();
+    this.showAuthNotice('Добавить в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
   }
 
   toggleLater(): void {
-    this.showAuthNoticeWithTimer();
+    this.showAuthNotice('Смотреть позже', 'Войдите в аккаунт, чтобы отложить на вечер.');
   }
 
   toggleWatched(event: Event): void {
     event.stopPropagation();
-    this.showAuthNoticeWithTimer();
+    this.showAuthNotice('Отметить просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
   }
 
-  closeAuthNotice(): void {
-    this.showAuthNotice = false;
-    if (this.authNoticeTimer) {
-      clearTimeout(this.authNoticeTimer);
-      this.authNoticeTimer = null;
-    }
+  toggleSendComment(): void {
+    this.showAuthNotice('Оставить комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
   }
 
-  private showAuthNoticeWithTimer(): void {
-    this.showAuthNotice = true;
-
-    if (this.authNoticeTimer) {
-      clearTimeout(this.authNoticeTimer);
+  closeAuthNotice(id: number): void {
+    const timer = this.noticeTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      this.noticeTimers.delete(id);
     }
 
-    this.authNoticeTimer = setTimeout(() => {
-      this.showAuthNotice = false;
-      this.authNoticeTimer = null;
-    }, 10000);
+    const notice = this.authNotices.find(n => n.id === id);
+    if (!notice || notice.leaving) {
+      return;
+    }
+
+    notice.leaving = true;
+    notice.visible = false;
+
+    setTimeout(() => {
+      this.authNotices = this.authNotices.filter(n => n.id !== id);
+
+      if (this.pendingNotice && this.authNotices.length < this.NOTICE_LIMIT) {
+        const pending = this.pendingNotice;
+        this.pendingNotice = null;
+        this.showAuthNotice(pending.title, pending.text);
+      }
+    }, this.NOTICE_LEAVE_DELAY);
+  }
+
+  private showAuthNotice(title: string, text: string): void {
+    if (this.authNotices.length >= this.NOTICE_LIMIT) {
+      this.pendingNotice = { title, text };
+      const oldest = this.authNotices[this.authNotices.length - 1];
+      if (!oldest.leaving) {
+        this.closeAuthNotice(oldest.id);
+      }
+      return;
+    }
+
+    const id = ++this.noticeIdCounter;
+    const notice: AuthNotice = { id, title, text, visible: false, leaving: false };
+
+    this.authNotices.unshift(notice);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        notice.visible = true;
+      });
+    });
+
+    const timer = setTimeout(() => {
+      this.closeAuthNotice(id);
+    }, this.NOTICE_LIFETIME);
+
+    this.noticeTimers.set(id, timer);
   }
 
   onSelectContent(content: Content): void {
@@ -245,8 +302,8 @@ export class ContentPage implements OnInit, OnDestroy {
       type = 'tv-series';
     }
     else if (content.type === 'anime') {
-      type = 'anime'
-    };
+      type = 'anime';
+    }
     this.router.navigate(['/content', type, content.id]);
   }
 }
