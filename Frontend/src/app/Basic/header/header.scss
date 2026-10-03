@@ -10,7 +10,6 @@
     border-radius: 25px;
     font-family: cursive;
     color: #4682b4;
-    box-sizing: border-box;
 }
 
 .basic-header-container {
@@ -98,7 +97,6 @@
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .search-year {
@@ -118,7 +116,6 @@
 }
 
 .basic-header-section-search-input:focus-within {
-    box-shadow: 0 6px 25px rgba(135, 206, 235, 0.3);
     border-color: #87CEEB;
 }
 
@@ -129,7 +126,6 @@
     font-size: 14px;
     color: #4682b4;
     width: 100%;
-    background: transparent;
     font-family: cursive;
 }
 
@@ -138,17 +134,18 @@
 }
 
 .basic-header-button-search {
+    display: flex;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
     padding: 6px;
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .basic-header-section-profile button {
+    display: flex;
+    justify-content: center;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
     border: 2px solid #b3e0ff;
     cursor: pointer;
@@ -156,14 +153,10 @@
     border-radius: 50%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .basic-header-section-profile button:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(135, 206, 235, 0.4);
 }
 
 .basic-header-section-profile button img {

@@ -21,6 +21,8 @@
 }
 
 .auth-close {
+    display: flex;
+    justify-content: center;
     position: absolute;
     top: 14px;
     right: 14px;
@@ -32,14 +34,10 @@
     font-size: 18px;
     font-weight: 800;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .auth-close:hover {
-    color: #87CEEB;
     transform: scale(1.15);
 }
 
@@ -70,7 +68,6 @@
     font-weight: 800;
     color: #4682b4;
     letter-spacing: 1.5px;
-    text-transform: uppercase;
     padding-left: 4px;
 }
 
@@ -106,12 +103,11 @@
     letter-spacing: 1px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .auth-btn:hover {
     transform: translateY(-2px);
-    color: #ffffff;
 }
 
 .auth-footer {
@@ -135,15 +131,4 @@
 
 .auth-link:hover {
     color: #4682b4;
-}
-
-@media (max-width: 500px) {
-    .auth-card {
-        padding: 26px 20px 22px;
-        border-radius: 20px;
-    }
-
-    .auth-title {
-        font-size: 20px;
-    }
 }

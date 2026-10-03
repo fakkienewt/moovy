@@ -38,24 +38,24 @@
                     <h1 class="content-title">{{ content.name }}</h1>
                     <div class="info-grid">
                         <div class="info-block full-width">
-                            <div class="label">Актеры:</div>
+                            <div class="label">АКТЁРЫ:</div>
                             <div class="value">{{ content.actors }}</div>
                         </div>
                         <div class="info-block">
-                            <div class="label">Режиссер:</div>
+                            <div class="label">РЕЖИССЁР:</div>
                             <div class="value">{{ content.directors }}</div>
                         </div>
                         <div class="info-block">
-                            <div class="label">Жанры:</div>
+                            <div class="label">ЖАНРЫ:</div>
                             <div class="value">{{ content.genres }}</div>
                         </div>
                         <div class="info-block">
-                            <div class="label">Страна:</div>
+                            <div class="label">СТРАНА:</div>
                             <div class="value">{{ content.countries }}</div>
                         </div>
                         @if (content.year && content.year > 0) {
                         <div class="info-block">
-                            <div class="label">Год:</div>
+                            <div class="label">ГОД:</div>
                             <div class="value">{{ content.year }}</div>
                         </div>
                         }
@@ -115,11 +115,18 @@
             }
             <div class="comments-section">
                 <h3 class="section-title">Комментарии</h3>
+
                 <div class="comment-form">
                     <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
                     <button type="button" class="btn-comment" (click)="toggleSendComment()">Отправить</button>
                 </div>
-                <div class="comments-list"></div>
+
+                @if (!comments || comments.length === 0) {
+                <div class="comments-empty">
+                    <div class="comments-empty-title">Комментариев пока нет</div>
+                    <div class="comments-empty-sub">Будьте первым, кто оставит отзыв!</div>
+                </div>
+                }
             </div>
         </div>
         }

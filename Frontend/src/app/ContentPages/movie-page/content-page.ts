@@ -6,6 +6,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
+import { FormsModule } from '@angular/forms';
 
 interface AuthNotice {
   id: number;
@@ -15,10 +16,17 @@ interface AuthNotice {
   leaving: boolean;
 }
 
+interface Comment {
+  id: number;
+  author: string;
+  text: string;
+  date: string;
+}
+
 @Component({
   selector: 'app-content-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './content-page.html',
   styleUrl: './content-page.scss'
 })
@@ -30,6 +38,11 @@ export class ContentPage implements OnInit, OnDestroy {
   isWatched = false;
 
   authNotices: AuthNotice[] = [];
+
+  comments: Comment[] = [];
+  commentText = '';
+
+  userName = 'Пользователь';
 
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
@@ -109,6 +122,8 @@ export class ContentPage implements OnInit, OnDestroy {
     this.noticeTimers.clear();
     this.authNotices = [];
     this.pendingNotice = null;
+    this.comments = []; 
+    this.commentText = '';
 
     let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
 
@@ -226,7 +241,7 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   toggleFavorite(): void {
-    this.showAuthNotice('Добавить в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
+    this.showAuthNotice('Добавьте в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
   }
 
   toggleLater(): void {
@@ -235,11 +250,11 @@ export class ContentPage implements OnInit, OnDestroy {
 
   toggleWatched(event: Event): void {
     event.stopPropagation();
-    this.showAuthNotice('Отметить просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
+    this.showAuthNotice('Отметьте просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
   }
 
   toggleSendComment(): void {
-    this.showAuthNotice('Оставить комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
+    this.showAuthNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
   }
 
   closeAuthNotice(id: number): void {
