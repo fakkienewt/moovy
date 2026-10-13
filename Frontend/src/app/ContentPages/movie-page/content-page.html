@@ -29,7 +29,9 @@
                     <div class="skeleton-poster-placeholder"></div>
                     }
                     <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
-                        <img src="/SVG/content-page-watched-badge.svg">
+                        <img [src]="isWatched
+                            ? '/SVG/content-page-watched-badge-green.svg'
+                            : '/SVG/content-page-watched-badge.svg'">
                     </div>
 
                     <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
@@ -61,13 +63,15 @@
                         }
                     </div>
                     <div class="action-buttons-row">
-                        <button type="button" class="btn-action btn-fav" [class.active]="isFavorite"
-                            (click)="toggleFavorite()">
-                            <img src="/SVG/content-page-button-favorite2.svg"> В избранное
+                        <button type="button" class="btn-action btn-fav" (click)="toggleFavorite()">
+                            <img [src]="isFavorite
+                                ? '/SVG/content-page-button-favorite1.svg'
+                                : '/SVG/content-page-button-favorite2.svg'"> В избранное
                         </button>
-                        <button type="button" class="btn-action btn-later" [class.active]="isLater"
-                            (click)="toggleLater()">
-                            <img src="/SVG/content-page-button-time.svg"> Смотреть позже
+                        <button type="button" class="btn-action btn-later" (click)="toggleLater()">
+                            <img [src]="isLater
+                                ? '/SVG/content-page-button-time-full.svg'
+                                : '/SVG/content-page-button-time.svg'"> Смотреть позже
                         </button>
                     </div>
                 </div>

@@ -143,23 +143,29 @@
     border-radius: 10px;
 }
 
-.basic-header-section-profile button {
+.profile-btn {
     display: flex;
+    align-items: center;
     justify-content: center;
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
     border: 2px solid #b3e0ff;
-    cursor: pointer;
-    padding: 8px;
     border-radius: 50%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    font-family: cursive;
+    font-weight: 800;
+    font-size: 13px;
+    color: #4682b4;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
+    transition: transform 0.3s ease;
 }
 
-.basic-header-section-profile button:hover {
+.profile-btn:hover {
     transform: scale(1.1);
 }
 
-.basic-header-section-profile button img {
+.profile-btn img {
     width: 24px;
     height: 24px;
 }

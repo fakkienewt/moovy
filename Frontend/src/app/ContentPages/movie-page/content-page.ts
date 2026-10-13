@@ -7,6 +7,7 @@ import { filter } from 'rxjs/operators';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { FormsModule } from '@angular/forms';
+import { AuthStateService } from '../../Services/auth-state-service';
 
 interface AuthNotice {
   id: number;
@@ -63,7 +64,8 @@ export class ContentPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private contentService: ServiceGetData,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private auth: AuthStateService
   ) { }
 
   ngOnInit(): void {
@@ -115,6 +117,17 @@ export class ContentPage implements OnInit, OnDestroy {
     }
   }
 
+  private buildKey(type: string | undefined, id: number): string {
+    let src = 'movies';
+    if (type === 'tv-series') {
+      src = 'tv-series';
+    }
+    else if (type === 'anime') {
+      src = 'anime';
+    }
+    return `${src}:${id}`;
+  }
+
   loadContent(contentId: number, typeFromRoute: string | null): void {
     window.scrollTo(0, 0);
 
@@ -122,7 +135,7 @@ export class ContentPage implements OnInit, OnDestroy {
     this.noticeTimers.clear();
     this.authNotices = [];
     this.pendingNotice = null;
-    this.comments = []; 
+    this.comments = [];
     this.commentText = '';
 
     let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
@@ -174,11 +187,30 @@ export class ContentPage implements OnInit, OnDestroy {
 
     this.loadPlayer(contentId, apiSource);
     this.findSimilarMovies(this.content, this.allContentCache);
+
+    this.isFavorite = false;
+    this.isLater = false;
+    this.isWatched = false;
+
+    const user = this.auth.getUser();
+    if (!user) {
+      return;
+    }
+
+    const key = this.buildKey(this.content.type, this.content.id);
+
+    this.contentService.getUserState(user.id).subscribe({
+      next: (state) => {
+        this.isFavorite = state.favorites.includes(key);
+        this.isLater = state.watch_later.includes(key);
+        this.isWatched = state.watched.includes(key);
+      },
+      error: (err) => console.error('Не удалось получить состояние юзера:', err)
+    });
   }
 
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-
     if (img) {
       img.style.display = 'none';
     }
@@ -241,20 +273,63 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   toggleFavorite(): void {
-    this.showAuthNotice('Добавьте в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
+    const user = this.auth.getUser();
+    if (!user) {
+      this.showAuthNotice('Добавьте в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
+      return;
+    }
+    if (!this.content) {
+      return;
+    }
+
+    const key = this.buildKey(this.content.type, this.content.id);
+    this.contentService.toggleFavorite(user.id, key).subscribe({
+      next: (res) => this.isFavorite = res.active,
+      error: (err) => console.error(err)
+    });
   }
 
   toggleLater(): void {
-    this.showAuthNotice('Смотреть позже', 'Войдите в аккаунт, чтобы отложить на вечер.');
+    const user = this.auth.getUser();
+    if (!user) {
+      this.showAuthNotice('Смотреть позже', 'Войдите в аккаунт, чтобы отложить на вечер.');
+      return;
+    }
+    if (!this.content) {
+      return;
+    }
+
+    const key = this.buildKey(this.content.type, this.content.id);
+    this.contentService.toggleWatchLater(user.id, key).subscribe({
+      next: (res) => this.isLater = res.active,
+      error: (err) => console.error(err)
+    });
   }
 
   toggleWatched(event: Event): void {
     event.stopPropagation();
-    this.showAuthNotice('Отметьте просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
+
+    const user = this.auth.getUser();
+    if (!user) {
+      this.showAuthNotice('Отметьте просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
+      return;
+    }
+    if (!this.content) {
+      return;
+    }
+
+    const key = this.buildKey(this.content.type, this.content.id);
+    this.contentService.toggleWatched(user.id, key).subscribe({
+      next: (res) => this.isWatched = res.active,
+      error: (err) => console.error(err)
+    });
   }
 
   toggleSendComment(): void {
-    this.showAuthNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
+    if (!this.auth.getUser()) {
+      this.showAuthNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
+      return;
+    }
   }
 
   closeAuthNotice(id: number): void {
@@ -287,9 +362,7 @@ export class ContentPage implements OnInit, OnDestroy {
     if (this.authNotices.length >= this.NOTICE_LIMIT) {
       this.pendingNotice = { title, text };
       const oldest = this.authNotices[this.authNotices.length - 1];
-      if (!oldest.leaving) {
-        this.closeAuthNotice(oldest.id);
-      }
+      if (!oldest.leaving) this.closeAuthNotice(oldest.id);
       return;
     }
 
@@ -299,15 +372,10 @@ export class ContentPage implements OnInit, OnDestroy {
     this.authNotices.unshift(notice);
 
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        notice.visible = true;
-      });
+      requestAnimationFrame(() => { notice.visible = true; });
     });
 
-    const timer = setTimeout(() => {
-      this.closeAuthNotice(id);
-    }, this.NOTICE_LIFETIME);
-
+    const timer = setTimeout(() => this.closeAuthNotice(id), this.NOTICE_LIFETIME);
     this.noticeTimers.set(id, timer);
   }
 

@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/moovy_content_DB'
@@ -67,6 +68,17 @@ class Users(db.Model):
     favorites = db.Column(db.Text, nullable=False, default='')
     watch_later = db.Column(db.Text, nullable=False, default='') 
     comments = db.Column(db.Text, nullable=False, default='[]')
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    
+class EmailVerification(db.Model):
+    __tablename__ = 'email_verification'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), nullable=False, index=True)
+    username = db.Column(db.String(50), nullable=False)
+    nickname = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
 if __name__ == '__main__':

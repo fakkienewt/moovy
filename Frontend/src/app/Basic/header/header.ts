@@ -4,6 +4,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { AuthStateService, CurrentUser } from '../../Services/auth-state-service';
 
 @Component({
   selector: 'app-header',
@@ -17,18 +18,26 @@ export class Header implements OnInit, OnDestroy {
   searchResults: Content[] = [];
   allContent: Content[] = [];
 
+  currentUser: CurrentUser | null = null;
+
   private routerSub!: Subscription;
 
   constructor(
     private router: Router,
-    private contentService: ServiceGetData
+    private contentService: ServiceGetData,
+    private auth: AuthStateService
   ) { }
 
   onProfileClick(): void {
+    if (this.currentUser) {
+      this.router.navigate(['/profile']);
+      return;
+    }
     this.router.navigate(['/auth']);
   }
 
   ngOnInit(): void {
+    this.auth.user$.subscribe(u => this.currentUser = u);
     forkJoin({
       movies: this.contentService.getMovies(),
       series: this.contentService.getTVSeries(),
@@ -109,7 +118,7 @@ export class Header implements OnInit, OnDestroy {
   handlePosterError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
-    
+
     if (img.parentElement) {
       img.parentElement.style.background = 'linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%)';
     }

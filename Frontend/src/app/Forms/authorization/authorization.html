@@ -1,29 +1,62 @@
 <div class="auth-page">
     <div class="auth-card">
         <button class="auth-close" (click)="onClose()" type="button">✕</button>
+        @if (step === 1) {
         <h1 class="auth-title">Регистрация</h1>
-        <form class="auth-form">
+        <form class="auth-form" (ngSubmit)="onSubmit()">
             <div class="auth-field">
                 <label class="auth-label">ИМЯ ПОЛЬЗОВАТЕЛЯ</label>
-                <input type="text" class="auth-input" placeholder="Введите имя...">
+                <input type="text" class="auth-input" placeholder="Введите имя..." [(ngModel)]="nickname"
+                    name="nickname">
+            </div>
+            <div class="auth-field">
+                <label class="auth-label">ЛОГИН</label>
+                <input type="text" class="auth-input" placeholder="username" [(ngModel)]="username" name="username">
             </div>
             <div class="auth-field">
                 <label class="auth-label">EMAIL</label>
-                <input type="email" class="auth-input" placeholder="example@mail.com">
+                <input type="email" class="auth-input" placeholder="example@mail.com" [(ngModel)]="email" name="email">
             </div>
             <div class="auth-field">
                 <label class="auth-label">ПАРОЛЬ</label>
-                <input type="password" class="auth-input" placeholder="Минимум 8 символов">
+                <input type="password" class="auth-input" placeholder="Минимум 8 символов" [(ngModel)]="password"
+                    name="password">
             </div>
             <div class="auth-field">
-                <label class="auth-label">ПАВТОРИТЕ ПАРОЛЬ</label>
-                <input type="password" class="auth-input" placeholder="Ещё раз">
+                <label class="auth-label">ПОВТОРИТЕ ПАРОЛЬ</label>
+                <input type="password" class="auth-input" placeholder="Ещё раз" [(ngModel)]="confirm" name="confirm">
             </div>
-            <button type="submit" class="auth-btn">Зарегистрироваться</button>
+            @if (error) { <div class="auth-error">{{ error }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="loading">
+                {{ loading ? 'Отправка...' : 'Зарегистрироваться' }}
+            </button>
         </form>
         <div class="auth-footer">
             Уже есть аккаунт?
             <a routerLink="/login" class="auth-link">Войти</a>
         </div>
+        }
+        @if (step === 2) {
+        <h1 class="auth-title">Подтверждение</h1>
+        <p style="text-align:center; color:#5a7d9a; font-size:14px;">
+            Мы отправили код на <b>{{ email }}</b>
+        </p>
+        <form class="auth-form" (ngSubmit)="onVerify()">
+            <div class="auth-field">
+                <label class="auth-label">КОД ИЗ ПИСЬМА</label>
+                <input type="text" class="auth-input" maxlength="6" placeholder="000000" [(ngModel)]="code" name="code"
+                    style="text-align:center; letter-spacing:8px; font-size:20px;">
+            </div>
+            @if (error) { <div class="auth-error">{{ error }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="loading">
+                {{ loading ? 'Проверка...' : 'Подтвердить' }}
+            </button>
+        </form>
+        <div class="auth-footer">
+            <a class="auth-link" (click)="step = 1" style="cursor:pointer;">
+                Изменить email
+            </a>
+        </div>
+        }
     </div>
 </div>

@@ -2,16 +2,20 @@
     <div class="auth-card">
         <button class="auth-close" (click)="onClose()" type="button">✕</button>
         <h1 class="auth-title">Вход</h1>
-        <form class="auth-form">
+        <form class="auth-form" (ngSubmit)="onSubmit()">
             <div class="auth-field">
-                <label class="auth-label">EMAIl</label>
-                <input type="email" class="auth-input" placeholder="example@mail.com">
+                <label class="auth-label">EMAIL</label>
+                <input type="email" class="auth-input" placeholder="example@mail.com" [(ngModel)]="email" name="email">
             </div>
             <div class="auth-field">
                 <label class="auth-label">ПАРОЛЬ</label>
-                <input type="password" class="auth-input" placeholder="Введите пароль">
+                <input type="password" class="auth-input" placeholder="Введите пароль" [(ngModel)]="password"
+                    name="password">
             </div>
-            <button type="submit" class="auth-btn">Войти</button>
+            @if (error) { <div class="auth-error">{{ error }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="loading">
+                {{ loading ? 'Вход...' : 'Войти' }}
+            </button>
         </form>
         <div class="auth-footer">
             Нет аккаунта?

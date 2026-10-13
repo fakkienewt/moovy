@@ -1,0 +1,99 @@
+<div class="page-wrap">
+    <div class="profile-layout">
+        <aside class="side-panel">
+            <div class="side-top">
+                <div class="side-avatar">
+                    {{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
+                </div>
+                <div class="side-nickname">{{ user?.nickname }}</div>
+                <div class="side-username">&#64;{{ user?.username }}</div>
+            </div>
+            <nav class="side-nav">
+                <button class="side-item" [class.active]="activeTab === 'watched'" (click)="setTab('watched')">
+                    <span class="side-item-label">Просмотрено</span>
+                    <span class="side-item-count">{{ state.watched.length }}</span>
+                </button>
+                <button class="side-item" [class.active]="activeTab === 'favorites'" (click)="setTab('favorites')">
+                    <span class="side-item-label">Избранное</span>
+                    <span class="side-item-count">{{ state.favorites.length }}</span>
+                </button>
+                <button class="side-item" [class.active]="activeTab === 'watch_later'" (click)="setTab('watch_later')">
+                    <span class="side-item-label">Позже</span>
+                    <span class="side-item-count">{{ state.watch_later.length }}</span>
+                </button>
+                <button class="side-item" [class.active]="activeTab === 'comments'" (click)="setTab('comments')">
+                    <span class="side-item-label">Комментарии</span>
+                    <span class="side-item-count">{{ userComments.length }}</span>
+                </button>
+            </nav>
+            <div class="side-bottom">
+                <button class="btn-logout" (click)="onLogout()">Выйти</button>
+                <button class="btn-delete" (click)="onDeleteAccount()">Удалить</button>
+            </div>
+        </aside>
+        <main class="shelf-area">
+            @if (activeTab === 'comments') {
+            <header class="shelf-head">
+                <h2 class="shelf-title">Комментарии</h2>
+                <span class="shelf-count">{{ userComments.length }}</span>
+            </header>
+            @if (userComments.length === 0) {
+            <div class="shelf-empty">
+                <div class="shelf-empty-title">Комментариев пока нет</div>
+                <div class="shelf-empty-sub">Оставь первый — он появится здесь</div>
+            </div>
+            } @else {
+            <div class="comment-list">
+                @for (c of userComments; track c.id) {
+                }
+            </div>
+            }
+            } @else {
+            <header class="shelf-head">
+                <h2 class="shelf-title">{{ shelfTitle }}</h2>
+                <span class="shelf-count">{{ fullList.length }}</span>
+            </header>
+            @if (isLoading) {
+            <div class="shelf-grid">
+                @for (i of skeletonItems; track i) {
+                <div class="card skeleton">
+                    <div class="card-poster">
+                        <div class="skeleton-img"></div>
+                    </div>
+                    <div class="card-info">
+                        <div class="skeleton-line title"></div>
+                        <div class="skeleton-line year"></div>
+                    </div>
+                </div>
+                }
+            </div>
+            } @else if (fullList.length === 0) {
+            <div class="shelf-empty">
+                <div class="shelf-empty-title">Полка пуста</div>
+                <div class="shelf-empty-sub">Добавляй контент — он появится здесь</div>
+            </div>
+            } @else {
+            <div class="shelf-grid">
+                @for (item of currentList; track item.key) {
+                <div class="card" (click)="onOpenItem(item)">
+                    <div class="card-poster">
+                        <img [src]="item.poster" [alt]="item.name" loading="lazy">
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">{{ item.name }}</div>
+                        <div class="card-year">{{ item.year }}</div>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+            }
+            <div class="pagination"
+                [class.hidden]="(activeTab === 'comments' ? userComments.length : fullList.length) <= itemsPerPage || isLoading">
+                <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
+                <span>{{ currentPage }} / {{ totalPages }}</span>
+                <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
+            </div>
+        </main>
+    </div>
+</div>

@@ -30,8 +30,12 @@
                 }
             </div>
             <div class="basic-header-section-profile">
-                <button (click)="onProfileClick()">
+                <button (click)="onProfileClick()" class="profile-btn">
+                    @if (currentUser) {
+                    {{ currentUser.nickname.charAt(0).toUpperCase() }}
+                    } @else {
                     <img src="/SVG/basic-header-button-svg-2.svg">
+                    }
                 </button>
             </div>
         </div>
