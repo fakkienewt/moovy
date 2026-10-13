@@ -135,3 +135,120 @@
     font-weight: bold;
     box-shadow: 0 2px 5px rgba(135, 206, 235, 0.3);
 }
+
+@media (max-width: 900px) {
+    .basic-new-logo {
+        font-size: 17px;
+        padding: 10px 22px;
+    }
+
+    .basic-new-section {
+        padding: 18px 14px;
+    }
+
+    .basic-new-container-arrows {
+        display: none;
+    }
+
+    .basic-new-loading {
+        display: flex;
+        grid-template-columns: none;
+        gap: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+    }
+
+    .basic-new-loading::-webkit-scrollbar {
+        display: none;
+    }
+
+    .basic-new-section-movie-poster {
+        flex: 0 0 22%;
+        padding: 9px;
+        border-radius: 16px;
+    }
+
+    .basic-new-poster {
+        border-radius: 11px;
+        margin-bottom: 8px;
+    }
+
+    .movie-year {
+        font-size: 11px;
+        padding: 3px 8px;
+        min-width: 42px;
+        border-radius: 10px;
+    }
+
+    .empty-year {
+        height: 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .basic-new-logo {
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 14px 14px 0 0;
+        margin-top: 12px;
+        letter-spacing: 1px;
+    }
+
+    .basic-new-section {
+        padding: 14px 12px;
+        border-radius: 0 0 16px 16px;
+        border-width: 2px;
+    }
+
+    .basic-new-loading {
+        gap: 10px;
+    }
+
+    .basic-new-section-movie-poster {
+        flex: 0 0 22%;
+        padding: 6px;
+        border-radius: 12px;
+        border-width: 2px;
+    }
+
+    .basic-new-poster {
+        border-radius: 9px;
+        margin-bottom: 6px;
+        border-width: 1px;
+    }
+
+    .movie-year {
+        font-size: 9px;
+        padding: 2px 5px;
+        min-width: 30px;
+        border-radius: 8px;
+    }
+
+    .empty-year {
+        height: 11px;
+    }
+}
+
+@media (max-width: 380px) {
+    .basic-new-section {
+        padding: 12px 10px;
+    }
+
+    .basic-new-loading {
+        gap: 8px;
+    }
+
+    .basic-new-section-movie-poster {
+        flex: 0 0 24%;
+        padding: 5px;
+    }
+
+    .movie-year {
+        font-size: 8px;
+        padding: 2px 4px;
+        min-width: 26px;
+    }
+}

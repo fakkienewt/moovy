@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ServiceGetData } from '../../Services/service-get-data';
@@ -20,11 +20,17 @@ export class NewItems implements OnInit {
 
   currentIndex = 0;
   itemsPerPage = 4;
+  isMobile = window.innerWidth <= 900;
 
   constructor(
     private movieService: ServiceGetData,
     private router: Router
   ) { }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobile = window.innerWidth <= 900;
+  }
 
   ngOnInit(): void {
     this.movieService.getMovies().subscribe({
@@ -33,7 +39,6 @@ export class NewItems implements OnInit {
         this.newItems2026 = data
           .filter(m => m.year === 2026)
           .slice(0, 10);
-
         this.updateVisibleMovies();
         this.isLoading = false;
       },

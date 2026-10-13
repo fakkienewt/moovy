@@ -1,5 +1,7 @@
 :host {
     width: 100%;
+    position: relative;
+    z-index: 100;
 }
 
 .basic-header {
@@ -10,6 +12,8 @@
     border-radius: 25px;
     font-family: cursive;
     color: #4682b4;
+    position: relative;
+    z-index: 100;
 }
 
 .basic-header-container {
@@ -27,13 +31,11 @@
 }
 
 .basic-header-section-search {
+    position: relative;
     flex-grow: 1;
     max-width: 500px;
     min-width: 150px;
-}
-
-.input-group {
-    position: relative;
+    z-index: 110;
 }
 
 .suggestions {
@@ -41,15 +43,18 @@
     top: 100%;
     left: 0;
     right: 0;
+    width: 100%;
+    box-sizing: border-box;
     background: white;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
     margin-top: 8px;
     padding: 8px;
-    z-index: 100;
+    z-index: 200;
     max-height: 300px;
     overflow-y: auto;
     box-shadow: 0 8px 25px rgba(135, 206, 235, 0.3);
+    list-style: none;
 }
 
 .suggestions li {
@@ -78,6 +83,7 @@
     overflow: hidden;
     border: 2px solid #b3e0ff;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    flex: 0 0 auto;
 }
 
 .search-poster img {
@@ -90,6 +96,8 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .search-name {
@@ -97,6 +105,7 @@
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .search-year {
@@ -168,4 +177,109 @@
 .profile-btn img {
     width: 24px;
     height: 24px;
+}
+
+@media (max-width: 900px) {
+    .basic-header {
+        padding: 18px 20px;
+        border-radius: 20px;
+    }
+
+    .basic-header-container {
+        gap: 12px;
+    }
+
+    .basic-header-logo {
+        font-size: 22px;
+    }
+
+    .basic-header-section-search {
+        max-width: none;
+    }
+
+    .profile-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .profile-btn img {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .basic-header {
+        padding: 12px 14px;
+        border-radius: 18px;
+    }
+
+    .basic-header-container {
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .basic-header-section-logo {
+        flex: 0 0 auto;
+    }
+
+    .basic-header-section-search {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .basic-header-section-profile {
+        flex: 0 0 auto;
+    }
+
+    .basic-header-logo {
+        font-size: 18px;
+    }
+
+    .basic-header-section-search-input {
+        padding: 2px 2px 2px 6px;
+        border-width: 1px;
+    }
+
+    .basic-header-input-search {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+
+    .basic-header-button-search {
+        padding: 4px;
+    }
+
+    .basic-header-button-search img {
+        width: 16px;
+        height: 16px;
+    }
+
+    .suggestions {
+        max-height: 240px;
+        padding: 6px;
+        margin-top: 6px;
+    }
+
+    .search-poster {
+        width: 34px;
+        height: 50px;
+    }
+
+    .search-name {
+        font-size: 13px;
+    }
+
+    .search-year {
+        font-size: 10px;
+    }
+
+    .profile-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
 }
