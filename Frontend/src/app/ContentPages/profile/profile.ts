@@ -12,6 +12,7 @@ interface ListItem {
   poster?: string;
   type: string;
   id: number;
+  rating?: number | string;
 }
 
 interface UserComment {
@@ -62,10 +63,15 @@ export class Profile implements OnInit {
   get shelfTitle(): string {
     switch (this.activeTab) {
       case 'watched': return 'Просмотрено';
-      case 'favorites': return 'Избранное';
+      case 'favorites': return 'Смотрю';
       case 'watch_later': return 'Смотреть позже';
       default: return '';
     }
+  }
+
+  get isPaginationHidden(): boolean {
+    const length = this.activeTab === 'comments' ? this.userComments.length : this.fullList.length;
+    return length <= this.itemsPerPage || this.isLoading;
   }
 
   ngOnInit(): void {
@@ -186,7 +192,8 @@ export class Profile implements OnInit {
           name: found.name,
           year: found.year,
           poster: found.poster,
-          type: found.type
+          type: found.type,
+          rating: found.rating
         } as ListItem;
       })
       .filter((x: ListItem | null): x is ListItem => x !== null);
