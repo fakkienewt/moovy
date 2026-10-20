@@ -166,7 +166,7 @@
     }
 
     .basic-new-section-movie-poster {
-        flex: 0 0 22%;
+        flex: 0 0 calc(25% - 9px);
         padding: 9px;
         border-radius: 16px;
     }
@@ -208,7 +208,7 @@
     }
 
     .basic-new-section-movie-poster {
-        flex: 0 0 22%;
+        flex: 0 0 calc(25% - 7.5px);
         padding: 6px;
         border-radius: 12px;
         border-width: 2px;
@@ -242,7 +242,7 @@
     }
 
     .basic-new-section-movie-poster {
-        flex: 0 0 24%;
+        flex: 0 0 calc(25% - 6px);
         padding: 5px;
     }
 

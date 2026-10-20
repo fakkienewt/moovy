@@ -34,12 +34,12 @@ type ListTab = 'watched' | 'favorites' | 'watch_later';
 })
 export class Profile implements OnInit {
   user: CurrentUser | null = null;
-  registeredAt = '';
   activeTab: Tab = 'watched';
   currentList: ListItem[] = [];
   userComments: UserComment[] = [];
 
   isLoading = true;
+  modalState: 'none' | 'logout' | 'delete' = 'none';
 
   currentPage = 1;
   itemsPerPage = 8;
@@ -52,6 +52,15 @@ export class Profile implements OnInit {
 
   allContent: any[] = [];
   fullList: ListItem[] = [];
+
+  get tabs(): { key: Tab; label: string; count: number }[] {
+    return [
+      { key: 'watch_later', label: 'Смотреть позже', count: this.state.watch_later.length },
+      { key: 'watched', label: 'Просмотрено', count: this.state.watched.length },
+      { key: 'favorites', label: 'Избранное', count: this.state.favorites.length },
+      { key: 'comments', label: 'Комментарии', count: this.userComments.length },
+    ];
+  }
 
   constructor(
     private auth: AuthStateService,
@@ -81,22 +90,12 @@ export class Profile implements OnInit {
       return;
     }
 
-    const raw = localStorage.getItem('moovy_user');
-    if (raw) {
-      const obj = JSON.parse(raw);
-      if (obj.created_at) {
-        this.registeredAt = new Date(obj.created_at).toLocaleDateString('ru-RU');
-      } else {
-        this.registeredAt = new Date().toLocaleDateString('ru-RU');
-      }
-    }
-
     const saved = this.stateService.load();
     if (saved.currentPage && saved.currentPage > 0) {
       this.currentPage = saved.currentPage;
     }
 
-    this.api.getProfileData(this.user.id).subscribe({
+    this.api.getProfileData().subscribe({
       next: (data) => {
         this.allContent = data.content || [];
         this.state = data.state || { favorites: [], watch_later: [], watched: [] };
@@ -140,26 +139,28 @@ export class Profile implements OnInit {
     this.router.navigate(['/content', item.type, item.id]);
   }
 
-  onLogout(): void {
-    this.auth.logout();
-    this.router.navigate(['/']);
+  openModal(state: 'logout' | 'delete'): void {
+    this.modalState = state;
   }
 
-  onDeleteAccount(): void {
-    if (!confirm('Точно удалить аккаунт? Это действие необратимо.')) {
-      return;
-    }
-    if (!this.user) {
-      return;
-    }
+  closeModal(): void {
+    this.modalState = 'none';
+  }
 
-    this.api.deleteAccount(this.user.id).subscribe({
-      next: () => {
-        this.auth.logout();
-        this.router.navigate(['/']);
-      },
-      error: (e) => console.error(e)
-    });
+  confirmAction(): void {
+    if (this.modalState === 'logout') {
+      this.auth.logout();
+      this.router.navigate(['/']);
+    } else if (this.modalState === 'delete') {
+      this.api.deleteAccount().subscribe({
+        next: () => {
+          this.auth.logout();
+          this.router.navigate(['/']);
+        },
+        error: (e) => console.error(e)
+      });
+    }
+    this.closeModal();
   }
 
   private persist(): void {

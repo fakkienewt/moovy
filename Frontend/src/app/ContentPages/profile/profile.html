@@ -2,39 +2,35 @@
     <div class="profile-layout">
         <header class="profile-top">
             <div class="profile-user">
-                <div class="side-avatar">
-                    {{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
-                </div>
-                <div class="user-info">
+                <div class="side-avatar">{{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}</div>
+                <div>
                     <div class="side-nickname">{{ user?.nickname }}</div>
                     <div class="side-username">&#64;{{ user?.username }}</div>
                 </div>
             </div>
             <div class="profile-actions">
-                <button class="btn-logout" (click)="onLogout()">Выйти</button>
-                <button class="btn-delete" (click)="onDeleteAccount()">Удалить</button>
+                <button class="btn-logout" (click)="openModal('logout')">Выйти</button>
+                <button class="btn-delete" (click)="openModal('delete')">Удалить</button>
             </div>
         </header>
         <nav class="profile-tabs">
-            <button class="side-item" [class.active]="activeTab === 'watch_later'" (click)="setTab('watch_later')">
-                Смотреть позже <span class="side-count">{{ state.watch_later.length }}</span>
+            @for (t of tabs; track t.key) {
+            <button class="side-item" [class.active]="activeTab === t.key" (click)="setTab($any(t.key))">
+                <span>{{ t.label }}</span>
+                <span class="side-count">{{ t.count }}</span>
             </button>
-            <button class="side-item" [class.active]="activeTab === 'watched'" (click)="setTab('watched')">
-                Просмотрено <span class="side-count">{{ state.watched.length }}</span>
-            </button>
-            <button class="side-item" [class.active]="activeTab === 'favorites'" (click)="setTab('favorites')">
-                Смотрю <span class="side-count">{{ state.favorites.length }}</span>
-            </button>
-            <button class="side-item" [class.active]="activeTab === 'comments'" (click)="setTab('comments')">
-                Комментарии <span class="side-count">{{ userComments.length }}</span>
-            </button>
+            }
         </nav>
         <main class="shelf-area">
             <div class="shelf-card">
-                @if (activeTab === 'comments') {
                 <header class="shelf-head">
-                    <h2 class="shelf-title">Комментарии</h2>
+                    <h2 class="shelf-title">{{ activeTab === 'comments' ? 'Комментарии' : shelfTitle }}</h2>
+                    @if (activeTab !== 'comments') {
+                    <span class="shelf-count">{{ fullList.length }}</span>
+                    }
                 </header>
+
+                @if (activeTab === 'comments') {
                 @if (userComments.length === 0) {
                 <div class="shelf-empty">
                     <div class="shelf-empty-title">Комментариев пока нет</div>
@@ -45,12 +41,7 @@
                     @for (c of userComments; track c.id) { }
                 </div>
                 }
-                } @else {
-                <header class="shelf-head">
-                    <h2 class="shelf-title">{{ shelfTitle }}</h2>
-                    <span class="shelf-count">{{ fullList.length }}</span>
-                </header>
-                @if (isLoading) {
+                } @else if (isLoading) {
                 <div class="shelf-grid">
                     @for (i of skeletonItems; track i) {
                     <div class="card skeleton">
@@ -85,7 +76,8 @@
                     }
                 </div>
                 }
-                <div class="pagination" [class.hidden]="isPaginationHidden">
+                @if (activeTab !== 'comments' && !isPaginationHidden) {
+                <div class="pagination">
                     <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
                     <span>{{ currentPage }} / {{ totalPages }}</span>
                     <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
@@ -94,4 +86,21 @@
             </div>
         </main>
     </div>
+    @if (modalState !== 'none') {
+    <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <h3 class="modal-title">{{ modalState === 'logout' ? 'Выход из аккаунта' : 'Удаление аккаунта' }}</h3>
+            <p class="modal-text">
+                {{ modalState === 'logout' ? 'Вы уверены, что хотите выйти?' : 'Вы уверены, что хотите удалить аккаунт?
+                Это действие необратимо.' }}
+            </p>
+            <div class="modal-actions">
+                <button class="btn-cancel" (click)="closeModal()">Отмена</button>
+                <button class="btn-confirm" [class.danger]="modalState === 'delete'" (click)="confirmAction()">
+                    {{ modalState === 'logout' ? 'Выйти' : 'Удалить' }}
+                </button>
+            </div>
+        </div>
+    </div>
+    }
 </div>

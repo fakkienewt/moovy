@@ -12,7 +12,7 @@
                     <div class="skeleton-block"></div>
                     <div class="skeleton-block"></div>
                 </div>
-                <div class="action-buttons-row skeleton-buttons-row">
+                <div class="action-buttons-row">
                     <div class="skeleton-btn"></div>
                     <div class="skeleton-btn"></div>
                 </div>
@@ -29,11 +29,9 @@
                     <div class="skeleton-poster-placeholder"></div>
                     }
                     <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
-                        <img [src]="isWatched
-                            ? '/SVG/content-page-watched-badge-green.svg'
-                            : '/SVG/content-page-watched-badge.svg'">
+                        <img
+                            [src]="isWatched ? '/SVG/content-page-watched-badge-green.svg' : '/SVG/content-page-watched-badge.svg'">
                     </div>
-
                     <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
                 </div>
                 <div class="content-right-side">
@@ -63,15 +61,15 @@
                         }
                     </div>
                     <div class="action-buttons-row">
-                        <button type="button" class="btn-action btn-fav" (click)="toggleFavorite()">
-                            <img [src]="isFavorite
-                                ? '/SVG/content-page-button-favorite1.svg'
-                                : '/SVG/content-page-button-favorite2.svg'"> В избранное
+                        <button type="button" class="btn-action" (click)="toggleFavorite()">
+                            <img
+                                [src]="isFavorite ? '/SVG/content-page-button-favorite1.svg' : '/SVG/content-page-button-favorite2.svg'">
+                            В избранное
                         </button>
-                        <button type="button" class="btn-action btn-later" (click)="toggleLater()">
-                            <img [src]="isLater
-                                ? '/SVG/content-page-button-time-full.svg'
-                                : '/SVG/content-page-button-time.svg'"> Смотреть позже
+                        <button type="button" class="btn-action" (click)="toggleLater()">
+                            <img
+                                [src]="isLater ? '/SVG/content-page-button-time-full.svg' : '/SVG/content-page-button-time.svg'">
+                            Смотреть позже
                         </button>
                     </div>
                 </div>
@@ -119,12 +117,10 @@
             }
             <div class="comments-section">
                 <h3 class="section-title">Комментарии</h3>
-
                 <div class="comment-form">
                     <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
                     <button type="button" class="btn-comment" (click)="toggleSendComment()">Отправить</button>
                 </div>
-
                 @if (!comments || comments.length === 0) {
                 <div class="comments-empty">
                     <div class="comments-empty-title">Комментариев пока нет</div>
@@ -139,13 +135,9 @@
             <div class="auth-notice" [class.show]="notice.visible" [class.leaving]="notice.leaving">
                 <div class="auth-notice-header">
                     <span class="auth-notice-title">{{ notice.title }}</span>
-                    <button type="button" class="auth-notice-close" (click)="closeAuthNotice(notice.id)">
-                        ✕
-                    </button>
+                    <button type="button" class="auth-notice-close" (click)="closeAuthNotice(notice.id)">✕</button>
                 </div>
-                <div class="auth-notice-text">
-                    {{ notice.text }}
-                </div>
+                <div class="auth-notice-text">{{ notice.text }}</div>
             </div>
             }
         </div>

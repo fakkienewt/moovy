@@ -1,11 +1,11 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ServiceGetData } from '../../Services/service-get-data';
 import { FormsModule } from '@angular/forms';
+import { ServiceGetData } from '../../Services/service-get-data';
 import { AuthStateService } from '../../Services/auth-state-service';
 
 @Component({
-  selector: 'app-authorization',
+  selector: 'app-auth',
   standalone: true,
   imports: [RouterLink, FormsModule],
   templateUrl: './authorization.html',
@@ -13,8 +13,8 @@ import { AuthStateService } from '../../Services/auth-state-service';
 })
 export class Authorization {
   step: 1 | 2 = 1;
-  username = '';
   nickname = '';
+  username = '';
   email = '';
   password = '';
   confirm = '';
@@ -22,10 +22,12 @@ export class Authorization {
   error = '';
   loading = false;
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private api: ServiceGetData,
-    private cdr: ChangeDetectorRef,
-    private auth: AuthStateService) { }
+    private auth: AuthStateService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   onClose() {
     this.router.navigate(['/']);
@@ -34,14 +36,22 @@ export class Authorization {
   onSubmit() {
     this.error = '';
 
-    if (!this.username || !this.nickname || !this.email || !this.password) {
-      this.error = 'Заполните все поля'; return;
+    if (!this.nickname || !this.username || !this.email || !this.password || !this.confirm) {
+      this.error = 'Заполните все поля';
+      this.cdr.detectChanges();
+      return;
     }
-    if (this.password.length < 8) {
-      this.error = 'Пароль минимум 8 символов'; return;
-    }
+
     if (this.password !== this.confirm) {
-      this.error = 'Пароли не совпадают'; return;
+      this.error = 'Пароли не совпадают';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.password.length < 8) {
+      this.error = 'Пароль минимум 8 символов';
+      this.cdr.detectChanges();
+      return;
     }
 
     this.loading = true;
@@ -66,20 +76,23 @@ export class Authorization {
 
   onVerify() {
     this.error = '';
-    if (!this.code || this.code.length !== 6) {
-      this.error = 'Введите 6-значный код'; return;
+
+    if (!this.code) {
+      this.error = 'Введите код';
+      this.cdr.detectChanges();
+      return;
     }
 
     this.loading = true;
     this.api.verifyEmail({ email: this.email, code: this.code }).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         this.loading = false;
-        this.auth.setUser(res.user);
+        this.auth.setSession(res.user, res.access_token);
         this.router.navigate(['/']);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.error || 'Неверный код';
+        this.error = err.error?.error || 'Ошибка подтверждения';
         this.cdr.detectChanges();
       }
     });

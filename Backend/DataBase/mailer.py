@@ -1,12 +1,13 @@
+import os
 import smtplib
 import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-SMTP_HOST = 'smtp.gmail.com'
-SMTP_PORT = 465
-SMTP_USER = 'komachenok.vika@gmail.com'  
-SMTP_PASS = 'tawrtvpveaitfyuv' 
+SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
+SMTP_USER = os.getenv('SMTP_USER', '')
+SMTP_PASS = os.getenv('SMTP_PASS', '')
 
 def generate_code() -> str:
     return f"{random.randint(0, 999999):06d}"

@@ -199,7 +199,7 @@ export class ContentPage implements OnInit, OnDestroy {
 
     const key = this.buildKey(this.content.type, this.content.id);
 
-    this.contentService.getUserState(user.id).subscribe({
+    this.contentService.getUserState().subscribe({
       next: (state) => {
         this.isFavorite = state.favorites.includes(key);
         this.isLater = state.watch_later.includes(key);
@@ -283,7 +283,7 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleFavorite(user.id, key).subscribe({
+    this.contentService.toggleFavorite(key).subscribe({
       next: (res) => this.isFavorite = res.active,
       error: (err) => console.error(err)
     });
@@ -300,7 +300,7 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleWatchLater(user.id, key).subscribe({
+    this.contentService.toggleWatchLater(key).subscribe({
       next: (res) => this.isLater = res.active,
       error: (err) => console.error(err)
     });
@@ -319,7 +319,7 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleWatched(user.id, key).subscribe({
+    this.contentService.toggleWatched(key).subscribe({
       next: (res) => this.isWatched = res.active,
       error: (err) => console.error(err)
     });

@@ -41,7 +41,7 @@ export class Login {
     this.api.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         this.loading = false;
-        this.auth.setUser(res.user);
+        this.auth.setSession(res.user, res.access_token);
         this.router.navigate(['/']);
       },
       error: (err) => {

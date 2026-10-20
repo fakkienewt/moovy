@@ -16,22 +16,18 @@ export interface ProfileData {
   providedIn: 'root',
 })
 export class ServiceGetData {
-  private apiUrlMovies = 'http://127.0.0.1:5001/api/movies';
-  private apiUrlTVSeries = 'http://127.0.0.1:5001/api/tv-series';
-  private apiUrlAnime = 'http://127.0.0.1:5001/api/anime';
-  private apiUrlPlayer = 'http://127.0.0.1:5001/api/get-iframe';
   private apiUrlBase = 'http://127.0.0.1:5001/api';
 
   private movies$?: Observable<Content[]>;
   private tvSeries$?: Observable<Content[]>;
   private anime$?: Observable<Content[]>;
-  private profileCache = new Map<number, Observable<ProfileData>>();
+  private profileCache$?: Observable<ProfileData>;
 
   constructor(private http: HttpClient) { }
 
   getMovies(): Observable<Content[]> {
     if (!this.movies$) {
-      this.movies$ = this.http.get<Content[]>(this.apiUrlMovies).pipe(
+      this.movies$ = this.http.get<Content[]>(`${this.apiUrlBase}/movies`).pipe(
         map(items => items.map(item => ({ ...item, type: 'movie' as const }))),
         shareReplay(1)
       );
@@ -41,7 +37,7 @@ export class ServiceGetData {
 
   getTVSeries(): Observable<Content[]> {
     if (!this.tvSeries$) {
-      this.tvSeries$ = this.http.get<Content[]>(this.apiUrlTVSeries).pipe(
+      this.tvSeries$ = this.http.get<Content[]>(`${this.apiUrlBase}/tv-series`).pipe(
         map(items => items.map(item => ({ ...item, type: 'tv-series' as const }))),
         shareReplay(1)
       );
@@ -51,7 +47,7 @@ export class ServiceGetData {
 
   getAnime(): Observable<Content[]> {
     if (!this.anime$) {
-      this.anime$ = this.http.get<Content[]>(this.apiUrlAnime).pipe(
+      this.anime$ = this.http.get<Content[]>(`${this.apiUrlBase}/anime`).pipe(
         map(items => items.map(item => ({ ...item, type: 'anime' as const }))),
         shareReplay(1)
       );
@@ -59,76 +55,77 @@ export class ServiceGetData {
     return this.anime$;
   }
 
-  getProfileData(userId: number): Observable<ProfileData> {
-    if (!this.profileCache.has(userId)) {
-      this.profileCache.set(
-        userId,
-        this.http.get<ProfileData>(`${this.apiUrlBase}/profile/${userId}`).pipe(
-          shareReplay(1)
-        )
+  getProfileData(): Observable<ProfileData> {
+    if (!this.profileCache$) {
+      this.profileCache$ = this.http.get<ProfileData>(`${this.apiUrlBase}/profile`).pipe(
+        shareReplay(1)
       );
     }
-    return this.profileCache.get(userId)!;
+    return this.profileCache$;
   }
 
-  invalidateProfile(userId: number): void {
-    this.profileCache.delete(userId);
+  invalidateProfile(): void {
+    this.profileCache$ = undefined;
   }
 
   getPlayerLink(id: number, source: string = 'movies'): Observable<any> {
-    return this.http.get(`${this.apiUrlPlayer}/${id}?source=${source}`);
+    return this.http.get(`${this.apiUrlBase}/get-iframe/${id}?source=${source}`);
   }
 
   register(payload: { username: string; nickname: string; email: string; password: string }) {
-    return this.http.post<{ message: string }>('http://127.0.0.1:5001/api/register', payload);
+    return this.http.post<{ message: string }>(`${this.apiUrlBase}/register`, payload);
   }
 
   verifyEmail(payload: { email: string; code: string }) {
     return this.http.post<{
       message: string;
-      user: { id: number; nickname: string; username: string; email: string };
-    }>('http://127.0.0.1:5001/api/verify', payload);
+      access_token: string;
+      user: { id: number; nickname: string; username: string; email: string; created_at?: string };
+    }>(`${this.apiUrlBase}/verify`, payload);
   }
 
   login(payload: { email: string; password: string }) {
     return this.http.post<{
       message: string;
-      user: { id: number; nickname: string; username: string; email: string };
-    }>('http://127.0.0.1:5001/api/login', payload);
+      access_token: string;
+      user: { id: number; nickname: string; username: string; email: string; created_at?: string };
+    }>(`${this.apiUrlBase}/login`, payload);
   }
 
-  toggleFavorite(userId: number, key: string) {
-    this.invalidateProfile(userId);
+  me() {
+    return this.http.get<{ user: any }>(`${this.apiUrlBase}/me`);
+  }
+
+  toggleFavorite(key: string) {
+    this.invalidateProfile();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/favorites/toggle`, { user_id: userId, key }
+      `${this.apiUrlBase}/favorites/toggle`, { key }
     );
   }
 
-  toggleWatchLater(userId: number, key: string) {
-    this.invalidateProfile(userId);
+  toggleWatchLater(key: string) {
+    this.invalidateProfile();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/watch-later/toggle`, { user_id: userId, key }
+      `${this.apiUrlBase}/watch-later/toggle`, { key }
     );
   }
 
-  toggleWatched(userId: number, key: string) {
-    this.invalidateProfile(userId);
+  toggleWatched(key: string) {
+    this.invalidateProfile();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/watched/toggle`, { user_id: userId, key }
+      `${this.apiUrlBase}/watched/toggle`, { key }
     );
   }
 
-  getUserState(userId: number) {
+  getUserState() {
     return this.http.get<{
       favorites: string[];
       watch_later: string[];
       watched: string[];
-    }>(`${this.apiUrlBase}/user-state/${userId}`);
+    }>(`${this.apiUrlBase}/user-state`);
   }
 
-  deleteAccount(userId: number) {
-    return this.http.delete<{ message: string }>(
-      `${this.apiUrlBase}/delete-account/${userId}`
-    );
+  deleteAccount() {
+    return this.http.delete<{ message: string }>(`${this.apiUrlBase}/delete-account`);
   }
 }
