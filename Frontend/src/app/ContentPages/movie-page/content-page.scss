@@ -500,3 +500,287 @@
   color: #5a7d9a;
   line-height: 1.5;
 }
+
+@media (max-width: 768px) {
+  :host {
+    margin: 10px 0;
+  }
+
+  .skeleton-card-wrapper,
+  .content-main-card {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    border-radius: 20px;
+    border-width: 2px;
+  }
+
+  .poster-wrapper,
+  .skeleton-poster-area {
+    width: 100%;
+    max-width: 160px;
+    margin: 0 auto;
+    aspect-ratio: 2/3;
+    border-width: 2px;
+    border-radius: 16px;
+  }
+
+  .rating-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    top: 6px;
+    right: 6px;
+    border-radius: 12px;
+  }
+
+  .watched-badge {
+    width: 24px;
+    height: 24px;
+    top: 6px;
+    left: 6px;
+    border-radius: 8px;
+  }
+
+  .watched-badge img {
+    width: 14px;
+    height: 14px;
+  }
+
+  .content-right-side {
+    gap: 12px;
+  }
+
+  .content-title {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .skeleton-info-area {
+    gap: 12px;
+  }
+
+  .info-grid,
+  .skeleton-grid {
+    gap: 8px;
+  }
+
+  .info-block,
+  .skeleton-block {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .skeleton-block {
+    height: 50px;
+  }
+
+  .label {
+    font-size: 9px;
+  }
+
+  .value {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .action-buttons-row {
+    gap: 8px;
+  }
+
+  .btn-action,
+  .skeleton-btn {
+    padding: 8px;
+    font-size: 12px;
+    border-radius: 10px;
+    gap: 5px;
+  }
+
+  .btn-action img {
+    width: 14px;
+    height: 14px;
+  }
+
+  .description-full-width {
+    padding: 12px 16px;
+    border-radius: 14px;
+    border-left-width: 3px;
+    margin-top: 0;
+  }
+
+  .description-full-width .section-title {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .desc-text {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .player-placeholder-block {
+    padding: 12px;
+    border-width: 2px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .player-screen-empty {
+    height: 200px;
+    border-width: 1.5px;
+    border-radius: 12px;
+  }
+
+  .empty-message {
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .empty-message img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .content-player-iframe {
+    height: 200px;
+    border-radius: 12px;
+  }
+
+  .skeleton-player-area {
+    height: 224px;
+    padding: 12px;
+    border-width: 2px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .skeleton-player-area::after {
+    inset: 12px;
+    border-radius: 12px;
+    border-width: 1.5px;
+  }
+
+  .similar-section {
+    padding: 15px;
+    border-width: 2px;
+    border-radius: 16px;
+    margin-top: 0;
+  }
+
+  .similar-title {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 12px;
+    padding-left: 0;
+  }
+
+  .basic-main-content {
+    gap: 8px;
+  }
+
+  .basic-main-poster-card {
+    padding: 6px;
+    border-radius: 12px;
+    border-width: 1.5px;
+  }
+
+  .basic-main-poster {
+    margin-bottom: 6px;
+    border-radius: 8px;
+    border-width: 1px;
+  }
+
+  .basic-main-title {
+    font-size: 10px;
+    height: 26px;
+    margin-bottom: 2px;
+  }
+
+  .basic-main-year {
+    font-size: 9px;
+  }
+
+  .comments-section {
+    padding: 16px;
+    border-width: 2px;
+    border-radius: 20px;
+    margin-top: 0;
+    scroll-margin-top: 20px;
+  }
+
+  .comments-section .section-title {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .comment-form {
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .comment-input {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+    scroll-margin-top: 20px;
+  }
+
+  .btn-comment {
+    width: max-content;
+    padding: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .comments-empty {
+    padding: 20px 10px;
+    gap: 6px;
+  }
+
+  .comments-empty-title {
+    font-size: 14px;
+  }
+
+  .comments-empty-sub {
+    font-size: 12px;
+  }
+
+  .auth-notice-stack {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    gap: 8px;
+  }
+
+  .auth-notice {
+    width: 100%;
+    padding: 12px;
+    border-width: 2px;
+    border-radius: 14px;
+  }
+
+  .auth-notice-header {
+    margin-bottom: 6px;
+  }
+
+  .auth-notice-title {
+    font-size: 13px;
+  }
+
+  .auth-notice-close {
+    font-size: 14px;
+    padding: 2px;
+  }
+
+  .auth-notice-text {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .skeleton-title-line {
+    height: 24px;
+  }
+}

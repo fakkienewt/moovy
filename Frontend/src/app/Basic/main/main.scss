@@ -381,29 +381,6 @@
     transform: translateY(-2px);
 }
 
-@media (max-width: 900px) {
-    .nav-container {
-        padding: 18px 20px;
-        border-radius: 20px;
-        margin: 16px 0;
-    }
-
-    .nav-tab {
-        padding: 9px 18px;
-        font-size: 14px;
-    }
-
-    .content-container {
-        padding: 20px;
-        border-radius: 20px;
-    }
-
-    .grid-layout {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 18px;
-    }
-}
-
 @media (max-width: 600px) {
     .nav-container {
         padding: 12px;
@@ -412,15 +389,11 @@
     }
 
     .nav-section {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
         padding: 0;
     }
 
     .nav-tabs {
         gap: 6px;
-        flex-wrap: wrap;
     }
 
     .nav-tab {
@@ -446,12 +419,6 @@
     }
 
     .filter-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-
-    .filter-grid.input-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 6px;
     }
 
@@ -463,7 +430,6 @@
     }
 
     .filter-buttons {
-        justify-content: flex-end;
         gap: 6px;
     }
 
@@ -486,8 +452,6 @@
     }
 
     .sort-bar {
-        justify-content: flex-end;
-        padding-right: 5px;
         gap: 6px;
     }
 
@@ -507,40 +471,62 @@
     }
 
     .grid-layout {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-        padding: 4px 2px;
-        min-height: 200px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 0;
+        width: 100%;
     }
 
     .card {
-        padding: 8px;
-        border-radius: 14px;
+        padding: 4px;
+        border-radius: 10px;
+        border-width: 1.5px;
+        width: 100%;
     }
 
     .card-info {
-        margin-top: 8px;
-        min-height: 36px;
+        margin-top: 4px;
+        min-height: auto;
+        padding: 0 2px;
     }
 
     .card-title {
-        font-size: 11px;
+        font-size: 9px;
+        margin-bottom: 2px;
+        white-space: normal;
+        word-break: break-word;
     }
 
     .card-year {
-        font-size: 10px;
+        font-size: 8px;
     }
 
     .card-poster {
-        border-radius: 11px;
-        margin-bottom: 6px;
+        border-radius: 6px;
+        border-width: 1px;
+        margin-bottom: 4px;
     }
 
     .rating-badge {
-        font-size: 9px;
-        padding: 2px 5px;
-        top: 5px;
-        right: 5px;
+        font-size: 8px;
+        padding: 1px 4px;
+        top: 4px;
+        right: 4px;
+        border-radius: 4px;
+    }
+
+    .skeleton-img {
+        border-radius: 6px;
+    }
+
+    .skeleton-line.title {
+        height: 10px;
+        margin-bottom: 4px;
+    }
+
+    .skeleton-line.year {
+        width: 60%;
+        height: 8px;
     }
 
     .empty-state {
