@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthStateService, CurrentUser } from '../../Services/auth-state-service';
 import { ServiceGetData } from '../../Services/service-get-data';
@@ -28,18 +29,25 @@ type ListTab = 'watched' | 'favorites' | 'watch_later';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
   user: CurrentUser | null = null;
-  activeTab: Tab = 'watched';
+  activeTab: Tab = 'watch_later';
   currentList: ListItem[] = [];
   userComments: UserComment[] = [];
 
   isLoading = true;
   modalState: 'none' | 'logout' | 'delete' = 'none';
+  isSettingsOpen = false;
+
+  isEditing = false;
+  editField: 'nickname' | 'username' | null = null;
+  editDraft = '';
+  editError = '';
+  isSaving = false;
 
   currentPage = 1;
   itemsPerPage = 8;
@@ -95,6 +103,10 @@ export class Profile implements OnInit {
       this.currentPage = saved.currentPage;
     }
 
+    this.auth.user$.subscribe(u => {
+      this.user = u;
+    });
+
     this.api.getProfileData().subscribe({
       next: (data) => {
         this.allContent = data.content || [];
@@ -105,6 +117,95 @@ export class Profile implements OnInit {
       error: (e) => {
         console.error(e);
         this.isLoading = false;
+      }
+    });
+  }
+
+  openSettings(): void {
+    this.isSettingsOpen = true;
+    this.cancelEdit();
+  }
+
+  closeSettings(): void {
+    this.isSettingsOpen = false;
+    this.cancelEdit();
+  }
+
+  triggerAvatarUpload(): void {
+    const fileInput = document.getElementById('avatar-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      console.log('Выбран файл:', input.files[0].name);
+    }
+  }
+
+  startEdit(field: 'nickname' | 'username'): void {
+    if (!this.user) {
+      return;
+    }
+    this.editField = field;
+    this.editDraft = field === 'nickname' ? this.user.nickname : this.user.username;
+    this.editError = '';
+    this.isEditing = true;
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.editField = null;
+    this.editError = '';
+    this.isSaving = false;
+  }
+
+  saveEdit(): void {
+    if (!this.user || !this.editField || this.isSaving) {
+      return;
+    }
+
+    const value = (this.editDraft || '').trim();
+
+    if (this.editField === 'nickname') {
+      if (value.length < 2 || value.length > 100) {
+        this.editError = 'Ник должен быть от 2 до 100 символов';
+        return;
+      }
+      if (value === this.user.nickname) return this.cancelEdit();
+    } else {
+      if (value.length < 3 || value.length > 50) {
+        this.editError = 'Username должен быть от 3 до 50 символов';
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+        this.editError = 'Только латиница, цифры и _';
+        return;
+      }
+      if (value === this.user.username) {
+        return this.cancelEdit();
+      }
+    }
+
+    this.isSaving = true;
+    this.editError = '';
+
+    const req$ = this.editField === 'nickname'
+      ? this.api.updateNickname(value)
+      : this.api.updateUsername(value);
+
+    req$.subscribe({
+      next: (res) => {
+        this.auth.setUser(res.user as CurrentUser);
+        this.isSaving = false;
+        this.isEditing = false;
+        this.editField = null;
+      },
+      error: (e) => {
+        this.isSaving = false;
+        this.editError = e?.error?.error || 'Не удалось сохранить';
       }
     });
   }
@@ -141,6 +242,7 @@ export class Profile implements OnInit {
 
   openModal(state: 'logout' | 'delete'): void {
     this.modalState = state;
+    this.closeSettings();
   }
 
   closeModal(): void {
@@ -184,9 +286,11 @@ export class Profile implements OnInit {
         const id = +idStr;
         const type = typeKey === 'movies' ? 'movie' : typeKey;
         const found = this.allContent.find(c => c.id === id && c.type === type);
+
         if (!found) {
           return null;
         }
+
         return {
           key,
           id: found.id,

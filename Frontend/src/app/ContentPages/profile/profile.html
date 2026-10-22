@@ -3,14 +3,13 @@
         <header class="profile-top">
             <div class="profile-user">
                 <div class="side-avatar">{{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}</div>
-                <div>
+                <div class="profile-name-block">
                     <div class="side-nickname">{{ user?.nickname }}</div>
                     <div class="side-username">&#64;{{ user?.username }}</div>
                 </div>
             </div>
             <div class="profile-actions">
-                <button class="btn-logout" (click)="openModal('logout')">Выйти</button>
-                <button class="btn-delete" (click)="openModal('delete')">Удалить</button>
+                <button class="btn-settings" (click)="openSettings()">Настройки</button>
             </div>
         </header>
         <nav class="profile-tabs">
@@ -29,7 +28,6 @@
                     <span class="shelf-count">{{ fullList.length }}</span>
                     }
                 </header>
-
                 @if (activeTab === 'comments') {
                 @if (userComments.length === 0) {
                 <div class="shelf-empty">
@@ -86,6 +84,77 @@
             </div>
         </main>
     </div>
+    @if (isSettingsOpen) {
+    <div class="modal-overlay" (click)="closeSettings()">
+        <div class="modal-content settings-modal" (click)="$event.stopPropagation()">
+            <div class="settings-header">
+                <h3 class="modal-title">Настройки</h3>
+                <button class="btn-close-icon" (click)="closeSettings()">✕</button>
+            </div>
+            <div class="settings-avatar-section">
+                <div class="settings-avatar-wrapper" (click)="triggerAvatarUpload()" title="Сменить аватарку">
+                    <div class="side-avatar settings-big-avatar">{{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
+                    </div>
+                </div>
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;"
+                    (change)="onAvatarSelected($event)">
+            </div>
+            <div class="settings-list">
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <span class="settings-label">Никнейм</span>
+                        @if (!isEditing || editField !== 'nickname') {
+                        <span class="settings-value">{{ user?.nickname }}</span>
+                        }
+                    </div>
+                    @if (!isEditing || editField !== 'nickname') {
+                    <button class="btn-edit-nick" (click)="startEdit('nickname')">✎</button>
+                    }
+                    @if (isEditing && editField === 'nickname') {
+                    <div class="settings-edit-group">
+                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="100"
+                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
+                            autofocus>
+                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
+                            'OK' }}</button>
+                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                    </div>
+                    }
+                </div>
+                @if (isEditing && editField === 'nickname' && editError) {
+                <div class="nickname-error">{{ editError }}</div>
+                }
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <span class="settings-label">Username</span>
+                        @if (!isEditing || editField !== 'username') {
+                        <span class="settings-value">&#64;{{ user?.username }}</span>
+                        }
+                    </div>
+                    @if (!isEditing || editField !== 'username') {
+                    <button class="btn-edit-nick" (click)="startEdit('username')">✎</button>
+                    }
+                    @if (isEditing && editField === 'username') {
+                    <div class="settings-edit-group">
+                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="50"
+                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
+                            autofocus>
+                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
+                            'OK' }}</button>
+                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                    </div>
+                    }
+                </div>
+                @if (isEditing && editField === 'username' && editError) {
+                <div class="nickname-error">{{ editError }}</div>
+                }
+                <div class="settings-divider"></div>
+                <button class="btn-settings-action logout" (click)="openModal('logout')">Выйти из аккаунта</button>
+                <button class="btn-settings-action delete" (click)="openModal('delete')">Удалить аккаунт</button>
+            </div>
+        </div>
+    </div>
+    }
     @if (modalState !== 'none') {
     <div class="modal-overlay" (click)="closeModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">

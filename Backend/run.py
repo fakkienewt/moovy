@@ -446,6 +446,62 @@ def delete_account():
     return jsonify({'message': 'Аккаунт удалён'}), 200
 
 
+@app.route('/api/profile/nickname', methods=['PATCH'])
+@jwt_required()
+@limiter.limit('20 per minute')
+def update_nickname():
+    uid = _current_user_id()
+    user = db.session.get(Users, uid) if uid else None
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    data = request.get_json() or {}
+    nickname = (data.get('nickname') or '').strip()
+
+    if not nickname:
+        return jsonify({'error': 'Ник не может быть пустым'}), 400
+    if len(nickname) > 100:
+        return jsonify({'error': 'Ник слишком длинный (макс. 100)'}), 400
+    if len(nickname) < 2:
+        return jsonify({'error': 'Ник слишком короткий (мин. 2)'}), 400
+
+    user.nickname = nickname
+    db.session.commit()
+
+    return jsonify({'message': 'Ник обновлён', 'user': user.to_dict()}), 200
+
+
+@app.route('/api/profile/username', methods=['PATCH'])
+@jwt_required()
+@limiter.limit('10 per minute')
+def update_username():
+    uid = _current_user_id()
+    user = db.session.get(Users, uid) if uid else None
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    data = request.get_json() or {}
+    username = (data.get('username') or '').strip()
+
+    if not username:
+        return jsonify({'error': 'Username не может быть пустым'}), 400
+    if len(username) < 3:
+        return jsonify({'error': 'Username слишком короткий (мин. 3)'}), 400
+    if len(username) > 50:
+        return jsonify({'error': 'Username слишком длинный (макс. 50)'}), 400
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        return jsonify({'error': 'Username может содержать только буквы, цифры и _'}), 400
+
+    if username != user.username:
+        if Users.query.filter_by(username=username).first():
+            return jsonify({'error': 'Этот username уже занят'}), 409
+
+    user.username = username
+    db.session.commit()
+
+    return jsonify({'message': 'Username обновлён', 'user': user.to_dict()}), 200
+
+
 @jwt.unauthorized_loader
 def missing_token(reason):
     return jsonify({'error': 'Требуется авторизация', 'reason': reason}), 401

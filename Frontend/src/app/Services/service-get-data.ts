@@ -128,4 +128,18 @@ export class ServiceGetData {
   deleteAccount() {
     return this.http.delete<{ message: string }>(`${this.apiUrlBase}/delete-account`);
   }
+
+  updateNickname(nickname: string) {
+    return this.http.patch<{
+      message: string;
+      user: { id: number; nickname: string; username: string; email: string; created_at?: string };
+    }>(`${this.apiUrlBase}/profile/nickname`, { nickname });
+  }
+
+  updateUsername(username: string) {
+    return this.http.patch<{
+      message: string;
+      user: { id: number; nickname: string; username: string; email: string; created_at?: string };
+    }>(`${this.apiUrlBase}/profile/username`, { username });
+  }
 }
