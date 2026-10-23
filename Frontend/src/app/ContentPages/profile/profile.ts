@@ -49,6 +49,12 @@ export class Profile implements OnInit {
   editError = '';
   isSaving = false;
 
+  isChangingPassword = false;
+  oldPassword = '';
+  newPassword = '';
+  passwordError = '';
+  isSavingPassword = false;
+
   currentPage = 1;
   itemsPerPage = 8;
   totalPages = 1;
@@ -124,11 +130,13 @@ export class Profile implements OnInit {
   openSettings(): void {
     this.isSettingsOpen = true;
     this.cancelEdit();
+    this.cancelPasswordChange();
   }
 
   closeSettings(): void {
     this.isSettingsOpen = false;
     this.cancelEdit();
+    this.cancelPasswordChange();
   }
 
   triggerAvatarUpload(): void {
@@ -146,9 +154,12 @@ export class Profile implements OnInit {
   }
 
   startEdit(field: 'nickname' | 'username'): void {
+
     if (!this.user) {
       return;
     }
+
+    this.cancelPasswordChange();
     this.editField = field;
     this.editDraft = field === 'nickname' ? this.user.nickname : this.user.username;
     this.editError = '';
@@ -210,9 +221,50 @@ export class Profile implements OnInit {
     });
   }
 
+  startPasswordChange(): void {
+    this.cancelEdit();
+    this.isChangingPassword = true;
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.passwordError = '';
+  }
+
+  cancelPasswordChange(): void {
+    this.isChangingPassword = false;
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.passwordError = '';
+    this.isSavingPassword = false;
+  }
+
+  savePassword(): void {
+    if (!this.oldPassword || !this.newPassword || this.isSavingPassword) {
+      return;
+    }
+
+    if (this.newPassword.length < 8) {
+      this.passwordError = 'Новый пароль должен быть минимум 8 символов';
+      return;
+    }
+
+    this.isSavingPassword = true;
+    this.passwordError = '';
+
+    this.api.updatePassword({ old_password: this.oldPassword, new_password: this.newPassword }).subscribe({
+      next: () => {
+        this.closeSettings();
+      },
+      error: (e) => {
+        this.isSavingPassword = false;
+        this.passwordError = e?.error?.error || 'Не удалось изменить пароль';
+      }
+    });
+  }
+
   setTab(tab: Tab): void {
     this.activeTab = tab;
     this.currentPage = 1;
+
     if (tab !== 'comments') {
       this.refreshList();
     }

@@ -52,7 +52,6 @@
     font-size: 28px;
     font-weight: 700;
     box-shadow: 0 6px 20px rgba(135, 206, 235, .4);
-    flex-shrink: 0;
 }
 
 .side-nickname {
@@ -187,7 +186,6 @@
     gap: 25px;
     padding: 10px 5px;
     min-height: 400px;
-    align-content: start;
 }
 
 .card {
@@ -259,7 +257,6 @@
 .card-poster img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
 }
 
 .skeleton-img,
@@ -456,10 +453,6 @@
     transition: opacity .2s;
 }
 
-.settings-avatar-wrapper:hover {
-    opacity: 0.8;
-}
-
 .settings-big-avatar {
     width: 120px;
     height: 120px;
@@ -494,7 +487,6 @@
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.5px;
-    text-transform: uppercase;
 }
 
 .settings-value {
@@ -522,6 +514,11 @@
     font-weight: 700;
     font-family: cursive;
     transition: border-color .2s;
+}
+
+.nickname-input::placeholder {
+    color: #87ceeb;
+    font-weight: 700;
 }
 
 .nickname-input:focus {
@@ -607,4 +604,20 @@
 
 .btn-settings-action.delete:hover {
     background: #ffebee;
+}
+
+.settings-password-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f8fbff;
+    border: 1px solid #e6f2ff;
+    border-radius: 12px;
+}
+
+.password-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
 }

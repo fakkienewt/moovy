@@ -470,6 +470,33 @@ def update_nickname():
 
     return jsonify({'message': 'Ник обновлён', 'user': user.to_dict()}), 200
 
+@app.route('/api/profile/password', methods=['PATCH'])
+@jwt_required()
+@limiter.limit('5 per minute')
+def update_password():
+    uid = _current_user_id()
+    user = db.session.get(Users, uid) if uid else None
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    data = request.get_json() or {}
+    old_password = data.get('old_password') or ''
+    new_password = data.get('new_password') or ''
+
+    if not old_password or not new_password:
+        return jsonify({'error': 'Заполните оба поля'}), 400
+
+    if not check_password_hash(user.password_hash, old_password):
+        return jsonify({'error': 'Неверный старый пароль'}), 400
+
+    if len(new_password) < 8:
+        return jsonify({'error': 'Новый пароль должен быть минимум 8 символов'}), 400
+
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+
+    return jsonify({'message': 'Пароль успешно изменён'}), 200
+
 
 @app.route('/api/profile/username', methods=['PATCH'])
 @jwt_required()

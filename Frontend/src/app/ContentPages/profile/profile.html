@@ -93,60 +93,74 @@
             </div>
             <div class="settings-avatar-section">
                 <div class="settings-avatar-wrapper" (click)="triggerAvatarUpload()" title="Сменить аватарку">
-                    <div class="side-avatar settings-big-avatar">{{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
-                    </div>
+                    <div class="side-avatar settings-big-avatar">{{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}</div>
                 </div>
-                <input type="file" id="avatar-upload" accept="image/*" style="display: none;"
-                    (change)="onAvatarSelected($event)">
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;" (change)="onAvatarSelected($event)">
             </div>
             <div class="settings-list">
                 <div class="settings-item">
                     <div class="settings-info">
-                        <span class="settings-label">Никнейм</span>
+                        <span class="settings-label">НИКНЕЙМ</span>
                         @if (!isEditing || editField !== 'nickname') {
-                        <span class="settings-value">{{ user?.nickname }}</span>
+                            <span class="settings-value">{{ user?.nickname }}</span>
                         }
                     </div>
                     @if (!isEditing || editField !== 'nickname') {
-                    <button class="btn-edit-nick" (click)="startEdit('nickname')">✎</button>
+                        <button class="btn-edit-nick" (click)="startEdit('nickname')">✎</button>
                     }
                     @if (isEditing && editField === 'nickname') {
-                    <div class="settings-edit-group">
-                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="100"
-                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
-                            autofocus>
-                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
-                            'OK' }}</button>
-                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
-                    </div>
+                        <div class="settings-edit-group">
+                            <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="100" [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()" autofocus>
+                            <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' : 'OK' }}</button>
+                            <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                        </div>
                     }
                 </div>
                 @if (isEditing && editField === 'nickname' && editError) {
-                <div class="nickname-error">{{ editError }}</div>
+                    <div class="nickname-error">{{ editError }}</div>
                 }
                 <div class="settings-item">
                     <div class="settings-info">
-                        <span class="settings-label">Username</span>
+                        <span class="settings-label">USERNAME</span>
                         @if (!isEditing || editField !== 'username') {
-                        <span class="settings-value">&#64;{{ user?.username }}</span>
+                            <span class="settings-value">&#64;{{ user?.username }}</span>
                         }
                     </div>
                     @if (!isEditing || editField !== 'username') {
-                    <button class="btn-edit-nick" (click)="startEdit('username')">✎</button>
+                        <button class="btn-edit-nick" (click)="startEdit('username')">✎</button>
                     }
                     @if (isEditing && editField === 'username') {
-                    <div class="settings-edit-group">
-                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="50"
-                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
-                            autofocus>
-                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
-                            'OK' }}</button>
-                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
-                    </div>
+                        <div class="settings-edit-group">
+                            <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="50" [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()" autofocus>
+                            <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' : 'OK' }}</button>
+                            <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                        </div>
                     }
                 </div>
                 @if (isEditing && editField === 'username' && editError) {
-                <div class="nickname-error">{{ editError }}</div>
+                    <div class="nickname-error">{{ editError }}</div>
+                }
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <span class="settings-label">ПАРОЛЬ</span>
+                        @if (!isChangingPassword) {
+                            <span class="settings-value">••••••••</span>
+                        }
+                    </div>
+                    @if (!isChangingPassword) {
+                        <button class="btn-edit-nick" (click)="startPasswordChange()">✎</button>
+                    }
+                </div>
+                @if (isChangingPassword) {
+                    <div class="settings-password-group">
+                        <input class="nickname-input" type="password" placeholder="Старый пароль" [(ngModel)]="oldPassword" [disabled]="isSavingPassword">
+                        <input class="nickname-input" type="password" placeholder="Новый пароль" [(ngModel)]="newPassword" [disabled]="isSavingPassword">
+                        <div class="password-actions">
+                            <button class="btn-nick-save" [disabled]="isSavingPassword" (click)="savePassword()">{{ isSavingPassword ? '...' : 'Сохранить' }}</button>
+                            <button class="btn-nick-cancel" [disabled]="isSavingPassword" (click)="cancelPasswordChange()">Отмена</button>
+                        </div>
+                        @if (passwordError) { <div class="nickname-error">{{ passwordError }}</div> }
+                    </div>
                 }
                 <div class="settings-divider"></div>
                 <button class="btn-settings-action logout" (click)="openModal('logout')">Выйти из аккаунта</button>
@@ -160,8 +174,7 @@
         <div class="modal-content" (click)="$event.stopPropagation()">
             <h3 class="modal-title">{{ modalState === 'logout' ? 'Выход из аккаунта' : 'Удаление аккаунта' }}</h3>
             <p class="modal-text">
-                {{ modalState === 'logout' ? 'Вы уверены, что хотите выйти?' : 'Вы уверены, что хотите удалить аккаунт?
-                Это действие необратимо.' }}
+                {{ modalState === 'logout' ? 'Вы уверены, что хотите выйти?' : 'Вы уверены, что хотите удалить аккаунт? Это действие необратимо.' }}
             </p>
             <div class="modal-actions">
                 <button class="btn-cancel" (click)="closeModal()">Отмена</button>

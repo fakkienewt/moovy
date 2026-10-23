@@ -142,4 +142,8 @@ export class ServiceGetData {
       user: { id: number; nickname: string; username: string; email: string; created_at?: string };
     }>(`${this.apiUrlBase}/profile/username`, { username });
   }
+
+  updatePassword(payload: { old_password: string; new_password: string }) {
+    return this.http.patch<{ message: string }>(`${this.apiUrlBase}/profile/password`, payload);
+  }
 }
