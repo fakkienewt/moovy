@@ -100,7 +100,7 @@ export class Main implements OnInit {
       next: (data) => {
         const isValid = (i: any) => i.name && typeof i.name === 'string' && i.name.trim().length > 3 &&
           i.poster && typeof i.poster === 'string' && i.poster.trim().length > 10 &&
-          !i.poster.includes('base64') && !i.poster.includes('poster_none');
+          !i.poster.includes('poster_none');
 
         this.allMovies = (data.movies || []).filter(isValid);
         this.allSeries = (data.series || []).filter(isValid);
@@ -116,6 +116,10 @@ export class Main implements OnInit {
         }
 
         this.isLoading = false;
+
+        setTimeout(() => {
+          this.paginatedList = [...this.paginatedList];
+        }, 0);
       },
       error: (err) => {
         console.error(err);
@@ -263,7 +267,9 @@ export class Main implements OnInit {
 
     const available = new Set<string>();
     this.getSourceList().forEach(i => {
-      if (i.actors) i.actors.split(',').forEach(a => { const t = a.trim(); if (t) available.add(t); });
+      if (i.actors) {
+        i.actors.split(',').forEach(a => { const t = a.trim(); if (t) available.add(t); });
+      }
     });
 
     this.filteredActorSuggestions = Array.from(available)
@@ -385,6 +391,10 @@ export class Main implements OnInit {
       case 'movie': src = this.allMovies; break;
       case 'tvSeries': src = this.allSeries; break;
       case 'anime': src = this.allAnime; break;
+      default:
+        this.activeTab = 'movie';
+        src = this.allMovies;
+        break;
     }
 
     this.totalPages = Math.max(1, Math.ceil(src.length / this.itemsPerPage));

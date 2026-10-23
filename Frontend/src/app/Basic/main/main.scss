@@ -215,16 +215,6 @@
     font-weight: 700;
 }
 
-.empty-state.empty-clean {
-    background: rgba(255, 255, 255, .6);
-    border-radius: 20px;
-    border: 2px solid #b3e0ff;
-}
-
-.empty-state.empty-clean span {
-    font-size: 16px;
-}
-
 .card {
     display: flex;
     flex-direction: column;
@@ -532,10 +522,6 @@
     .empty-state {
         padding: 50px 16px;
         font-size: 14px;
-    }
-
-    .empty-state.empty-clean span {
-        font-size: 12px;
     }
 
     .pagination {

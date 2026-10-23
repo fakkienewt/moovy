@@ -61,15 +61,15 @@
                         }
                     </div>
                     <div class="action-buttons-row">
-                        <button type="button" class="btn-action" (click)="toggleFavorite()">
-                            <img
-                                [src]="isFavorite ? '/SVG/content-page-button-favorite1.svg' : '/SVG/content-page-button-favorite2.svg'">
-                            В избранное
-                        </button>
                         <button type="button" class="btn-action" (click)="toggleLater()">
                             <img
                                 [src]="isLater ? '/SVG/content-page-button-time-full.svg' : '/SVG/content-page-button-time.svg'">
                             Смотреть позже
+                        </button>
+                        <button type="button" class="btn-action" (click)="toggleWatchingNow()">
+                            <img
+                                [src]="isWatchingNow ? '/SVG/content-page-button-favorite1.svg' : '/SVG/content-page-button-favorite2.svg'">
+                            Смотрю сейчас
                         </button>
                     </div>
                 </div>

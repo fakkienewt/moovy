@@ -1,12 +1,9 @@
 import sys
 import os
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from dotenv import load_dotenv
 load_dotenv()
-
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -97,7 +94,6 @@ def _resolve_keys(keys):
         for r in rows:
             result.append(_content_to_dict(r, type_name))
     return result
-
 
 def _current_user_id():
     ident = get_jwt_identity()
@@ -357,16 +353,16 @@ def get_profile_data():
     if not user:
         return jsonify({'error': 'Пользователь не найден'}), 404
 
-    fav = _split(user.favorites)
+    wn = _split(user.watching_now)
     wl = _split(user.watch_later)
     watch = _split(user.watched)
-    all_keys = list({*fav, *wl, *watch})
+    all_keys = list({*wn, *wl, *watch})
     content = _resolve_keys(all_keys)
 
     return jsonify({
         'content': content,
         'state': {
-            'favorites': fav,
+            'watching_now': wn,
             'watch_later': wl,
             'watched': watch,
         }
@@ -382,7 +378,7 @@ def get_user_state():
         return jsonify({'error': 'Пользователь не найден'}), 404
 
     return jsonify({
-        'favorites': _split(user.favorites),
+        'watching_now': _split(user.watching_now),
         'watch_later': _split(user.watch_later),
         'watched': _split(user.watched),
     }), 200
@@ -412,16 +408,16 @@ def _toggle_field(field: str, key: str):
     return jsonify({'active': active, 'items': items}), 200
 
 
-@app.route('/api/favorites/toggle', methods=['POST'])
+@app.route('/api/watch-now/toggle', methods=['POST'])
 @jwt_required()
-def toggle_favorite():
+def toggle_watch_now():
     data = request.get_json() or {}
-    return _toggle_field('favorites', data.get('key'))
+    return _toggle_field('watching_now', data.get('key'))
 
 
 @app.route('/api/watch-later/toggle', methods=['POST'])
 @jwt_required()
-def toggle_later():
+def toggle_watch_later():
     data = request.get_json() or {}
     return _toggle_field('watch_later', data.get('key'))
 
@@ -470,6 +466,7 @@ def update_nickname():
 
     return jsonify({'message': 'Ник обновлён', 'user': user.to_dict()}), 200
 
+
 @app.route('/api/profile/password', methods=['PATCH'])
 @jwt_required()
 @limiter.limit('5 per minute')
@@ -496,6 +493,42 @@ def update_password():
     db.session.commit()
 
     return jsonify({'message': 'Пароль успешно изменён'}), 200
+
+
+@app.route('/api/profile/avatar', methods=['POST'])
+@jwt_required()
+def upload_avatar():
+    uid = _current_user_id()
+    user = db.session.get(Users, uid) if uid else None
+    if not user:
+        return jsonify({'error': 'Пользователь не найден'}), 404
+
+    if 'avatar' not in request.files:
+        return jsonify({'error': 'Файл не найден'}), 400
+
+    file = request.files['avatar']
+    if file.filename == '':
+        return jsonify({'error': 'Файл не выбран'}), 400
+
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        return jsonify({'error': 'Неверный формат файла'}), 400
+
+    user.avatar = file.read()
+    db.session.commit()
+
+    return jsonify({'message': 'Аватар обновлён', 'user': user.to_dict()}), 200
+
+
+@app.route('/api/profile/avatar/<int:user_id>', methods=['GET'])
+def get_avatar(user_id):
+    user = db.session.get(Users, user_id)
+    if not user or not user.avatar:
+        return jsonify({'error': 'Аватар не найден'}), 404
+    
+    return Response(user.avatar, mimetype='image/jpeg')
 
 
 @app.route('/api/profile/username', methods=['PATCH'])

@@ -6,7 +6,7 @@ import { Content } from '../Models/ContentModel';
 export interface ProfileData {
   content: Content[];
   state: {
-    favorites: string[];
+    watching_now: string[];
     watch_later: string[];
     watched: string[];
   };
@@ -17,42 +17,26 @@ export interface ProfileData {
 })
 export class ServiceGetData {
   private apiUrlBase = 'http://127.0.0.1:5001/api';
-
-  private movies$?: Observable<Content[]>;
-  private tvSeries$?: Observable<Content[]>;
-  private anime$?: Observable<Content[]>;
   private profileCache$?: Observable<ProfileData>;
 
   constructor(private http: HttpClient) { }
 
   getMovies(): Observable<Content[]> {
-    if (!this.movies$) {
-      this.movies$ = this.http.get<Content[]>(`${this.apiUrlBase}/movies`).pipe(
-        map(items => items.map(item => ({ ...item, type: 'movie' as const }))),
-        shareReplay(1)
-      );
-    }
-    return this.movies$;
+    return this.http.get<Content[]>(`${this.apiUrlBase}/movies`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'movie' as const })))
+    );
   }
 
   getTVSeries(): Observable<Content[]> {
-    if (!this.tvSeries$) {
-      this.tvSeries$ = this.http.get<Content[]>(`${this.apiUrlBase}/tv-series`).pipe(
-        map(items => items.map(item => ({ ...item, type: 'tv-series' as const }))),
-        shareReplay(1)
-      );
-    }
-    return this.tvSeries$;
+    return this.http.get<Content[]>(`${this.apiUrlBase}/tv-series`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'tv-series' as const })))
+    );
   }
 
   getAnime(): Observable<Content[]> {
-    if (!this.anime$) {
-      this.anime$ = this.http.get<Content[]>(`${this.apiUrlBase}/anime`).pipe(
-        map(items => items.map(item => ({ ...item, type: 'anime' as const }))),
-        shareReplay(1)
-      );
-    }
-    return this.anime$;
+    return this.http.get<Content[]>(`${this.apiUrlBase}/anime`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'anime' as const })))
+    );
   }
 
   getProfileData(): Observable<ProfileData> {
@@ -96,10 +80,10 @@ export class ServiceGetData {
     return this.http.get<{ user: any }>(`${this.apiUrlBase}/me`);
   }
 
-  toggleFavorite(key: string) {
+  toggleWatchingNow(key: string) {
     this.invalidateProfile();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/favorites/toggle`, { key }
+      `${this.apiUrlBase}/watch-now/toggle`, { key }
     );
   }
 
@@ -119,7 +103,7 @@ export class ServiceGetData {
 
   getUserState() {
     return this.http.get<{
-      favorites: string[];
+      watching_now: string[];
       watch_later: string[];
       watched: string[];
     }>(`${this.apiUrlBase}/user-state`);
@@ -145,5 +129,13 @@ export class ServiceGetData {
 
   updatePassword(payload: { old_password: string; new_password: string }) {
     return this.http.patch<{ message: string }>(`${this.apiUrlBase}/profile/password`, payload);
+  }
+
+  uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.http.post<{ message: string; avatar: string; user: any }>(
+      `${this.apiUrlBase}/profile/avatar`, formData
+    );
   }
 }

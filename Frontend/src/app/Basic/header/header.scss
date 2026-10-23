@@ -1,19 +1,17 @@
 :host {
     width: 100%;
-    position: relative;
-    z-index: 100;
 }
 
 .basic-header {
-    background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
-    padding: 22px 30px;
-    box-shadow: 0 4px 20px rgba(135, 206, 235, 0.3);
-    border-bottom: 3px solid #b3e0ff;
-    border-radius: 25px;
-    font-family: cursive;
-    color: #4682b4;
     position: relative;
     z-index: 100;
+    padding: 22px 30px;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 50%, #f0f8ff 100%);
+    border-bottom: 3px solid #b3e0ff;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(135, 206, 235, 0.3);
+    font-family: cursive;
+    color: #4682b4;
 }
 
 .basic-header-container {
@@ -35,7 +33,6 @@
     flex-grow: 1;
     max-width: 500px;
     min-width: 150px;
-    z-index: 110;
 }
 
 .suggestions {
@@ -43,16 +40,14 @@
     top: 100%;
     left: 0;
     right: 0;
-    width: 100%;
-    box-sizing: border-box;
+    z-index: 200;
+    margin-top: 8px;
+    padding: 8px;
+    max-height: 300px;
+    overflow-y: auto;
     background: white;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
-    margin-top: 8px;
-    padding: 8px;
-    z-index: 200;
-    max-height: 300px;
-    overflow-y: auto;
     box-shadow: 0 8px 25px rgba(135, 206, 235, 0.3);
     list-style: none;
 }
@@ -79,24 +74,22 @@
 .search-poster {
     width: 40px;
     height: 60px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid #b3e0ff;
-    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
     flex: 0 0 auto;
+    border: 2px solid #b3e0ff;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
+    overflow: hidden;
 }
 
 .search-poster img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
 }
 
 .search-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-width: 0;
     flex: 1 1 auto;
 }
 
@@ -104,24 +97,23 @@
     font-size: 14px;
     font-weight: bold;
     white-space: nowrap;
-    overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .search-year {
     font-size: 11px;
-    color: #87CEEB;
     font-weight: 600;
+    color: #87CEEB;
 }
 
 .basic-header-section-search-input {
     display: flex;
     align-items: center;
-    background: #ffffff;
-    border-radius: 25px;
     padding: 4px 4px 4px 8px;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
+    background: #ffffff;
     border: 2px solid #b3e0ff;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
 }
 
 .basic-header-section-search-input:focus-within {
@@ -129,13 +121,13 @@
 }
 
 .basic-header-input-search {
+    width: 100%;
+    padding: 5px 10px;
     border: none;
     outline: none;
-    padding: 5px 10px;
+    font-family: cursive;
     font-size: 14px;
     color: #4682b4;
-    width: 100%;
-    font-family: cursive;
 }
 
 .basic-header-input-search::placeholder {
@@ -145,38 +137,50 @@
 .basic-header-button-search {
     display: flex;
     justify-content: center;
+    padding: 6px;
     background: none;
     border: none;
-    cursor: pointer;
-    padding: 6px;
     border-radius: 10px;
+    cursor: pointer;
 }
 
 .profile-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
+    padding: 0;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    border: 2px solid #b3e0ff;
+    border: none;
     border-radius: 50%;
-    cursor: pointer;
     font-family: cursive;
+    font-size: 14px;
     font-weight: 800;
-    font-size: 13px;
     color: #4682b4;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
+    cursor: pointer;
+    overflow: hidden;
     transition: transform 0.3s ease;
 }
 
+.profile-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 .profile-btn:hover {
     transform: scale(1.1);
 }
 
-.profile-btn img {
-    width: 24px;
-    height: 24px;
+.profile-btn:has(.header-avatar-img) {
+    background: transparent;
+}
+
+.header-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 @media (max-width: 900px) {
@@ -202,11 +206,6 @@
         height: 36px;
         font-size: 12px;
     }
-
-    .profile-btn img {
-        width: 20px;
-        height: 20px;
-    }
 }
 
 @media (max-width: 600px) {
@@ -218,7 +217,6 @@
     .basic-header-container {
         flex-wrap: nowrap;
         gap: 8px;
-        align-items: center;
     }
 
     .basic-header-section-logo {

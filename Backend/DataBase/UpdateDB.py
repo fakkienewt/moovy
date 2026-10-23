@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -72,9 +73,11 @@ class Users(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    avatar = db.Column(db.String(500), nullable=True)
+    
+    avatar = db.Column(db.LargeBinary, nullable=True)
+    
     watched = db.Column(db.Text, nullable=False, default='')
-    favorites = db.Column(db.Text, nullable=False, default='')
+    watching_now = db.Column(db.Text, nullable=False, default='')
     watch_later = db.Column(db.Text, nullable=False, default='')
     comments = db.Column(db.Text, nullable=False, default='[]')
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -85,6 +88,7 @@ class Users(db.Model):
             'nickname': self.nickname,
             'username': self.username,
             'email': self.email,
+            'avatar': f"http://127.0.0.1:5001/api/profile/avatar/{self.id}?t={int(time.time())}" if self.avatar else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
 

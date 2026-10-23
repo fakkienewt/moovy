@@ -34,7 +34,7 @@ interface Comment {
 export class ContentPage implements OnInit, OnDestroy {
   content: Content | null = null;
   similarMovies: Content[] = [];
-  isFavorite = false;
+  isWatchingNow = false;
   isLater = false;
   isWatched = false;
 
@@ -188,7 +188,7 @@ export class ContentPage implements OnInit, OnDestroy {
     this.loadPlayer(contentId, apiSource);
     this.findSimilarMovies(this.content, this.allContentCache);
 
-    this.isFavorite = false;
+    this.isWatchingNow = false;
     this.isLater = false;
     this.isWatched = false;
 
@@ -201,7 +201,7 @@ export class ContentPage implements OnInit, OnDestroy {
 
     this.contentService.getUserState().subscribe({
       next: (state) => {
-        this.isFavorite = state.favorites.includes(key);
+        this.isWatchingNow = state.watching_now.includes(key);
         this.isLater = state.watch_later.includes(key);
         this.isWatched = state.watched.includes(key);
       },
@@ -272,10 +272,10 @@ export class ContentPage implements OnInit, OnDestroy {
     this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
   }
 
-  toggleFavorite(): void {
+  toggleWatchingNow(): void {
     const user = this.auth.getUser();
     if (!user) {
-      this.showAuthNotice('Добавьте в избранное', 'Войдите в аккаунт, чтобы добавить в избранное.');
+      this.showAuthNotice('Смотрю сейчас', 'Войдите в аккаунт, чтобы добавить в список.');
       return;
     }
     if (!this.content) {
@@ -283,8 +283,8 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleFavorite(key).subscribe({
-      next: (res) => this.isFavorite = res.active,
+    this.contentService.toggleWatchingNow(key).subscribe({
+      next: (res) => this.isWatchingNow = res.active,
       error: (err) => console.error(err)
     });
   }

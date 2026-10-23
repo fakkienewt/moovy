@@ -23,8 +23,8 @@ interface UserComment {
   date: string;
 }
 
-type Tab = 'watched' | 'favorites' | 'watch_later' | 'comments';
-type ListTab = 'watched' | 'favorites' | 'watch_later';
+type Tab = 'watched' | 'watching_now' | 'watch_later' | 'comments';
+type ListTab = 'watched' | 'watching_now' | 'watch_later';
 
 @Component({
   selector: 'app-profile',
@@ -60,8 +60,8 @@ export class Profile implements OnInit {
   totalPages = 1;
   skeletonItems = Array.from({ length: 8 }, (_, i) => i);
 
-  state: { watched: string[]; favorites: string[]; watch_later: string[] } = {
-    watched: [], favorites: [], watch_later: []
+  state: { watched: string[]; watching_now: string[]; watch_later: string[] } = {
+    watched: [], watching_now: [], watch_later: []
   };
 
   allContent: any[] = [];
@@ -71,7 +71,7 @@ export class Profile implements OnInit {
     return [
       { key: 'watch_later', label: 'Смотреть позже', count: this.state.watch_later.length },
       { key: 'watched', label: 'Просмотрено', count: this.state.watched.length },
-      { key: 'favorites', label: 'Избранное', count: this.state.favorites.length },
+      { key: 'watching_now', label: 'Смотрю сейчас', count: this.state.watching_now.length },
       { key: 'comments', label: 'Комментарии', count: this.userComments.length },
     ];
   }
@@ -86,7 +86,7 @@ export class Profile implements OnInit {
   get shelfTitle(): string {
     switch (this.activeTab) {
       case 'watched': return 'Просмотрено';
-      case 'favorites': return 'Смотрю';
+      case 'watching_now': return 'Смотрю сейчас';
       case 'watch_later': return 'Смотреть позже';
       default: return '';
     }
@@ -104,9 +104,13 @@ export class Profile implements OnInit {
       return;
     }
 
+    this.activeTab = 'watch_later';
+
     const saved = this.stateService.load();
-    if (saved.currentPage && saved.currentPage > 0) {
+    if (saved.currentPage && saved.currentPage > 0 && saved.activeTab === 'watch_later') {
       this.currentPage = saved.currentPage;
+    } else {
+      this.currentPage = 1;
     }
 
     this.auth.user$.subscribe(u => {
@@ -116,7 +120,7 @@ export class Profile implements OnInit {
     this.api.getProfileData().subscribe({
       next: (data) => {
         this.allContent = data.content || [];
-        this.state = data.state || { favorites: [], watch_later: [], watched: [] };
+        this.state = data.state || { watching_now: [], watch_later: [], watched: [] };
         this.isLoading = false;
         this.refreshList();
       },
@@ -149,8 +153,46 @@ export class Profile implements OnInit {
   onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      console.log('Выбран файл:', input.files[0].name);
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = (e: any) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+          } else {
+            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+              this.api.uploadAvatar(compressedFile).subscribe({
+                next: (res) => {
+                  this.auth.setUser(res.user as CurrentUser);
+                  this.user = res.user as CurrentUser; // Мгновенно обновляет картинку в модалке
+                },
+                error: (err) => console.error(err)
+              });
+            }
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
+    input.value = '';
   }
 
   startEdit(field: 'nickname' | 'username'): void {
@@ -353,7 +395,8 @@ export class Profile implements OnInit {
           rating: found.rating
         } as ListItem;
       })
-      .filter((x: ListItem | null): x is ListItem => x !== null);
+      .filter((x: ListItem | null): x is ListItem => x !== null)
+      .reverse();
 
     this.totalPages = Math.max(1, Math.ceil(this.fullList.length / this.itemsPerPage));
     if (this.currentPage > this.totalPages) {
