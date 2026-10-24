@@ -81,14 +81,8 @@
     gap: 12px;
 }
 
-.btn-settings,
-.side-item,
 .pagination button,
-.btn-edit-nick,
-.btn-nick-save,
-.btn-nick-cancel,
 .btn-settings-action,
-.btn-cancel,
 .btn-confirm,
 .btn-close-icon {
     cursor: pointer;
@@ -102,16 +96,10 @@
     border: 2px solid #b3e0ff;
     border-radius: 12px;
     color: #4682b4;
-    font-size: 14px;
     font-weight: 800;
+    transition: background .2s, transform .2s, color .2s;
 }
 
-.btn-settings:hover,
-.side-item:hover,
-.pagination button:hover:not(:disabled),
-.btn-edit-nick:hover:not(:disabled),
-.btn-nick-cancel:hover,
-.btn-settings-action.logout:hover,
 .btn-cancel:hover {
     background: #e6f2ff;
 }
@@ -128,6 +116,8 @@
     font-weight: 700;
     color: #5a9ccc;
     box-shadow: 0 2px 8px rgba(135, 206, 235, .1);
+    transition: background .2s, transform .2s, color .2s;
+    cursor: pointer;
 }
 
 .side-item.active {
@@ -143,13 +133,8 @@
     min-width: 20px;
     height: 20px;
     border-radius: 10px;
-    background: #f0f8ff;
-    color: #87ceeb;
     font-size: 11px;
     font-weight: 800;
-}
-
-.side-item.active .side-count {
     background: #fff;
     color: #4682b4;
 }
@@ -194,7 +179,6 @@
 }
 
 .card {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -206,10 +190,6 @@
     text-align: center;
     cursor: pointer;
     transition: transform .2s;
-}
-
-.card:hover:not(.skeleton) {
-    transform: translateY(-5px);
 }
 
 .card-info {
@@ -250,6 +230,7 @@
 }
 
 .card-poster {
+    position: relative;
     width: 100%;
     aspect-ratio: 2/3;
     margin: 0 auto 12px;
@@ -260,7 +241,6 @@
 }
 
 .card-poster img {
-    width: 100%;
     height: 100%;
 }
 
@@ -380,10 +360,8 @@
 .btn-cancel,
 .btn-confirm {
     flex: 1;
-    padding: 10px 20px;
     border-radius: 12px;
     font-size: 14px;
-    font-weight: 800;
     border: 2px solid transparent;
 }
 
@@ -426,12 +404,7 @@
     margin-bottom: 20px;
 }
 
-.settings-header .modal-title {
-    margin: 0;
-}
-
 .btn-close-icon {
-    padding: 0 5px;
     background: transparent;
     border: none;
     color: #87ceeb;
@@ -455,7 +428,6 @@
 
 .settings-avatar-wrapper {
     cursor: pointer;
-    transition: opacity .2s;
 }
 
 .settings-big-avatar {
@@ -541,6 +513,8 @@
     border-radius: 8px;
     color: #4682b4;
     font-size: 16px;
+    transition: background .2s, transform .2s, color .2s;
+    cursor: pointer;
 }
 
 .btn-nick-save,
@@ -554,6 +528,8 @@
     font-size: 14px;
     font-weight: 800;
     border: 2px solid transparent;
+    transition: background .2s, transform .2s, color .2s;
+    cursor: pointer;
 }
 
 .btn-nick-save {
@@ -580,8 +556,6 @@
 }
 
 .settings-divider {
-    height: 2px;
-    margin: 5px 0;
     background: #e6f2ff;
     border-radius: 2px;
 }

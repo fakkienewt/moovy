@@ -4,8 +4,11 @@
     justify-content: center;
     min-height: 100vh;
     padding: 40px 20px;
-    font-family: cursive;
+}
+
+* {
     box-sizing: border-box;
+    font-family: cursive;
 }
 
 .auth-card {
@@ -17,7 +20,6 @@
     border-radius: 25px;
     box-shadow: 0 4px 20px rgba(135, 206, 235, 0.3);
     padding: 32px 30px 26px;
-    box-sizing: border-box;
 }
 
 .auth-close {
@@ -78,11 +80,9 @@
     border: 2px solid #b3e0ff;
     border-radius: 15px;
     color: #4682b4;
-    font-family: cursive;
     font-size: 14px;
     font-weight: 600;
     outline: none;
-    box-sizing: border-box;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -97,13 +97,12 @@
     border: 2px solid #b3e0ff;
     border-radius: 18px;
     color: #4682b4;
-    font-family: cursive;
     font-size: 15px;
     font-weight: 800;
     letter-spacing: 1px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .auth-btn:hover {

@@ -120,7 +120,6 @@
         } @else {
         @if (filteredResults.length > 0) {
         <div class="sort-bar">
-            <span class="sort-label">Сортировка:</span>
             <select class="sort-select" [(ngModel)]="sortType" (ngModelChange)="applyFilters()">
                 <option value="default">По умолчанию</option>
                 <option value="rating_desc">По возрастанию</option>

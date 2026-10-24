@@ -1,12 +1,12 @@
 :host {
   width: 100%;
   margin: 20px 0;
-  font-family: cursive;
   color: #4682b4;
 }
 
 * {
   box-sizing: border-box;
+  font-family: cursive;
 }
 
 @keyframes shimmer {
@@ -227,12 +227,11 @@
   font-size: 14px;
   cursor: pointer;
   gap: 6px;
-  transition: transform .3s, box-shadow .3s, border-color .3s;
+  transition: transform .3s, border-color .3s;
 }
 
 .btn-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(135, 206, 235, .3);
   border-color: #87ceeb;
 }
 
@@ -332,12 +331,11 @@
   box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
   cursor: pointer;
   height: 100%;
-  transition: transform .2s, box-shadow .2s, border-color .2s;
+  transition: transform .2s, border-color .2s;
 }
 
 .basic-main-poster-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(135, 206, 235, .3);
   border-color: #87ceeb;
 }
 
@@ -353,7 +351,6 @@
 .basic-main-poster img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .basic-main-info {
@@ -407,17 +404,15 @@
   border-radius: 12px;
   background: linear-gradient(135deg, #87ceeb, #4682b4);
   color: #fff;
-  font-family: cursive;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(135, 206, 235, .3);
-  transition: transform .2s, box-shadow .2s;
+  transition: transform .2s;
 }
 
 .btn-comment:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(70, 130, 180, .4);
 }
 
 .comments-empty {

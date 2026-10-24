@@ -362,7 +362,9 @@ export class ContentPage implements OnInit, OnDestroy {
     if (this.authNotices.length >= this.NOTICE_LIMIT) {
       this.pendingNotice = { title, text };
       const oldest = this.authNotices[this.authNotices.length - 1];
-      if (!oldest.leaving) this.closeAuthNotice(oldest.id);
+      if (!oldest.leaving) {
+        this.closeAuthNotice(oldest.id);
+      }
       return;
     }
 
