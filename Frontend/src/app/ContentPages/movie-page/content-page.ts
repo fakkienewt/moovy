@@ -47,6 +47,7 @@ export class ContentPage implements OnInit, OnDestroy {
 
   playerUrl: string | null = null;
   safePlayerUrl: SafeResourceUrl | null = null;
+  isPlayerLoading = true;
 
   private navSub!: Subscription;
   private noticeTimers = new Map<number, any>();
@@ -67,6 +68,16 @@ export class ContentPage implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private auth: AuthStateService
   ) { }
+
+  onPlayerLoad(): void {
+    const iframe = document.querySelector('.content-player-iframe');
+    if (iframe) {
+      iframe.classList.add('loaded');
+    }
+    setTimeout(() => {
+      this.isPlayerLoading = false;
+    }, 400);
+  }
 
   ngOnInit(): void {
     this.navSub = this.router.events.pipe(
@@ -217,6 +228,9 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   loadPlayer(contentId: number, source: string): void {
+    this.isPlayerLoading = true;
+    this.playerUrl = null;
+    this.safePlayerUrl = null;
     this.contentService.getPlayerLink(contentId, source).subscribe({
       next: (res) => {
         const url = res?.primary_player ||
@@ -227,12 +241,14 @@ export class ContentPage implements OnInit, OnDestroy {
         } else {
           this.playerUrl = null;
           this.safePlayerUrl = null;
+          this.isPlayerLoading = true;
         }
       },
       error: (err) => {
         console.error('Ошибка плеера:', err);
         this.playerUrl = null;
         this.safePlayerUrl = null;
+        this.isPlayerLoading = true;
       }
     });
   }

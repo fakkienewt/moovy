@@ -82,7 +82,7 @@
     box-sizing: border-box;
 }
 
-.basic-new-section-movie-poster:hover:not(.empty) {
+.basic-new-section-movie-poster:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(135, 206, 235, 0.3);
 }

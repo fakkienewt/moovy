@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -80,7 +80,8 @@ export class Profile implements OnInit {
     private auth: AuthStateService,
     private api: ServiceGetData,
     private router: Router,
-    private stateService: PaginationStateService
+    private stateService: PaginationStateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get shelfTitle(): string {
@@ -152,47 +153,86 @@ export class Profile implements OnInit {
 
   onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const reader = new FileReader();
+    const file = input.files?.[0];
+    input.value = '';
 
-      reader.onload = (e: any) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_SIZE = 200;
-          let width = img.width;
-          let height = img.height;
+    if (!file) {
+      return;
+    }
 
-          if (width > height) {
-            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-          } else {
-            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            return;
           }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+          const previewReader = new FileReader();
 
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-              this.api.uploadAvatar(compressedFile).subscribe({
-                next: (res) => {
-                  this.auth.setUser(res.user as CurrentUser);
-                  this.user = res.user as CurrentUser; // Мгновенно обновляет картинку в модалке
-                },
-                error: (err) => console.error(err)
-              });
-            }
-          }, 'image/jpeg', 0.8);
-        };
-        img.src = e.target.result;
+          previewReader.onload = (previewEvent: any) => {
+            this.applyAvatar(previewEvent.target.result, false);
+            this.syncAvatar(compressedFile);
+          };
+
+          previewReader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.8);
       };
-      reader.readAsDataURL(file);
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  private syncAvatar(file: File): void {
+    this.api.uploadAvatar(file).subscribe({
+      next: (res) => {
+        const url = (res.user as CurrentUser)?.avatar || res.avatar;
+        if (!url) {
+          this.closeSettings();
+          return;
+        }
+
+        this.applyAvatar(`${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`, true);
+      },
+      error: (err) => {
+        console.error(err);
+        this.closeSettings();
+      }
+    });
+  }
+
+  private applyAvatar(avatar: string, closeSettings = true): void {
+    const base = this.auth.getUser() || this.user;
+    if (!base) {
+      return;
     }
-    input.value = '';
+
+    const updated: CurrentUser = { ...base, avatar };
+    this.auth.setUser({ ...updated });
+    this.user = { ...updated };
+    this.cdr.detectChanges();
+
+    if (closeSettings) {
+      this.closeSettings();
+    }
   }
 
   startEdit(field: 'nickname' | 'username'): void {

@@ -50,6 +50,7 @@
     border-radius: 15px;
     box-shadow: 0 8px 25px rgba(135, 206, 235, 0.3);
     list-style: none;
+    scrollbar-width: none;
 }
 
 .suggestions li {
@@ -169,6 +170,7 @@
     height: 100%;
     object-fit: cover;
 }
+
 .profile-btn:hover {
     transform: scale(1.1);
 }

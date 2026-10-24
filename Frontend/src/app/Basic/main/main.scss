@@ -246,7 +246,7 @@
     height: 100%;
 }
 
-.card:hover:not(.skeleton) {
+.card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(135, 206, 235, .3);
 }

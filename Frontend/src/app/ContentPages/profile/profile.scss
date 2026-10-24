@@ -89,7 +89,17 @@
     transition: background .2s, transform .2s, color .2s;
 }
 
-.btn-settings,
+.btn-settings {
+    padding: 10px 20px;
+    background: #fff;
+    border: 2px solid #b3e0ff;
+    border-radius: 12px;
+    color: #4682b4;
+    font-weight: 800;
+    transition: background .2s, transform .2s, color .2s;
+    cursor: pointer;
+}
+
 .btn-cancel {
     padding: 10px 20px;
     background: #fff;
@@ -98,6 +108,7 @@
     color: #4682b4;
     font-weight: 800;
     transition: background .2s, transform .2s, color .2s;
+    cursor: pointer;
 }
 
 .btn-cancel:hover {
@@ -556,6 +567,7 @@
 }
 
 .settings-divider {
+    height: 2px;
     background: #e6f2ff;
     border-radius: 2px;
 }

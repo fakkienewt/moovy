@@ -81,17 +81,22 @@
                 }
             </div>
             <div class="player-placeholder-block">
-                @if (playerUrl) {
-                <iframe [src]="safePlayerUrl" allowfullscreen referrerpolicy="origin"
-                    class="content-player-iframe"></iframe>
-                } @else {
-                <div class="player-screen-empty">
-                    <div class="empty-message">
-                        <img src="/SVG/content-page-icon-video.svg" />
-                        <span>Видео временно недоступно</span>
+                <div class="player-frame-wrapper">
+                    @if (playerUrl && safePlayerUrl) {
+                    <iframe [src]="safePlayerUrl" allowfullscreen referrerpolicy="origin" class="content-player-iframe"
+                        (load)="onPlayerLoad()"></iframe>
+                    }
+                    @if (isPlayerLoading) {
+                    <div class="player-loader-emulator">
+                        <div class="player-emulator-play">
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff">
+                                <path d="M8 5v14l11-7z"></path>
+                            </svg>
+                        </div>
+                        <div class="player-loader-spinner"></div>
                     </div>
+                    }
                 </div>
-                }
             </div>
             @if (similarMovies && similarMovies.length > 0) {
             <div class="similar-section">

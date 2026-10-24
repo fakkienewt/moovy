@@ -260,37 +260,71 @@
   font-size: 14px;
 }
 
-.player-screen-empty {
-  display: grid;
-  place-items: center;
+.player-frame-wrapper {
+  position: relative;
+  overflow: hidden;
   width: 100%;
-  height: 400px;
-  background: linear-gradient(135deg, #f4faff, #e6f2ff);
-  border: 2px solid #b3e0ff;
+  height: 500px;
   border-radius: 16px;
-}
-
-.empty-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  color: #87ceeb;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.empty-message img {
-  width: 65px;
-  height: 65px;
-  filter: drop-shadow(1px 1px 2px rgba(70, 130, 180, .3));
 }
 
 .content-player-iframe {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  height: 500px;
+  height: 100%;
   border: none;
   border-radius: 16px;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.content-player-iframe.loaded {
+  opacity: 1;
+}
+
+.player-loader-emulator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.player-emulator-play {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.player-loader-spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(135, 206, 235, 0.25);
+  border-top-color: #87ceeb;
+  border-radius: 50%;
+  animation: player-spin 0.8s linear infinite;
+  position: relative;
+  z-index: 4;
+}
+
+@keyframes player-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .similar-section,
@@ -621,25 +655,34 @@
     margin-bottom: 16px;
   }
 
-  .player-screen-empty {
+  .player-frame-wrapper {
     height: 200px;
-    border-width: 1.5px;
     border-radius: 12px;
   }
 
-  .empty-message {
-    font-size: 13px;
-    gap: 10px;
-  }
-
-  .empty-message img {
-    width: 40px;
-    height: 40px;
+  .player-loader-emulator {
+    border-radius: 12px;
   }
 
   .content-player-iframe {
-    height: 200px;
+    height: 100%;
     border-radius: 12px;
+  }
+
+  .player-emulator-play {
+    width: 64px;
+    height: 64px;
+  }
+
+  .player-emulator-play svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .player-loader-spinner {
+    width: 44px;
+    height: 44px;
+    border-width: 4px;
   }
 
   .skeleton-player-area {
