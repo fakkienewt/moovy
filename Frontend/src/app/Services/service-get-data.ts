@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, shareReplay } from 'rxjs';
 import { Content } from '../Models/ContentModel';
@@ -10,6 +10,32 @@ export interface ProfileData {
     watch_later: string[];
     watched: string[];
   };
+}
+
+export interface ContentQuery {
+  type?: string;
+  page?: number;
+  limit?: number;
+  genre?: string;
+  year?: string | number;
+  country?: string;
+  director?: string;
+  actor?: string;
+  search?: string;
+  sort?: string;
+}
+
+export interface ContentResponse {
+  items: Content[];
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export interface FilterOptions {
+  genres: string[];
+  years: string[];
+  countries: string[];
 }
 
 @Injectable({
@@ -37,6 +63,48 @@ export class ServiceGetData {
     return this.http.get<Content[]>(`${this.apiUrlBase}/anime`).pipe(
       map(items => items.map(item => ({ ...item, type: 'anime' as const })))
     );
+  }
+
+  getContent(params: ContentQuery = {}): Observable<ContentResponse> {
+    return this.http.get<ContentResponse>(
+      `${this.apiUrlBase}/content`,
+      { params: this.buildParams(params) }
+    );
+  }
+
+  searchContent(query: string, limit: number = 7): Observable<ContentResponse> {
+    return this.getContent({ search: query, page: 1, limit });
+  }
+
+  getFilterOptions(type: string = ''): Observable<FilterOptions> {
+    return this.http.get<FilterOptions>(
+      `${this.apiUrlBase}/filter-options`,
+      { params: this.buildParams({ type }) }
+    );
+  }
+
+  getSuggestions(
+    field: 'director' | 'actor',
+    query: string,
+    type: string = '',
+    limit: number = 5
+  ): Observable<string[]> {
+    return this.http.get<string[]>(
+      `${this.apiUrlBase}/suggestions`,
+      { params: this.buildParams({ field, q: query, type, limit }) }
+    );
+  }
+
+  private buildParams(values: object): HttpParams {
+    let params = new HttpParams();
+
+    Object.entries(values).forEach(([key, value]) => {
+      if ((typeof value === 'string' && value !== '') || typeof value === 'number') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return params;
   }
 
   getProfileData(): Observable<ProfileData> {

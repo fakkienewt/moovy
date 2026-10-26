@@ -12,7 +12,6 @@ import { Content } from '../../Models/ContentModel';
   styleUrl: './new-items.scss'
 })
 export class NewItems implements OnInit {
-  allMovies: Content[] = [];
   newItems2026: Content[] = [];
   visibleMovies: Content[] = [];
   isLoading = true;
@@ -33,12 +32,13 @@ export class NewItems implements OnInit {
   }
 
   ngOnInit(): void {
-    this.movieService.getMovies().subscribe({
-      next: (data) => {
-        this.allMovies = data;
-        this.newItems2026 = data
-          .filter(m => m.year === 2026)
-          .slice(0, 10);
+    this.movieService.getContent({
+      type: 'movie',
+      year: 2026,
+      limit: 10
+    }).subscribe({
+      next: (response) => {
+        this.newItems2026 = response.items || [];
         this.updateVisibleMovies();
         this.isLoading = false;
       },

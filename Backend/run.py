@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+from sqlalchemy import func, literal, cast, Float
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
 )
@@ -39,6 +40,21 @@ limiter = Limiter(
     storage_uri='memory://',
 )
 
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin')
+    if origin and origin in origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = request.headers.get(
+        'Access-Control-Request-Headers', 'Content-Type, Authorization'
+    )
+    response.headers['Access-Control-Max-Age'] = '86400'
+    return response
+
+
 HEADERS_BASKINO = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
@@ -69,8 +85,198 @@ _TYPE_MODEL = {
     'movies': Movies,
     'movie': Movies,
     'tv-series': TvSeries,
+    'tvseries': TvSeries,
+    'series': TvSeries,
     'anime': Anime,
 }
+
+_CONTENT_MODELS = (
+    (Movies, 'movie'),
+    (TvSeries, 'tv-series'),
+    (Anime, 'anime'),
+)
+
+_CONTENT_FIELDS = (
+    'id', 'name', 'year', 'genres', 'countries', 'actors', 'directors',
+    'time', 'description', 'poster', 'rating', 'page_url',
+)
+
+
+def _positive_int(value, default, maximum=None):
+    try:
+        result = int(value)
+    except (TypeError, ValueError):
+        result = default
+
+    if result < 1:
+        result = default
+
+    if maximum is not None:
+        result = min(result, maximum)
+
+    return result
+
+
+def _resolve_content_models(type_param):
+    key = (type_param or '').strip().lower()
+
+    if not key or key == 'all':
+        return list(_CONTENT_MODELS)
+
+    model = _TYPE_MODEL.get(key)
+    if not model:
+        return list(_CONTENT_MODELS)
+
+    type_name = next(name for candidate, name in _CONTENT_MODELS if candidate is model)
+    return [(model, type_name)]
+
+
+def _content_filters(model, args):
+    filters = []
+
+    genre = (args.get('genre') or '').strip()
+    if genre:
+        filters.append(model.genres.ilike(f'%{genre}%'))
+
+    country = (args.get('country') or '').strip()
+    if country:
+        filters.append(model.countries.ilike(f'%{country}%'))
+
+    director = (args.get('director') or '').strip()
+    if director:
+        filters.append(model.directors.ilike(f'%{director}%'))
+
+    actor = (args.get('actor') or '').strip()
+    if actor:
+        filters.append(model.actors.ilike(f'%{actor}%'))
+
+    search = (args.get('search') or '').strip()
+    if search:
+        filters.append(model.name.ilike(f'%{search}%'))
+
+    year = (args.get('year') or '').strip()
+    if year.isdigit():
+        filters.append(model.year == int(year))
+
+    return filters
+
+
+def _serialize_content(row):
+    data = {'type': row.type}
+    for field in _CONTENT_FIELDS:
+        data[field] = getattr(row, field, None)
+    return data
+
+
+def _paginated_content(args):
+    models = _resolve_content_models(args.get('type'))
+    page = _positive_int(args.get('page'), 1)
+    limit = _positive_int(args.get('limit'), 18, 100)
+    sort_type = (args.get('sort') or 'default').strip().lower()
+    rating_sort = sort_type in ('rating_asc', 'rating_desc')
+
+    selects = []
+
+    for index, (model, type_name) in enumerate(models):
+        columns = [getattr(model, field).label(field) for field in _CONTENT_FIELDS]
+
+        if rating_sort:
+            columns.append(cast(model.rating, Float).label('rating_num'))
+
+        selects.append(
+            db.session.query(
+                *columns,
+                literal(type_name).label('type'),
+                literal(index).label('type_order'),
+            ).filter(*_content_filters(model, args))
+        )
+
+    if len(selects) == 1:
+        content_subquery = selects[0].subquery()
+    else:
+        content_subquery = selects[0].union_all(*selects[1:]).subquery()
+
+    total_items = db.session.query(func.count()).select_from(content_subquery).scalar() or 0
+    total_pages = max(1, (total_items + limit - 1) // limit)
+    current_page = min(page, total_pages)
+    offset = (current_page - 1) * limit
+
+    if sort_type == 'rating_desc':
+        order_by = [content_subquery.c.rating_num.desc(), content_subquery.c.type_order, content_subquery.c.id]
+    elif sort_type == 'rating_asc':
+        order_by = [content_subquery.c.rating_num.asc(), content_subquery.c.type_order, content_subquery.c.id]
+    else:
+        order_by = [content_subquery.c.type_order, content_subquery.c.id]
+
+    rows = (
+        db.session.query(content_subquery)
+        .order_by(*order_by)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        'items': [_serialize_content(row) for row in rows],
+        'totalItems': total_items,
+        'totalPages': total_pages,
+        'currentPage': current_page,
+    }
+
+
+def _filter_options(type_param):
+    models = _resolve_content_models(type_param)
+    genres, years, countries = set(), set(), set()
+
+    for model, _ in models:
+        for (value,) in db.session.query(model.genres).distinct().all():
+            for token in _split(value):
+                token = token.strip()
+                if token and token not in ('Фильмы', 'Сериалы'):
+                    genres.add(token)
+
+        for (value,) in db.session.query(model.countries).distinct().all():
+            for token in _split(value):
+                token = token.strip()
+                if token:
+                    countries.add(token)
+
+        for (value,) in db.session.query(model.year).distinct().all():
+            if value:
+                years.add(str(value))
+
+    sorted_years = sorted(years, key=lambda item: int(item) if item.isdigit() else 0, reverse=True)
+
+    return {
+        'genres': sorted(genres),
+        'years': sorted_years,
+        'countries': sorted(countries),
+    }
+
+
+def _suggestions(field, query, type_param, limit):
+    column_name = 'directors' if field == 'director' else 'actors'
+    normalized_query = query.lower()
+    matches = set()
+
+    for model, _ in _resolve_content_models(type_param):
+        column = getattr(model, column_name)
+        rows = (
+            db.session.query(column)
+            .filter(column.ilike(f'%{query}%'))
+            .distinct()
+            .limit(1000)
+            .all()
+        )
+
+        for (value,) in rows:
+            for token in _split(value):
+                token = token.strip()
+                if token and normalized_query in token.lower():
+                    matches.add(token)
+
+    return sorted(matches)[:limit]
+
 
 def _resolve_keys(keys):
     grouped = {'movies': [], 'tv-series': [], 'anime': []}
@@ -134,6 +340,28 @@ def get_anime():
         'directors': i.directors, 'time': i.time, 'description': i.description,
         'rating': i.rating, 'page_url': i.page_url
     } for i in items])
+
+
+@app.route('/api/content', methods=['GET', 'OPTIONS'])
+def get_content():
+    return jsonify(_paginated_content(request.args))
+
+
+@app.route('/api/filter-options', methods=['GET', 'OPTIONS'])
+def get_filter_options():
+    return jsonify(_filter_options(request.args.get('type', '')))
+
+
+@app.route('/api/suggestions', methods=['GET', 'OPTIONS'])
+def get_suggestions():
+    field = (request.args.get('field') or 'director').strip().lower()
+    query = (request.args.get('q') or '').strip()
+    limit = _positive_int(request.args.get('limit'), 5, 20)
+
+    if field not in ('director', 'actor') or not query:
+        return jsonify([])
+
+    return jsonify(_suggestions(field, query, request.args.get('type', ''), limit))
 
 
 @app.route('/api/get-iframe/<int:content_id>')

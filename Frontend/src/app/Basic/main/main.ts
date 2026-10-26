@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { ServiceGetData } from '../../Services/service-get-data';
+import { Subscription } from 'rxjs';
+import { ContentQuery, ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { NewItems } from '../new-items/new-items';
 import { PaginationStateService } from '../../Services/pagination-state-service';
-import { matchesSearchText } from '../../Services/search-utils';
 
 @Component({
   selector: 'app-main',
@@ -16,7 +15,7 @@ import { matchesSearchText } from '../../Services/search-utils';
   templateUrl: './main.html',
   styleUrl: './main.scss',
 })
-export class Main implements OnInit {
+export class Main implements OnInit, OnDestroy {
   activeTab: string = 'movie';
   isFilterOpen: boolean = false;
   sortType: string = 'default';
@@ -28,8 +27,6 @@ export class Main implements OnInit {
   directorSearch: string = '';
   actorSearch: string = '';
 
-  allDirectors: string[] = [];
-  allActors: string[] = [];
   filteredDirectorSuggestions: string[] = [];
   filteredActorSuggestions: string[] = [];
 
@@ -37,12 +34,7 @@ export class Main implements OnInit {
   years: string[] = [];
   countries: string[] = [];
 
-  allMovies: Content[] = [];
-  allSeries: Content[] = [];
-  allAnime: Content[] = [];
-
   paginatedList: Content[] = [];
-  filteredResults: Content[] = [];
 
   isLoading = true;
   currentPage = 1;
@@ -50,10 +42,14 @@ export class Main implements OnInit {
   totalPages = 1;
   skeletonItems = Array.from({ length: 16 }, (_, i) => i);
 
+  private itemsRequestId = 0;
+  private optionsRequestId = 0;
+  private directorSuggestionsSub?: Subscription;
+  private actorSuggestionsSub?: Subscription;
+
   constructor(
     private contentService: ServiceGetData,
     private router: Router,
-    private route: ActivatedRoute,
     private stateService: PaginationStateService
   ) { }
 
@@ -91,42 +87,16 @@ export class Main implements OnInit {
       this.actorSearch = saved.actorSearch;
     };
 
-    this.isLoading = true;
+    this.loadItems();
 
-    forkJoin({
-      movies: this.contentService.getMovies(),
-      series: this.contentService.getTVSeries(),
-      anime: this.contentService.getAnime()
-    }).subscribe({
-      next: (data) => {
-        const isValid = (i: any) => i.name && typeof i.name === 'string' && i.name.trim().length > 3 &&
-          i.poster && typeof i.poster === 'string' && i.poster.trim().length > 10 &&
-          !i.poster.includes('poster_none');
+    if (this.isFilterOpen) {
+      this.loadFilterOptions();
+    }
+  }
 
-        this.allMovies = (data.movies || []).filter(isValid);
-        this.allSeries = (data.series || []).filter(isValid);
-        this.allAnime = (data.anime || []).filter(isValid);
-
-        this.extractGlobalOptions();
-
-        if (this.isFilterOpen) {
-          this.updateFilterOptions();
-          this.applyFilters(true);
-        } else {
-          this.updatePagination();
-        }
-
-        this.isLoading = false;
-
-        setTimeout(() => {
-          this.paginatedList = [...this.paginatedList];
-        }, 0);
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    this.directorSuggestionsSub?.unsubscribe();
+    this.actorSuggestionsSub?.unsubscribe();
   }
 
   private persist(): void {
@@ -156,12 +126,13 @@ export class Main implements OnInit {
     this.activeTab = tab;
     this.isFilterOpen = false;
     this.currentPage = 1;
-    this.updatePagination();
+    this.loadItems();
     this.persist();
   }
 
   toggleFilter(): void {
     this.isFilterOpen = !this.isFilterOpen;
+
     if (this.isFilterOpen) {
       this.filterType = '';
       this.sortType = 'default';
@@ -169,114 +140,148 @@ export class Main implements OnInit {
       this.filteredActorSuggestions = [];
       this.directorSearch = '';
       this.actorSearch = '';
+      this.currentPage = 1;
       this.updateFilterOptions();
       this.applyFilters();
     } else {
       this.currentPage = 1;
-      this.updatePagination();
+      this.loadItems();
       this.persist();
     }
   }
 
-  extractGlobalOptions(): void {
-    const all = [...this.allMovies, ...this.allSeries, ...this.allAnime];
-    const dS = new Set<string>(), aS = new Set<string>();
-
-    all.forEach(i => {
-      if (i.directors) {
-        i.directors.split(',').forEach(d => { const t = d.trim(); if (t) dS.add(t); });
-      }
-      if (i.actors) {
-        i.actors.split(',').forEach(a => { const t = a.trim(); if (t) aS.add(t); });
-      }
-    });
-
-    this.allDirectors = Array.from(dS).sort();
-    this.allActors = Array.from(aS).sort();
+  private activeType(): string {
+    switch (this.activeTab) {
+      case 'tvSeries': return 'tv-series';
+      case 'anime': return 'anime';
+      default: return 'movie';
+    }
   }
 
-  private getSourceList(): Content[] {
-    switch (this.filterType) {
-      case 'movie': return this.allMovies;
-      case 'tv-series': return this.allSeries;
-      case 'anime': return this.allAnime;
-      default: return [...this.allMovies, ...this.allSeries, ...this.allAnime];
+  private loadItems(): void {
+    const requestId = ++this.itemsRequestId;
+    this.isLoading = true;
+
+    const params: ContentQuery = {
+      type: this.isFilterOpen ? this.filterType : this.activeType(),
+      page: this.currentPage,
+      limit: this.itemsPerPage
+    };
+
+    if (this.isFilterOpen) {
+      params.genre = this.selectedGenre;
+      params.year = this.selectedYear;
+      params.country = this.selectedCountry;
+      params.director = this.directorSearch;
+      params.actor = this.actorSearch;
+      params.sort = this.sortType;
     }
+
+    this.contentService.getContent(params).subscribe({
+      next: (response) => {
+        if (requestId !== this.itemsRequestId) {
+          return;
+        }
+
+        this.paginatedList = response.items || [];
+        this.currentPage = response.currentPage || 1;
+        this.totalPages = Math.max(1, response.totalPages || 1);
+        this.isLoading = false;
+        this.persist();
+      },
+      error: (err) => {
+        if (requestId !== this.itemsRequestId) {
+          return;
+        }
+
+        console.error(err);
+        this.paginatedList = [];
+        this.totalPages = 1;
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private loadFilterOptions(): void {
+    const requestId = ++this.optionsRequestId;
+
+    this.contentService.getFilterOptions(this.filterType).subscribe({
+      next: (options) => {
+        if (requestId !== this.optionsRequestId) {
+          return;
+        }
+
+        this.genres = options.genres || [];
+        this.years = options.years || [];
+        this.countries = options.countries || [];
+
+        let changed = false;
+
+        if (this.selectedGenre && !this.genres.includes(this.selectedGenre)) {
+          this.selectedGenre = '';
+          changed = true;
+        }
+        if (this.selectedYear && !this.years.includes(this.selectedYear)) {
+          this.selectedYear = '';
+          changed = true;
+        }
+        if (this.selectedCountry && !this.countries.includes(this.selectedCountry)) {
+          this.selectedCountry = '';
+          changed = true;
+        }
+
+        if (changed) {
+          this.currentPage = 1;
+          this.loadItems();
+        }
+      },
+      error: (err) => console.error(err)
+    });
   }
 
   updateFilterOptions(): void {
     this.closeDropdowns();
-    const sourceList = this.getSourceList();
-
-    const gS = new Set<string>(), yS = new Set<string>(), cS = new Set<string>();
-
-    sourceList.forEach(i => {
-      if (i.year) {
-        yS.add(String(i.year));
-      };
-
-      if (i.genres) i.genres.split(',').forEach(g => {
-        const t = g.trim();
-        if (t && !['Фильмы', 'Сериалы'].includes(t)) gS.add(t);
-      });
-
-      if (i.countries) i.countries.split(',').forEach(c => {
-        const t = c.trim();
-        if (t) {
-          cS.add(t);
-        };
-      });
-    });
-
-    this.genres = Array.from(gS).sort();
-    this.years = Array.from(yS).sort((a, b) => Number(b) - Number(a));
-    this.countries = Array.from(cS).sort();
-
-    if (this.selectedGenre && !this.genres.includes(this.selectedGenre)) {
-      this.selectedGenre = '';
-    }
-    if (this.selectedYear && !this.years.includes(this.selectedYear)) {
-      this.selectedYear = '';
-    }
-    if (this.selectedCountry && !this.countries.includes(this.selectedCountry)) {
-      this.selectedCountry = '';
-    }
+    this.loadFilterOptions();
   }
 
   onDirectorInput(val: string): void {
     this.directorSearch = val;
-    if (!val) {
-      this.filteredDirectorSuggestions = []; return;
+    this.directorSuggestionsSub?.unsubscribe();
+
+    if (!val.trim()) {
+      this.filteredDirectorSuggestions = [];
+      return;
     }
 
-    const available = new Set<string>();
-    this.getSourceList().forEach(i => {
-      if (i.directors) i.directors.split(',').forEach(d => { const t = d.trim(); if (t) available.add(t); });
-    });
-
-    this.filteredDirectorSuggestions = Array.from(available)
-      .filter(d => matchesSearchText(d, val))
-      .sort()
-      .slice(0, 5);
+    this.directorSuggestionsSub = this.contentService
+      .getSuggestions('director', val, this.filterType, 5)
+      .subscribe({
+        next: suggestions => this.filteredDirectorSuggestions = suggestions,
+        error: (err) => {
+          console.error(err);
+          this.filteredDirectorSuggestions = [];
+        }
+      });
   }
 
   onActorInput(val: string): void {
     this.actorSearch = val;
-    if (!val) {
-      this.filteredActorSuggestions = []; return;
+    this.actorSuggestionsSub?.unsubscribe();
+
+    if (!val.trim()) {
+      this.filteredActorSuggestions = [];
+      return;
     }
 
-    const available = new Set<string>();
-    this.getSourceList().forEach(i => {
-      if (i.actors) {
-        i.actors.split(',').forEach(a => { const t = a.trim(); if (t) available.add(t); });
-      }
-    });
-
-    this.filteredActorSuggestions = Array.from(available)
-      .filter(a => matchesSearchText(a, val))
-      .sort()
-      .slice(0, 5);
+    this.actorSuggestionsSub = this.contentService
+      .getSuggestions('actor', val, this.filterType, 5)
+      .subscribe({
+        next: suggestions => this.filteredActorSuggestions = suggestions,
+        error: (err) => {
+          console.error(err);
+          this.filteredActorSuggestions = [];
+        }
+      });
   }
 
   selectSuggestion(type: 'director' | 'actor', value: string): void {
@@ -303,39 +308,7 @@ export class Main implements OnInit {
       this.currentPage = 1;
     }
 
-    let list = this.getSourceList();
-
-    if (this.selectedGenre) {
-      list = list.filter(i => matchesSearchText(i.genres, this.selectedGenre));
-    }
-    if (this.selectedYear) {
-      list = list.filter(i => String(i.year) === this.selectedYear);
-    }
-    if (this.selectedCountry) {
-      list = list.filter(i => matchesSearchText(i.countries, this.selectedCountry));
-    }
-    if (this.directorSearch.trim()) {
-      list = list.filter(i => matchesSearchText(i.directors, this.directorSearch));
-    }
-    if (this.actorSearch.trim()) {
-      list = list.filter(i => matchesSearchText(i.actors, this.actorSearch));
-    }
-
-    if (this.sortType === 'rating_asc') {
-      list.sort((a, b) => Number(a.rating || 0) - Number(b.rating || 0));
-    } else if (this.sortType === 'rating_desc') {
-      list.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-    }
-
-    this.filteredResults = list;
-    this.totalPages = Math.max(1, Math.ceil(list.length / this.itemsPerPage));
-
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    this.updatePaginatedFiltered();
-    this.persist();
+    this.loadItems();
   }
 
   resetFilters(): void {
@@ -350,7 +323,7 @@ export class Main implements OnInit {
     this.filteredActorSuggestions = [];
     this.currentPage = 1;
     this.updateFilterOptions();
-    this.applyFilters();
+    this.loadItems();
   }
 
   onSelectItem(item: Content): void {
@@ -364,8 +337,7 @@ export class Main implements OnInit {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.isFilterOpen ? this.updatePaginatedFiltered() : this.updatePagination();
-      this.persist();
+      this.loadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -373,49 +345,16 @@ export class Main implements OnInit {
   backPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.isFilterOpen ? this.updatePaginatedFiltered() : this.updatePagination();
-      this.persist();
+      this.loadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  private updatePagination(): void {
-    if (this.isFilterOpen) {
-      this.updatePaginatedFiltered();
-      return;
-    }
-
-    let src: Content[] = [];
-    switch (this.activeTab) {
-      case 'movie': src = this.allMovies; break;
-      case 'tvSeries': src = this.allSeries; break;
-      case 'anime': src = this.allAnime; break;
-      default:
-        this.activeTab = 'movie';
-        src = this.allMovies;
-        break;
-    }
-
-    this.totalPages = Math.max(1, Math.ceil(src.length / this.itemsPerPage));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    const s = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedList = src.slice(s, s + this.itemsPerPage);
-  }
-
-  private updatePaginatedFiltered(): void {
-    this.totalPages = Math.max(1, Math.ceil(this.filteredResults.length / this.itemsPerPage));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
-    }
-
-    const s = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedList = this.filteredResults.slice(s, s + this.itemsPerPage);
-  }
-
   get currentList(): Content[] {
+    return this.paginatedList;
+  }
+
+  get filteredResults(): Content[] {
     return this.paginatedList;
   }
 
