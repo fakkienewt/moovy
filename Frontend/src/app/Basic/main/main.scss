@@ -15,22 +15,21 @@
 }
 
 .nav-container {
+    position: relative;
+    z-index: 10;
+    margin: 20px 0;
     padding: 22px 30px;
     border: 2px solid #b3e0ff;
     filter: drop-shadow(0 4px 20px rgba(135, 206, 235, .3));
-    margin: 20px 0;
-    overflow: visible;
-    position: relative;
-    z-index: 10;
 }
 
 .content-container {
-    border: 3px solid #b3e0ff;
-    padding: 25px;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
-    margin-bottom: 30px;
     position: relative;
     z-index: 1;
+    margin-bottom: 30px;
+    padding: 25px;
+    border: 3px solid #b3e0ff;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
 }
 
 .nav-section {
@@ -42,19 +41,19 @@
 
 .nav-tabs {
     display: flex;
-    gap: 20px;
     flex-wrap: wrap;
+    gap: 20px;
 }
 
 .nav-tab {
     padding: 10px 25px;
     background: linear-gradient(135deg, #b3e0ff, #87ceeb);
     border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
     font-size: 16px;
+    white-space: nowrap;
     cursor: pointer;
     transition: transform .3s, box-shadow .3s;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
-    white-space: nowrap;
 }
 
 .nav-tab:hover {
@@ -63,18 +62,17 @@
 
 .nav-tab.active {
     background: linear-gradient(135deg, #4682b4, #5a9ccc);
-    color: #fff;
     box-shadow: 0 6px 25px rgba(70, 130, 180, .4);
+    color: #fff;
 }
 
 .filter-panel {
     margin-top: 20px;
     padding: 20px;
     background: rgba(255, 255, 255, .9);
-    border-radius: 20px;
     border: 2px solid #b3e0ff;
+    border-radius: 20px;
     animation: slideDown .3s ease-out;
-    overflow: visible;
 }
 
 @keyframes slideDown {
@@ -107,14 +105,14 @@
 .form-select,
 .form-input,
 .sort-select {
-    background: #fff;
+    background-color: #fff;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
     color: #4682b4;
+    font-family: cursive;
     font-weight: 700;
     outline: none;
     transition: border-color .2s;
-    font-family: cursive;
 }
 
 .form-select,
@@ -125,10 +123,20 @@
 }
 
 .sort-select {
+    min-width: 180px;
     padding: 10px 18px;
     font-size: 14px;
     cursor: pointer;
-    min-width: 180px;
+}
+
+.form-select,
+.sort-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234682b4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    padding-right: 40px;
 }
 
 .form-select:focus,
@@ -151,22 +159,22 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #fff;
-    border: 2px solid #b3e0ff;
-    border-radius: 10px;
+    z-index: 9999;
     margin-top: 5px;
     padding: 5px 0;
     list-style: none;
-    z-index: 9999;
+    background: #fff;
+    border: 2px solid #b3e0ff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(135, 206, 235, .3);
     max-height: 200px;
     overflow-y: auto;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, .3);
 }
 
 .suggestions li {
     padding: 8px 15px;
-    cursor: pointer;
     font-size: 13px;
+    cursor: pointer;
 }
 
 .suggestions li:hover {
@@ -183,11 +191,11 @@
 .btn-primary {
     padding: 10px 24px;
     border-radius: 18px;
+    font-family: cursive;
     font-size: 14px;
     font-weight: 800;
     cursor: pointer;
     transition: transform .2s;
-    font-family: cursive;
 }
 
 .btn-secondary {
@@ -231,71 +239,70 @@
 }
 
 .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-    text-align: center;
+    height: 100%;
+    padding: 15px;
     background: #fff;
     border: 2px solid #b3e0ff;
     border-radius: 20px;
-    padding: 15px;
     box-shadow: 0 4px 15px rgba(135, 206, 235, .2);
+    text-align: center;
     cursor: pointer;
-    transition: transform .2s, box-shadow .2s;
-    height: 100%;
+    transition: transform .2s;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(135, 206, 235, .3);
 }
 
 .card-info {
-    margin-top: 12px;
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     min-height: 45px;
+    margin-top: 12px;
 }
 
 .card-title {
-    font-size: 14px;
-    font-weight: 700;
+    max-height: 2.4em;
     margin-bottom: 4px;
     overflow: hidden;
+    font-size: 14px;
+    font-weight: 700;
     line-height: 1.2;
-    max-height: 2.4em;
 }
 
 .card-year {
-    font-size: 13px;
     color: #87ceeb;
+    font-size: 13px;
 }
 
 .rating-badge {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: linear-gradient(135deg, #4682b4, #5a9ccc);
-    color: #fff;
+    z-index: 2;
     padding: 3px 6px;
+    background: linear-gradient(135deg, #4682b4, #5a9ccc);
     border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(70, 130, 180, .4);
+    color: #fff;
     font-size: 11px;
     font-weight: 700;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(70, 130, 180, .4);
 }
 
 .card-poster {
     width: 100%;
     aspect-ratio: 2/3;
     margin: 0 auto 12px;
+    background: #fff;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
     overflow: hidden;
-    background: #fff;
 }
 
 .card-poster img {
@@ -351,12 +358,12 @@
 .pagination span {
     padding: 8px 20px;
     background: #fff;
-    color: #4682b4;
     border: 2px solid #b3e0ff;
     border-radius: 10px;
+    color: #4682b4;
+    font-family: cursive;
     font-size: 13px;
     font-weight: 800;
-    font-family: cursive;
 }
 
 .pagination span {
@@ -387,21 +394,17 @@
         gap: 6px;
     }
 
-    .nav-tab {
-        padding: 7px 12px;
-        font-size: 12px;
-        border-radius: 14px;
-    }
-
+    .nav-tab,
     .filter-trigger {
+        padding: 7px 12px;
+        border-radius: 14px;
         font-size: 12px;
-        padding: 7px 14px;
     }
 
     .filter-panel {
+        margin-top: 10px;
         padding: 10px;
         border-radius: 14px;
-        margin-top: 10px;
     }
 
     .filter-row-full,
@@ -416,8 +419,14 @@
     .form-select,
     .form-input {
         padding: 7px 8px;
-        font-size: 11px;
         border-radius: 10px;
+        font-size: 11px;
+    }
+
+    .form-select,
+    .sort-select {
+        background-image: none !important;
+        padding-right: 8px;
     }
 
     .filter-buttons {
@@ -427,14 +436,14 @@
     .btn-secondary,
     .btn-primary {
         padding: 7px 14px;
-        font-size: 11px;
         border-radius: 12px;
+        font-size: 11px;
     }
 
     .suggestions {
-        max-height: 150px;
         padding: 4px 0;
         border-radius: 10px;
+        max-height: 150px;
     }
 
     .suggestions li {
@@ -443,9 +452,9 @@
     }
 
     .sort-select {
+        min-width: 140px;
         padding: 6px 10px;
         font-size: 11px;
-        min-width: 140px;
     }
 
     .content-container {
@@ -455,62 +464,64 @@
     }
 
     .grid-layout {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
         padding: 0;
         width: 100%;
     }
 
     .card {
-        padding: 4px;
-        border-radius: 10px;
-        border-width: 1.5px;
         width: 100%;
+        max-width: 160px;
+        margin: 0 auto;
+        padding: 10px;
+        border-radius: 14px;
+        border-width: 2px;
     }
 
     .card-info {
-        margin-top: 4px;
+        margin-top: 8px;
         min-height: auto;
         padding: 0 2px;
     }
 
     .card-title {
-        font-size: 9px;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
+        font-size: 11px;
         white-space: normal;
         word-break: break-word;
     }
 
     .card-year {
-        font-size: 8px;
+        font-size: 10px;
     }
 
     .card-poster {
-        border-radius: 6px;
-        border-width: 1px;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        border-width: 2px;
     }
 
     .rating-badge {
-        font-size: 8px;
-        padding: 1px 4px;
-        top: 4px;
-        right: 4px;
-        border-radius: 4px;
+        top: 5px;
+        right: 5px;
+        padding: 2px 5px;
+        border-radius: 5px;
+        font-size: 9px;
     }
 
     .skeleton-img {
-        border-radius: 6px;
+        border-radius: 8px;
     }
 
     .skeleton-line.title {
-        height: 10px;
-        margin-bottom: 4px;
+        height: 12px;
+        margin-bottom: 6px;
     }
 
     .skeleton-line.year {
         width: 60%;
-        height: 8px;
+        height: 10px;
     }
 
     .empty-state {
@@ -526,9 +537,9 @@
 
     .pagination button,
     .pagination span {
-        font-size: 11px;
         padding: 6px 12px;
         border-radius: 8px;
+        font-size: 11px;
     }
 
     .pagination span {
