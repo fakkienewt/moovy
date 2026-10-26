@@ -7,6 +7,7 @@ import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { NewItems } from '../new-items/new-items';
 import { PaginationStateService } from '../../Services/pagination-state-service';
+import { matchesSearchText } from '../../Services/search-utils';
 
 @Component({
   selector: 'app-main',
@@ -254,7 +255,7 @@ export class Main implements OnInit {
     });
 
     this.filteredDirectorSuggestions = Array.from(available)
-      .filter(d => d.toLowerCase().includes(val.toLowerCase()))
+      .filter(d => matchesSearchText(d, val))
       .sort()
       .slice(0, 5);
   }
@@ -273,7 +274,7 @@ export class Main implements OnInit {
     });
 
     this.filteredActorSuggestions = Array.from(available)
-      .filter(a => a.toLowerCase().includes(val.toLowerCase()))
+      .filter(a => matchesSearchText(a, val))
       .sort()
       .slice(0, 5);
   }
@@ -305,21 +306,19 @@ export class Main implements OnInit {
     let list = this.getSourceList();
 
     if (this.selectedGenre) {
-      list = list.filter(i => i.genres?.toLowerCase().includes(this.selectedGenre.toLowerCase()));
+      list = list.filter(i => matchesSearchText(i.genres, this.selectedGenre));
     }
     if (this.selectedYear) {
       list = list.filter(i => String(i.year) === this.selectedYear);
     }
     if (this.selectedCountry) {
-      list = list.filter(i => i.countries?.toLowerCase().includes(this.selectedCountry.toLowerCase()));
+      list = list.filter(i => matchesSearchText(i.countries, this.selectedCountry));
     }
     if (this.directorSearch.trim()) {
-      const dSearch = this.directorSearch.toLowerCase();
-      list = list.filter(i => i.directors?.toLowerCase().includes(dSearch));
+      list = list.filter(i => matchesSearchText(i.directors, this.directorSearch));
     }
     if (this.actorSearch.trim()) {
-      const aSearch = this.actorSearch.toLowerCase();
-      list = list.filter(i => i.actors?.toLowerCase().includes(aSearch));
+      list = list.filter(i => matchesSearchText(i.actors, this.actorSearch));
     }
 
     if (this.sortType === 'rating_asc') {

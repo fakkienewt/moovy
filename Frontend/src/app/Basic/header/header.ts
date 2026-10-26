@@ -5,6 +5,7 @@ import { ServiceGetData } from '../../Services/service-get-data';
 import { Content } from '../../Models/ContentModel';
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { AuthStateService, CurrentUser } from '../../Services/auth-state-service';
+import { matchesSearchText } from '../../Services/search-utils';
 
 @Component({
   selector: 'app-header',
@@ -86,14 +87,15 @@ export class Header implements OnInit, OnDestroy {
   onSearchInput(val: string): void {
     this.searchQuery = val;
 
-    if (!val || val.trim().length < 2) {
+    const query = val.trim();
+
+    if (query.length < 2) {
       this.searchResults = [];
       return;
     }
 
-    const lowerVal = val.toLowerCase();
     this.searchResults = this.allContent
-      .filter(item => item.name?.toLowerCase().includes(lowerVal))
+      .filter(item => matchesSearchText(item.name, query))
       .slice(0, 7);
   }
 
