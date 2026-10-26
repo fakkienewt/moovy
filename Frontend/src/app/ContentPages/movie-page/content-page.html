@@ -19,6 +19,20 @@
             </div>
         </div>
         <div class="skeleton-player-area"></div>
+        <div class="similar-section">
+            <h3 class="section-title similar-title">Похожее:</h3>
+            <div class="basic-main-content">
+                @for (i of skeletonSimilarItems; track i) {
+                <div class="basic-main-poster-card skeleton">
+                    <div class="basic-main-poster skeleton-img"></div>
+                    <div class="basic-main-info">
+                        <div class="skeleton-line title"></div>
+                        <div class="skeleton-line year"></div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
         } @else {
         <div class="content-container">
             <div class="content-main-card">
@@ -98,10 +112,21 @@
                     }
                 </div>
             </div>
-            @if (similarMovies && similarMovies.length > 0) {
+            @if (isLoadingSimilar || (similarMovies && similarMovies.length > 0)) {
             <div class="similar-section">
                 <h3 class="section-title similar-title">Похожее:</h3>
                 <div class="basic-main-content">
+                    @if (isLoadingSimilar) {
+                    @for (i of skeletonSimilarItems; track i) {
+                    <div class="basic-main-poster-card skeleton">
+                        <div class="basic-main-poster skeleton-img"></div>
+                        <div class="basic-main-info">
+                            <div class="skeleton-line title"></div>
+                            <div class="skeleton-line year"></div>
+                        </div>
+                    </div>
+                    }
+                    } @else {
                     @for (movie of similarMovies; track movie.id) {
                     <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
                         <div class="basic-main-poster">
@@ -116,6 +141,7 @@
                             <div class="basic-main-year">{{ movie.year || 'Неизвестно' }}</div>
                         </div>
                     </div>
+                    }
                     }
                 </div>
             </div>

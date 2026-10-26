@@ -34,6 +34,8 @@ interface Comment {
 export class ContentPage implements OnInit, OnDestroy {
   content: Content | null = null;
   similarMovies: Content[] = [];
+  isLoadingSimilar = true;
+  skeletonSimilarItems = Array.from({ length: 4 }, (_, i) => i);
   isWatchingNow = false;
   isLater = false;
   isWatched = false;
@@ -165,6 +167,8 @@ export class ContentPage implements OnInit, OnDestroy {
     if (!foundItem) {
       console.error(`Контент ${wantedType} с ID ${contentId} не найден`);
       this.content = null;
+      this.similarMovies = [];
+      this.isLoadingSimilar = false;
       this.playerUrl = null;
       this.safePlayerUrl = null;
       return;
@@ -197,6 +201,7 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     this.loadPlayer(contentId, apiSource);
+    this.isLoadingSimilar = true;
     this.findSimilarMovies(this.content, this.allContentCache);
 
     this.isWatchingNow = false;
@@ -256,6 +261,7 @@ export class ContentPage implements OnInit, OnDestroy {
   findSimilarMovies(currentMovie: Content, allContent: Content[]): void {
     if (!currentMovie.genres || currentMovie.genres === 'Неизвестно') {
       this.similarMovies = [];
+      setTimeout(() => { this.isLoadingSimilar = false; }, 500);
       return;
     }
 
@@ -285,7 +291,11 @@ export class ContentPage implements OnInit, OnDestroy {
       .filter(item => item.score > 0);
 
     const shuffled = shuffle(scoredMovies);
-    this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
+
+    setTimeout(() => {
+      this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
+      this.isLoadingSimilar = false;
+    }, 500);
   }
 
   toggleWatchingNow(): void {

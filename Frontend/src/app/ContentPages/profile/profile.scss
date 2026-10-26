@@ -1,3 +1,10 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+}
+
 :host,
 .page-wrap,
 .profile-layout,
@@ -9,13 +16,13 @@
     width: 100%;
 }
 
-.page-wrap {
-    padding: 20px 0;
-}
-
 * {
     box-sizing: border-box;
     font-family: cursive;
+}
+
+.page-wrap {
+    padding: 20px 0;
 }
 
 .profile-layout {
@@ -46,13 +53,13 @@
     justify-content: center;
     width: 70px;
     height: 70px;
-    border-radius: 50%;
+    overflow: hidden;
     background: linear-gradient(135deg, #b3e0ff, #87ceeb);
+    border-radius: 50%;
+    box-shadow: 0 6px 20px rgba(135, 206, 235, .4);
     color: #fff;
     font-size: 23px;
     font-weight: 700;
-    box-shadow: 0 6px 20px rgba(135, 206, 235, .4);
-    overflow: hidden;
 }
 
 .side-avatar img {
@@ -62,16 +69,16 @@
 
 .side-nickname {
     margin-bottom: 4px;
+    color: #4682b4;
     font-size: 22px;
     font-weight: 800;
-    color: #4682b4;
     line-height: 1.2;
 }
 
 .side-username {
+    color: #87ceeb;
     font-size: 14px;
     font-weight: 700;
-    color: #87ceeb;
 }
 
 .profile-actions,
@@ -89,17 +96,7 @@
     transition: background .2s, transform .2s, color .2s;
 }
 
-.btn-settings {
-    padding: 10px 20px;
-    background: #fff;
-    border: 2px solid #b3e0ff;
-    border-radius: 12px;
-    color: #4682b4;
-    font-weight: 800;
-    transition: background .2s, transform .2s, color .2s;
-    cursor: pointer;
-}
-
+.btn-settings,
 .btn-cancel {
     padding: 10px 20px;
     background: #fff;
@@ -107,8 +104,8 @@
     border-radius: 12px;
     color: #4682b4;
     font-weight: 800;
-    transition: background .2s, transform .2s, color .2s;
     cursor: pointer;
+    transition: background .2s, transform .2s, color .2s;
 }
 
 .btn-cancel:hover {
@@ -123,12 +120,12 @@
     background: #fff;
     border: 2px solid transparent;
     border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(135, 206, 235, .1);
+    color: #5a9ccc;
     font-size: 13px;
     font-weight: 700;
-    color: #5a9ccc;
-    box-shadow: 0 2px 8px rgba(135, 206, 235, .1);
-    transition: background .2s, transform .2s, color .2s;
     cursor: pointer;
+    transition: background .2s, transform .2s, color .2s;
 }
 
 .side-item.active {
@@ -143,11 +140,11 @@
     justify-content: center;
     min-width: 20px;
     height: 20px;
+    background: #fff;
     border-radius: 10px;
+    color: #4682b4;
     font-size: 11px;
     font-weight: 800;
-    background: #fff;
-    color: #4682b4;
 }
 
 .shelf-card {
@@ -167,9 +164,9 @@
 
 .shelf-title {
     margin: 0;
+    color: #4682b4;
     font-size: 20px;
     font-weight: 800;
-    color: #4682b4;
 }
 
 .shelf-count {
@@ -185,8 +182,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, 180px);
     gap: 25px;
-    padding: 10px 5px;
     min-height: 400px;
+    padding: 10px 5px;
 }
 
 .card {
@@ -245,10 +242,10 @@
     width: 100%;
     aspect-ratio: 2/3;
     margin: 0 auto 12px;
+    overflow: hidden;
     background: #fff;
     border: 2px solid #b3e0ff;
     border-radius: 15px;
-    overflow: hidden;
 }
 
 .card-poster img {
@@ -524,8 +521,8 @@
     border-radius: 8px;
     color: #4682b4;
     font-size: 16px;
-    transition: background .2s, transform .2s, color .2s;
     cursor: pointer;
+    transition: background .2s, transform .2s, color .2s;
 }
 
 .btn-nick-save,
@@ -535,12 +532,12 @@
     justify-content: center;
     height: 32px;
     padding: 0 12px;
+    border: 2px solid transparent;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 800;
-    border: 2px solid transparent;
-    transition: background .2s, transform .2s, color .2s;
     cursor: pointer;
+    transition: background .2s, transform .2s, color .2s;
 }
 
 .btn-nick-save {
@@ -576,11 +573,11 @@
     width: 100%;
     padding: 14px;
     background: #fff;
+    border: 2px solid transparent;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 800;
     text-align: center;
-    border: 2px solid transparent;
 }
 
 .btn-settings-action.logout {
