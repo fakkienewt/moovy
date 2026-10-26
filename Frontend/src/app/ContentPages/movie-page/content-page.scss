@@ -133,7 +133,6 @@
 .skeleton-poster-placeholder {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .rating-badge,
@@ -278,7 +277,6 @@
 .content-player-iframe {
   position: relative;
   z-index: 1;
-  display: block;
   width: 100%;
   height: 100%;
   border: none;
@@ -403,10 +401,8 @@
   font-size: 13px;
 }
 
-/* Стили для скелетонов в блоке Похожие */
 .basic-main-poster-card.skeleton {
   cursor: default;
-  pointer-events: none;
 }
 
 .basic-main-poster.skeleton-img {
@@ -742,13 +738,22 @@
     padding-left: 0;
   }
 
+  /* МОБИЛЬНАЯ СЕТКА СКЕЛЕТОНОВ ПОХОЖИХ (3 В РЯД) */
   .basic-main-content {
-    grid-template-columns: repeat(4, 1fr) !important;
+    display: flex;
+    flex-wrap: nowrap;
     gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .basic-main-content::-webkit-scrollbar {
+    display: none;
   }
 
   .basic-main-poster-card,
   .basic-main-poster-card.skeleton {
+    flex: 0 0 calc(33.333% - 6px);
     padding: 6px;
     border-width: 1.5px;
     border-radius: 12px;
@@ -772,14 +777,14 @@
   }
 
   .skeleton-line.title {
-    height: 10px !important;
-    width: 85% !important;
+    height: 10px;
+    width: 85%;
     margin: 6px auto 4px;
   }
 
   .skeleton-line.year {
-    height: 8px !important;
-    width: 60% !important;
+    height: 8px;
+    width: 60%;
     margin: 0 auto;
   }
 
