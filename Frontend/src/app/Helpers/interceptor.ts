@@ -5,26 +5,27 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { AuthStateService } from './auth-state-service';
+import { ServiceState } from '../Services/service-state';
 
 @Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  constructor(private auth: AuthStateService, private router: Router) {}
+export class Interceptor implements HttpInterceptor {
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken();
+  constructor(private service_state: ServiceState, private router: Router) {}
 
-    let authReq = req;
+  intercept(request: HttpRequest<any>, nextHandler: HttpHandler): Observable<HttpEvent<any>> {
+    let token = this.service_state.GetJWTFromLocalStorage();
+
+    let request_with_token = request;
     if (token) {
-      authReq = req.clone({
+      request_with_token = request.clone({
         setHeaders: { Authorization: `Bearer ${token}` }
       });
     }
 
-    return next.handle(authReq).pipe(
+    return nextHandler.handle(request_with_token).pipe(
       catchError((err: HttpErrorResponse) => {
         if (err.status === 401) {
-          this.auth.logout();
+          this.service_state.LogoutFromAccount();
           this.router.navigate(['/login']);
         }
         return throwError(() => err);

@@ -22,7 +22,7 @@
         <div class="similar-section">
             <h3 class="section-title similar-title">Похожее:</h3>
             <div class="basic-main-content">
-                @for (i of skeletonSimilarItems; track i) {
+                @for (item of skeleton_similar_items; track item) {
                 <div class="basic-main-poster-card skeleton">
                     <div class="basic-main-poster skeleton-img"></div>
                     <div class="basic-main-info">
@@ -38,13 +38,13 @@
             <div class="content-main-card">
                 <div class="poster-wrapper">
                     @if (content.poster && content.poster.length > 0) {
-                    <img [src]="content.poster" class="content-poster" (error)="handleImageError($event)">
+                    <img [src]="content.poster" class="content-poster" (error)="HandleImageError($event)">
                     } @else {
                     <div class="skeleton-poster-placeholder"></div>
                     }
-                    <div class="watched-badge" [class.active]="isWatched" (click)="toggleWatched($event)">
+                    <div class="watched-badge" [class.active]="is_watched" (click)="SwitchWatched($event)">
                         <img
-                            [src]="isWatched ? '/SVG/content-page-watched-badge-green.svg' : '/SVG/content-page-watched-badge.svg'">
+                            [src]="is_watched ? '/SVG/content-page-watched-badge-green.svg' : '/SVG/content-page-watched-badge.svg'">
                     </div>
                     <div class="rating-badge">{{ content.rating || 'N/A' }}</div>
                 </div>
@@ -75,14 +75,14 @@
                         }
                     </div>
                     <div class="action-buttons-row">
-                        <button type="button" class="btn-action" (click)="toggleLater()">
+                        <button type="button" class="btn-action" (click)="SwitchLater()">
                             <img
-                                [src]="isLater ? '/SVG/content-page-button-time-full.svg' : '/SVG/content-page-button-time.svg'">
+                                [src]="is_later ? '/SVG/content-page-button-time-full.svg' : '/SVG/content-page-button-time.svg'">
                             Смотреть позже
                         </button>
-                        <button type="button" class="btn-action" (click)="toggleWatchingNow()">
+                        <button type="button" class="btn-action" (click)="SwitchWatchingNow()">
                             <img
-                                [src]="isWatchingNow ? '/SVG/content-page-button-favorite1.svg' : '/SVG/content-page-button-favorite2.svg'">
+                                [src]="is_watching_now ? '/SVG/content-page-button-favorite1.svg' : '/SVG/content-page-button-favorite2.svg'">
                             Смотрю сейчас
                         </button>
                     </div>
@@ -96,11 +96,11 @@
             </div>
             <div class="player-placeholder-block">
                 <div class="player-frame-wrapper">
-                    @if (playerUrl && safePlayerUrl) {
-                    <iframe [src]="safePlayerUrl" allowfullscreen referrerpolicy="origin" class="content-player-iframe"
-                        (load)="onPlayerLoad()"></iframe>
+                    @if (player_url && safe_player_url) {
+                    <iframe [src]="safe_player_url" allowfullscreen referrerpolicy="origin"
+                        class="content-player-iframe" (load)="OnPlayerLoad()"></iframe>
                     }
-                    @if (isPlayerLoading) {
+                    @if (is_player_loading) {
                     <div class="player-loader-emulator">
                         <div class="player-emulator-play">
                             <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff">
@@ -112,12 +112,12 @@
                     }
                 </div>
             </div>
-            @if (isLoadingSimilar || (similarMovies && similarMovies.length > 0)) {
+            @if (is_loading_similar || (similar_movies && similar_movies.length > 0)) {
             <div class="similar-section">
                 <h3 class="section-title similar-title">Похожее:</h3>
                 <div class="basic-main-content">
-                    @if (isLoadingSimilar) {
-                    @for (i of skeletonSimilarItems; track i) {
+                    @if (is_loading_similar) {
+                    @for (item of skeleton_similar_items; track item) {
                     <div class="basic-main-poster-card skeleton">
                         <div class="basic-main-poster skeleton-img"></div>
                         <div class="basic-main-info">
@@ -127,11 +127,11 @@
                     </div>
                     }
                     } @else {
-                    @for (movie of similarMovies; track movie.id) {
-                    <div class="basic-main-poster-card" (click)="onSelectContent(movie)">
+                    @for (movie of similar_movies; track movie.id) {
+                    <div class="basic-main-poster-card" (click)="OnSelectContent(movie)">
                         <div class="basic-main-poster">
                             @if (movie.poster && movie.poster.length > 0) {
-                            <img [src]="movie.poster" (error)="handleImageError($event)">
+                            <img [src]="movie.poster" (error)="HandleImageError($event)">
                             } @else {
                             <div class="skeleton-poster-placeholder small"></div>
                             }
@@ -150,25 +150,23 @@
                 <h3 class="section-title">Комментарии</h3>
                 <div class="comment-form">
                     <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input">
-                    <button type="button" class="btn-comment" (click)="toggleSendComment()">Отправить</button>
+                    <button type="button" class="btn-comment" (click)="SwitchSendComment()">Отправить</button>
                 </div>
-                @if (!comments || comments.length === 0) {
                 <div class="comments-empty">
                     <div class="comments-empty-title">Комментариев пока нет</div>
                     <div class="comments-empty-sub">Будьте первым, кто оставит отзыв!</div>
                 </div>
-                }
             </div>
         </div>
         }
-        <div class="auth-notice-stack">
-            @for (notice of authNotices; track notice.id) {
-            <div class="auth-notice" [class.show]="notice.visible" [class.leaving]="notice.leaving">
-                <div class="auth-notice-header">
-                    <span class="auth-notice-title">{{ notice.title }}</span>
-                    <button type="button" class="auth-notice-close" (click)="closeAuthNotice(notice.id)">✕</button>
+        <div class="notice-stack">
+            @for (notice of notices; track notice.id) {
+            <div class="notice" [class.show]="notice.visible" [class.leaving]="notice.leaving">
+                <div class="notice-header">
+                    <span class="notice-title">{{ notice.title }}</span>
+                    <button type="button" class="notice-close" (click)="CloseNotice(notice.id)">✕</button>
                 </div>
-                <div class="auth-notice-text">{{ notice.text }}</div>
+                <div class="notice-text">{{ notice.text }}</div>
             </div>
             }
         </div>

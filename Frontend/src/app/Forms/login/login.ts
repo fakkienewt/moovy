@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ServiceGetData } from '../../Services/service-get-data';
-import { AuthStateService } from '../../Services/auth-state-service';
+import { ServiceState } from '../../Services/service-state';
 
 @Component({
   selector: 'app-login',
@@ -14,39 +14,39 @@ import { AuthStateService } from '../../Services/auth-state-service';
 export class Login {
   email = '';
   password = '';
-  error = '';
-  loading = false;
+  error_message = '';
+  is_loading = false;
 
   constructor(
     private router: Router,
-    private api: ServiceGetData,
-    private auth: AuthStateService,
+    private service_get_data: ServiceGetData,
+    private service_state: ServiceState,
     private cdr: ChangeDetectorRef
   ) { }
 
-  onClose() {
+  OnClose(): void {
     this.router.navigate(['/']);
   }
 
-  onSubmit() {
-    this.error = '';
+  OnSubmit(): void {
+    this.error_message = '';
 
     if (!this.email || !this.password) {
-      this.error = 'Заполните все поля';
+      this.error_message = 'Заполните все поля';
       this.cdr.detectChanges();
       return;
     }
 
-    this.loading = true;
-    this.api.login({ email: this.email, password: this.password }).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.auth.setSession(res.user, res.access_token);
+    this.is_loading = true;
+    this.service_get_data.Login({ email: this.email, password: this.password }).subscribe({
+      next: (response: any) => {
+        this.is_loading = false;
+        this.service_state.SaveDataAndToken(response.user, response.access_token);
         this.router.navigate(['/']);
       },
-      error: (err) => {
-        this.loading = false;
-        this.error = err.error?.error || 'Ошибка входа';
+      error: (error: any) => {
+        this.is_loading = false;
+        this.error_message = error.error?.error || 'Ошибка входа';
         this.cdr.detectChanges();
       }
     });

@@ -3,10 +3,13 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ContentQuery, ServiceGetData } from '../../Services/service-get-data';
-import { Content } from '../../Models/ContentModel';
+import { ServiceGetData } from '../../Services/service-get-data';
+import { ContentModel } from '../../Models/ContentModel';
 import { NewItems } from '../new-items/new-items';
-import { PaginationStateService } from '../../Services/pagination-state-service';
+import { ServicePaginationState } from '../../Services/service-pagination-state';
+import { ContentQueryModel } from '../../Models/ContentQueryModel';
+import { FilterOptionsModel } from '../../Models/FilterOptionsModel';
+import { ContentResponseModel } from '../../Models/ContentResponseModel';
 
 @Component({
   selector: 'app-main',
@@ -16,198 +19,198 @@ import { PaginationStateService } from '../../Services/pagination-state-service'
   styleUrl: './main.scss',
 })
 export class Main implements OnInit, OnDestroy {
-  activeTab: string = 'movie';
-  isFilterOpen: boolean = false;
-  sortType: string = 'default';
+  active_tab: string = 'movie';
+  is_filter_open: boolean = false;
+  sort_type: string = 'default';
 
-  filterType: string = '';
-  selectedGenre: string = '';
-  selectedYear: string = '';
-  selectedCountry: string = '';
-  directorSearch: string = '';
-  actorSearch: string = '';
+  filter_type: string = '';
+  selected_genre: string = '';
+  selected_year: string = '';
+  selected_country: string = '';
+  director_search: string = '';
+  actor_search: string = '';
 
-  filteredDirectorSuggestions: string[] = [];
-  filteredActorSuggestions: string[] = [];
+  filtered_director_suggestions: string[] = [];
+  filtered_actor_suggestions: string[] = [];
 
   genres: string[] = [];
   years: string[] = [];
   countries: string[] = [];
 
-  paginatedList: Content[] = [];
+  paginated_list: ContentModel[] = [];
 
-  isLoading = true;
-  currentPage = 1;
-  itemsPerPage = 16;
-  totalPages = 1;
-  skeletonItems = Array.from({ length: 16 }, (_, i) => i);
+  is_loading = true;
+  current_page = 1;
+  items_per_page = 16;
+  total_pages = 1;
+  skeleton_items = Array.from({ length: 16 }, (_, i) => i);
 
-  private itemsRequestId = 0;
-  private optionsRequestId = 0;
-  private directorSuggestionsSub?: Subscription;
-  private actorSuggestionsSub?: Subscription;
+  private items_request_id = 0;
+  private options_request_id = 0;
+  private director_suggestions_sub?: Subscription;
+  private actor_suggestions_sub?: Subscription;
 
   constructor(
-    private contentService: ServiceGetData,
+    private service_content: ServiceGetData,
     private router: Router,
-    private stateService: PaginationStateService
+    private pagination_state_service: ServicePaginationState
   ) { }
 
   ngOnInit(): void {
-    const saved = this.stateService.load();
+    let saved_state = this.pagination_state_service.loadState();
 
-    if (saved.activeTab) {
-      this.activeTab = saved.activeTab;
-    };
-    if (saved.currentPage && saved.currentPage > 0) {
-      this.currentPage = saved.currentPage;
-    };
-    if (typeof saved.isFilterOpen === 'boolean') {
-      this.isFilterOpen = saved.isFilterOpen;
-    };
-    if (saved.sortType) {
-      this.sortType = saved.sortType;
-    };
-    if (saved.filterType) {
-      this.filterType = saved.filterType;
-    };
-    if (saved.selectedGenre) {
-      this.selectedGenre = saved.selectedGenre;
-    };
-    if (saved.selectedYear) {
-      this.selectedYear = saved.selectedYear;
-    };
-    if (saved.selectedCountry) {
-      this.selectedCountry = saved.selectedCountry;
-    };
-    if (saved.directorSearch) {
-      this.directorSearch = saved.directorSearch;
-    };
-    if (saved.actorSearch) {
-      this.actorSearch = saved.actorSearch;
-    };
+    if (saved_state.activeTab) {
+      this.active_tab = saved_state.activeTab;
+    }
+    if (saved_state.currentPage && saved_state.currentPage > 0) {
+      this.current_page = saved_state.currentPage;
+    }
+    if (typeof saved_state.isFilterOpen === 'boolean') {
+      this.is_filter_open = saved_state.isFilterOpen;
+    }
+    if (saved_state.sortType) {
+      this.sort_type = saved_state.sortType;
+    }
+    if (saved_state.filterType) {
+      this.filter_type = saved_state.filterType;
+    }
+    if (saved_state.selectedGenre) {
+      this.selected_genre = saved_state.selectedGenre;
+    }
+    if (saved_state.selectedYear) {
+      this.selected_year = saved_state.selectedYear;
+    }
+    if (saved_state.selectedCountry) {
+      this.selected_country = saved_state.selectedCountry;
+    }
+    if (saved_state.directorSearch) {
+      this.director_search = saved_state.directorSearch;
+    }
+    if (saved_state.actorSearch) {
+      this.actor_search = saved_state.actorSearch;
+    }
 
-    this.loadItems();
+    this.LoadItems();
 
-    if (this.isFilterOpen) {
-      this.loadFilterOptions();
+    if (this.is_filter_open) {
+      this.LoadFilterOptions();
     }
   }
 
   ngOnDestroy(): void {
-    this.directorSuggestionsSub?.unsubscribe();
-    this.actorSuggestionsSub?.unsubscribe();
+    this.director_suggestions_sub?.unsubscribe();
+    this.actor_suggestions_sub?.unsubscribe();
   }
 
-  private persist(): void {
-    this.stateService.save({
-      activeTab: this.activeTab,
-      currentPage: this.currentPage,
-      isFilterOpen: this.isFilterOpen,
-      sortType: this.sortType,
-      filterType: this.filterType,
-      selectedGenre: this.selectedGenre,
-      selectedYear: this.selectedYear,
-      selectedCountry: this.selectedCountry,
-      directorSearch: this.directorSearch,
-      actorSearch: this.actorSearch
+  private SavePageState(): void {
+    this.pagination_state_service.saveState({
+      activeTab: this.active_tab,
+      currentPage: this.current_page,
+      isFilterOpen: this.is_filter_open,
+      sortType: this.sort_type,
+      filterType: this.filter_type,
+      selectedGenre: this.selected_genre,
+      selectedYear: this.selected_year,
+      selectedCountry: this.selected_country,
+      directorSearch: this.director_search,
+      actorSearch: this.actor_search
     });
   }
 
   @HostListener('document:click', ['$event.target'])
-  onDocumentClick(target: EventTarget | null): void {
-    if (target instanceof HTMLElement && !target.closest('.filter-panel')) {
-      this.filteredDirectorSuggestions = [];
-      this.filteredActorSuggestions = [];
+  OnDocumentClick(target_element: EventTarget | null): void {
+    if (target_element instanceof HTMLElement && !target_element.closest('.filter-panel')) {
+      this.filtered_director_suggestions = [];
+      this.filtered_actor_suggestions = [];
     }
   }
 
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
-    this.isFilterOpen = false;
-    this.currentPage = 1;
-    this.loadItems();
-    this.persist();
+  SetActiveTab(tab_name: string): void {
+    this.active_tab = tab_name;
+    this.is_filter_open = false;
+    this.current_page = 1;
+    this.LoadItems();
+    this.SavePageState();
   }
 
-  toggleFilter(): void {
-    this.isFilterOpen = !this.isFilterOpen;
+  SwitchFilter(): void {
+    this.is_filter_open = !this.is_filter_open;
 
-    if (this.isFilterOpen) {
-      this.filterType = '';
-      this.sortType = 'default';
-      this.filteredDirectorSuggestions = [];
-      this.filteredActorSuggestions = [];
-      this.directorSearch = '';
-      this.actorSearch = '';
-      this.currentPage = 1;
-      this.updateFilterOptions();
-      this.applyFilters();
+    if (this.is_filter_open) {
+      this.filter_type = '';
+      this.sort_type = 'default';
+      this.filtered_director_suggestions = [];
+      this.filtered_actor_suggestions = [];
+      this.director_search = '';
+      this.actor_search = '';
+      this.current_page = 1;
+      this.UpdateFilterOptions();
+      this.ApplyFilters();
     } else {
-      this.currentPage = 1;
-      this.loadItems();
-      this.persist();
+      this.current_page = 1;
+      this.LoadItems();
+      this.SavePageState();
     }
   }
 
-  private activeType(): string {
-    switch (this.activeTab) {
-      case 'tvSeries': return 'tv-series';
-      case 'anime': return 'anime';
-      default: return 'movie';
+  private GetActiveType(): string {
+    if (this.active_tab === 'tvSeries') {
+      return 'tv-series';
     }
+    if (this.active_tab === 'anime') {
+      return 'anime';
+    }
+
+    return 'movie';
   }
 
-  private loadItems(): void {
-    const requestId = ++this.itemsRequestId;
-    this.isLoading = true;
+  private LoadItems(): void {
+    this.items_request_id++;
+    let current_request_id = this.items_request_id;
+    this.is_loading = true;
 
-    const params: ContentQuery = {
-      type: this.isFilterOpen ? this.filterType : this.activeType(),
-      page: this.currentPage,
-      limit: this.itemsPerPage
+    let query_params: ContentQueryModel = {
+      type: this.is_filter_open ? this.filter_type : this.GetActiveType(),
+      page: this.current_page,
+      limit: this.items_per_page
     };
 
-    if (this.isFilterOpen) {
-      params.genre = this.selectedGenre;
-      params.year = this.selectedYear;
-      params.country = this.selectedCountry;
-      params.director = this.directorSearch;
-      params.actor = this.actorSearch;
-      params.sort = this.sortType;
+    if (this.is_filter_open) {
+      query_params.genre = this.selected_genre;
+      query_params.year = this.selected_year;
+      query_params.country = this.selected_country;
+      query_params.director = this.director_search;
+      query_params.actor = this.actor_search;
+      query_params.sort = this.sort_type;
     }
 
-    this.contentService.getContent(params).subscribe({
-      next: (response) => {
-        if (requestId !== this.itemsRequestId) {
-          return;
-        }
+    this.service_content.GetPaginatedContent(query_params).subscribe({
+      next: (response: ContentResponseModel) => {
+        if (current_request_id !== this.items_request_id) return;
 
-        this.paginatedList = response.items || [];
-        this.currentPage = response.currentPage || 1;
-        this.totalPages = Math.max(1, response.totalPages || 1);
-        this.isLoading = false;
-        this.persist();
+        this.paginated_list = response.items || [];
+        this.current_page = response.currentPage || 1;
+        this.total_pages = Math.max(1, response.totalPages || 1);
+        this.is_loading = false;
+        this.SavePageState();
       },
-      error: (err) => {
-        if (requestId !== this.itemsRequestId) {
-          return;
-        }
-
-        console.error(err);
-        this.paginatedList = [];
-        this.totalPages = 1;
-        this.isLoading = false;
+      error: (error: any) => {
+        if (current_request_id !== this.items_request_id) return;
+        console.error(error);
+        this.paginated_list = [];
+        this.total_pages = 1;
+        this.is_loading = false;
       }
     });
   }
 
-  private loadFilterOptions(): void {
-    const requestId = ++this.optionsRequestId;
+  private LoadFilterOptions(): void {
+    this.options_request_id++;
+    let current_request_id = this.options_request_id;
 
-    this.contentService.getFilterOptions(this.filterType).subscribe({
-      next: (options) => {
-        if (requestId !== this.optionsRequestId) {
+    this.service_content.GetFilterOptions(this.filter_type).subscribe({
+      next: (options: FilterOptionsModel) => {
+        if (current_request_id !== this.options_request_id) {
           return;
         }
 
@@ -215,163 +218,161 @@ export class Main implements OnInit, OnDestroy {
         this.years = options.years || [];
         this.countries = options.countries || [];
 
-        let changed = false;
+        let is_changed = false;
 
-        if (this.selectedGenre && !this.genres.includes(this.selectedGenre)) {
-          this.selectedGenre = '';
-          changed = true;
+        if (this.selected_genre && !this.genres.includes(this.selected_genre)) {
+          this.selected_genre = '';
+          is_changed = true;
         }
-        if (this.selectedYear && !this.years.includes(this.selectedYear)) {
-          this.selectedYear = '';
-          changed = true;
+        if (this.selected_year && !this.years.includes(this.selected_year)) {
+          this.selected_year = '';
+          is_changed = true;
         }
-        if (this.selectedCountry && !this.countries.includes(this.selectedCountry)) {
-          this.selectedCountry = '';
-          changed = true;
+        if (this.selected_country && !this.countries.includes(this.selected_country)) {
+          this.selected_country = '';
+          is_changed = true;
         }
 
-        if (changed) {
-          this.currentPage = 1;
-          this.loadItems();
+        if (is_changed) {
+          this.current_page = 1;
+          this.LoadItems();
         }
       },
-      error: (err) => console.error(err)
+      error: (error: any) => console.error(error)
     });
   }
 
-  updateFilterOptions(): void {
-    this.closeDropdowns();
-    this.loadFilterOptions();
+  UpdateFilterOptions(): void {
+    this.CloseDropdowns();
+    this.LoadFilterOptions();
   }
 
-  onDirectorInput(val: string): void {
-    this.directorSearch = val;
-    this.directorSuggestionsSub?.unsubscribe();
+  OnDirectorInput(input_value: string): void {
+    this.director_search = input_value;
+    this.director_suggestions_sub?.unsubscribe();
 
-    if (!val.trim()) {
-      this.filteredDirectorSuggestions = [];
+    if (!input_value.trim()) {
+      this.filtered_director_suggestions = [];
       return;
     }
 
-    this.directorSuggestionsSub = this.contentService
-      .getSuggestions('director', val, this.filterType, 5)
+    this.director_suggestions_sub = this.service_content
+      .GetSuggestions('director', input_value, this.filter_type, 5)
       .subscribe({
-        next: suggestions => this.filteredDirectorSuggestions = suggestions,
-        error: (err) => {
-          console.error(err);
-          this.filteredDirectorSuggestions = [];
+        next: (suggestions: string[]) => this.filtered_director_suggestions = suggestions,
+        error: (error: any) => {
+          console.error(error);
+          this.filtered_director_suggestions = [];
         }
       });
   }
 
-  onActorInput(val: string): void {
-    this.actorSearch = val;
-    this.actorSuggestionsSub?.unsubscribe();
+  OnActorInput(input_value: string): void {
+    this.actor_search = input_value;
+    this.actor_suggestions_sub?.unsubscribe();
 
-    if (!val.trim()) {
-      this.filteredActorSuggestions = [];
+    if (!input_value.trim()) {
+      this.filtered_actor_suggestions = [];
       return;
     }
 
-    this.actorSuggestionsSub = this.contentService
-      .getSuggestions('actor', val, this.filterType, 5)
+    this.actor_suggestions_sub = this.service_content
+      .GetSuggestions('actor', input_value, this.filter_type, 5)
       .subscribe({
-        next: suggestions => this.filteredActorSuggestions = suggestions,
-        error: (err) => {
-          console.error(err);
-          this.filteredActorSuggestions = [];
+        next: (suggestions: string[]) => this.filtered_actor_suggestions = suggestions,
+        error: (error: any) => {
+          console.error(error);
+          this.filtered_actor_suggestions = [];
         }
       });
   }
 
-  selectSuggestion(type: 'director' | 'actor', value: string): void {
-    if (type === 'director') {
-      this.directorSearch = value;
-      this.filteredDirectorSuggestions = [];
+  SelectSuggestion(suggestion_type: 'director' | 'actor', value: string): void {
+    if (suggestion_type === 'director') {
+      this.director_search = value;
+      this.filtered_director_suggestions = [];
     } else {
-      this.actorSearch = value;
-      this.filteredActorSuggestions = [];
+      this.actor_search = value;
+      this.filtered_actor_suggestions = [];
     }
-    this.applyFilters();
+
+    this.ApplyFilters();
   }
 
-  closeDropdowns(): void {
+  CloseDropdowns(): void {
     (document.activeElement as HTMLElement)?.blur();
-    this.filteredDirectorSuggestions = [];
-    this.filteredActorSuggestions = [];
+    this.filtered_director_suggestions = [];
+    this.filtered_actor_suggestions = [];
   }
 
-  applyFilters(preservePage = false): void {
-    this.closeDropdowns();
+  ApplyFilters(preserve_page = false): void {
+    this.CloseDropdowns();
 
-    if (!preservePage) {
-      this.currentPage = 1;
+    if (!preserve_page) {
+      this.current_page = 1;
     }
 
-    this.loadItems();
+    this.LoadItems();
   }
 
-  resetFilters(): void {
-    this.filterType = '';
-    this.selectedGenre = '';
-    this.selectedYear = '';
-    this.selectedCountry = '';
-    this.directorSearch = '';
-    this.actorSearch = '';
-    this.sortType = 'default';
-    this.filteredDirectorSuggestions = [];
-    this.filteredActorSuggestions = [];
-    this.currentPage = 1;
-    this.updateFilterOptions();
-    this.loadItems();
+  ResetFilters(): void {
+    this.filter_type = '';
+    this.selected_genre = '';
+    this.selected_year = '';
+    this.selected_country = '';
+    this.director_search = '';
+    this.actor_search = '';
+    this.sort_type = 'default';
+    this.filtered_director_suggestions = [];
+    this.filtered_actor_suggestions = [];
+    this.current_page = 1;
+    this.UpdateFilterOptions();
+    this.LoadItems();
   }
 
-  onSelectItem(item: Content): void {
-    this.persist();
-    const map: Record<string, string> = { 'movie': 'movie', 'tv-series': 'tv-series', 'anime': 'anime' };
+  OnSelectItem(item: ContentModel): void {
+    this.SavePageState();
+    let content_type = item.type || 'movie';
+
     if (item?.id) {
-      this.router.navigate(['/content', map[item.type || ''] || 'movie', item.id]);
+      this.router.navigate(['/content', content_type, item.id]);
     }
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.loadItems();
+  NextPage(): void {
+    if (this.current_page < this.total_pages) {
+      this.current_page++;
+      this.LoadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  backPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.loadItems();
+  BackPage(): void {
+    if (this.current_page > 1) {
+      this.current_page--;
+      this.LoadItems();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  get currentList(): Content[] {
-    return this.paginatedList;
-  }
-
-  get filteredResults(): Content[] {
-    return this.paginatedList;
-  }
-
-  get emptyMessage(): string {
-    switch (this.activeTab) {
-      case 'movie': return 'Ой! Фильмы пока не найдены';
-      case 'tvSeries': return 'Упс! Сериалы еще не добавлены';
-      case 'anime': return 'Хмм... Аниме пока пусто';
-      default: return 'Ничего не найдено';
+  GetEmptyMessage(): string {
+    if (this.active_tab === 'movie') {
+      return 'Ой! Фильмы пока не найдены';
     }
+    if (this.active_tab === 'tvSeries') {
+      return 'Упс! Сериалы еще не добавлены';
+    }
+    if (this.active_tab === 'anime') {
+      return 'Хмм... Аниме пока пусто';
+    }
+    return 'Ничего не найдено';
   }
 
-  onDirectorFocus(): void {
-    this.filteredActorSuggestions = [];
+  OnDirectorFocus(): void {
+    this.filtered_actor_suggestions = [];
   }
 
-  onActorFocus(): void {
-    this.filteredDirectorSuggestions = [];
+  OnActorFocus(): void {
+    this.filtered_director_suggestions = [];
   }
 }

@@ -1,9 +1,9 @@
 <div class="auth-page">
     <div class="auth-card">
-        <button class="auth-close" (click)="onClose()" type="button">✕</button>
+        <button class="auth-close" (click)="OnClose()" type="button">✕</button>
         @if (step === 1) {
         <h1 class="auth-title">Регистрация</h1>
-        <form class="auth-form" (ngSubmit)="onSubmit()">
+        <form class="auth-form" (ngSubmit)="OnSubmit()">
             <div class="auth-field">
                 <label class="auth-label">ИМЯ ПОЛЬЗОВАТЕЛЯ</label>
                 <input type="text" class="auth-input" placeholder="Введите имя..." [(ngModel)]="nickname"
@@ -24,11 +24,12 @@
             </div>
             <div class="auth-field">
                 <label class="auth-label">ПОВТОРИТЕ ПАРОЛЬ</label>
-                <input type="password" class="auth-input" placeholder="Ещё раз" [(ngModel)]="confirm" name="confirm">
+                <input type="password" class="auth-input" placeholder="Ещё раз" [(ngModel)]="confirm_password"
+                    name="confirm_password">
             </div>
-            @if (error) { <div class="auth-error">{{ error }}</div> }
-            <button type="submit" class="auth-btn" [disabled]="loading">
-                {{ loading ? 'Отправка...' : 'Зарегистрироваться' }}
+            @if (error_message) { <div class="auth-error">{{ error_message }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="is_loading">
+                {{ is_loading ? 'Отправка...' : 'Зарегистрироваться' }}
             </button>
         </form>
         <div class="auth-footer">
@@ -41,15 +42,15 @@
         <p style="text-align:center; color:#5a7d9a; font-size:14px;">
             Мы отправили код на <b>{{ email }}</b>
         </p>
-        <form class="auth-form" (ngSubmit)="onVerify()">
+        <form class="auth-form" (ngSubmit)="OnVerify()">
             <div class="auth-field">
                 <label class="auth-label">КОД ИЗ ПИСЬМА</label>
                 <input type="text" class="auth-input" maxlength="6" placeholder="000000" [(ngModel)]="code" name="code"
                     style="text-align:center; letter-spacing:8px; font-size:20px;">
             </div>
-            @if (error) { <div class="auth-error">{{ error }}</div> }
-            <button type="submit" class="auth-btn" [disabled]="loading">
-                {{ loading ? 'Проверка...' : 'Подтвердить' }}
+            @if (error_message) { <div class="auth-error">{{ error_message }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="is_loading">
+                {{ is_loading ? 'Проверка...' : 'Подтвердить' }}
             </button>
         </form>
         <div class="auth-footer">

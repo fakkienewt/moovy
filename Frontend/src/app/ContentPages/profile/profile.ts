@@ -2,26 +2,11 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthStateService, CurrentUser } from '../../Services/auth-state-service';
+import { ServiceState } from '../../Services/service-state';
 import { ServiceGetData } from '../../Services/service-get-data';
-import { PaginationStateService } from '../../Services/pagination-state-service';
-
-interface ListItem {
-  key: string;
-  name: string;
-  year?: number;
-  poster?: string;
-  type: string;
-  id: number;
-  rating?: number | string;
-}
-
-interface UserComment {
-  id: number;
-  author: string;
-  text: string;
-  date: string;
-}
+import { ServicePaginationState } from '../../Services/service-pagination-state';
+import { ListItemModel } from '../../Models/ListItemModel';
+import { CurrentUserModel } from '../../Models/CurrentUserModel';
 
 type Tab = 'watched' | 'watching_now' | 'watch_later' | 'comments';
 type ListTab = 'watched' | 'watching_now' | 'watch_later';
@@ -34,138 +19,147 @@ type ListTab = 'watched' | 'watching_now' | 'watch_later';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit {
-  user: CurrentUser | null = null;
-  activeTab: Tab = 'watch_later';
-  currentList: ListItem[] = [];
-  userComments: UserComment[] = [];
+  user: CurrentUserModel | null = null;
+  active_tab: Tab = 'watch_later';
+  current_list: ListItemModel[] = [];
 
-  isLoading = true;
-  modalState: 'none' | 'logout' | 'delete' = 'none';
-  isSettingsOpen = false;
+  is_loading = true;
+  modal_state: 'none' | 'logout' | 'delete' = 'none';
+  is_settings_open = false;
 
-  isEditing = false;
-  editField: 'nickname' | 'username' | null = null;
-  editDraft = '';
-  editError = '';
-  isSaving = false;
+  is_editing = false;
+  edit_field: 'nickname' | 'username' | null = null;
+  edit_draft = '';
+  edit_error = '';
+  is_saving = false;
 
-  isChangingPassword = false;
-  oldPassword = '';
-  newPassword = '';
-  passwordError = '';
-  isSavingPassword = false;
+  is_changing_password = false;
+  old_password = '';
+  new_password = '';
+  password_error = '';
+  is_saving_password = false;
 
-  currentPage = 1;
-  itemsPerPage = 8;
-  totalPages = 1;
-  skeletonItems = Array.from({ length: 8 }, (_, i) => i);
+  current_page = 1;
+  items_per_page = 8;
+  total_pages = 1;
+  skeleton_items = Array.from({ length: 8 }, (_, i) => i);
 
   state: { watched: string[]; watching_now: string[]; watch_later: string[] } = {
     watched: [], watching_now: [], watch_later: []
   };
 
-  allContent: any[] = [];
-  fullList: ListItem[] = [];
+  all_content: any[] = [];
+  full_list: ListItemModel[] = [];
+  user_comments: any[] = [];
 
-  get tabs(): { key: Tab; label: string; count: number }[] {
+  get Tabs(): { key: Tab; label: string; count: number }[] {
     return [
       { key: 'watch_later', label: 'Смотреть позже', count: this.state.watch_later.length },
       { key: 'watched', label: 'Просмотрено', count: this.state.watched.length },
       { key: 'watching_now', label: 'Смотрю сейчас', count: this.state.watching_now.length },
-      { key: 'comments', label: 'Комментарии', count: this.userComments.length },
+      { key: 'comments', label: 'Комментарии', count: this.user_comments.length }
     ];
   }
 
   constructor(
-    private auth: AuthStateService,
-    private api: ServiceGetData,
+    private service_state: ServiceState,
+    private service_get_data: ServiceGetData,
     private router: Router,
-    private stateService: PaginationStateService,
+    private pagination_state_service: ServicePaginationState,
     private cdr: ChangeDetectorRef
   ) { }
 
-  get shelfTitle(): string {
-    switch (this.activeTab) {
-      case 'watched': return 'Просмотрено';
-      case 'watching_now': return 'Смотрю сейчас';
-      case 'watch_later': return 'Смотреть позже';
-      default: return '';
+  get ShelfTitle(): string {
+    if (this.active_tab === 'watched') {
+      return 'Просмотрено';
     }
+    if (this.active_tab === 'watching_now') {
+      return 'Смотрю сейчас';
+    }
+    if (this.active_tab === 'watch_later') {
+      return 'Смотреть позже';
+    }
+    if (this.active_tab === 'comments') {
+      return 'Комментарии';
+    }
+    return '';
   }
 
-  get isPaginationHidden(): boolean {
-    const length = this.activeTab === 'comments' ? this.userComments.length : this.fullList.length;
-    return length <= this.itemsPerPage || this.isLoading;
+  get IsPaginationHidden(): boolean {
+    return this.full_list.length <= this.items_per_page || this.is_loading;
   }
 
   ngOnInit(): void {
-    this.user = this.auth.getUser();
+    this.user = this.service_state.GetCurrentUserData();
+
     if (!this.user) {
-      this.router.navigate(['/auth']);
+      this.router.navigate(['/authorization']);
       return;
     }
 
-    this.activeTab = 'watch_later';
+    this.active_tab = 'watch_later';
 
-    const saved = this.stateService.load();
-    if (saved.currentPage && saved.currentPage > 0 && saved.activeTab === 'watch_later') {
-      this.currentPage = saved.currentPage;
+    let saved_state = this.pagination_state_service.loadState();
+
+    if (saved_state.currentPage && saved_state.currentPage > 0 && saved_state.activeTab === 'watch_later') {
+      this.current_page = saved_state.currentPage;
     } else {
-      this.currentPage = 1;
+      this.current_page = 1;
     }
 
-    this.auth.user$.subscribe(u => {
-      this.user = u;
+    this.service_state.user$.subscribe(user => {
+      this.user = user;
     });
 
-    this.api.getProfileData().subscribe({
-      next: (data) => {
-        this.allContent = data.content || [];
+    this.service_get_data.GetProfileData().subscribe({
+      next: (data: any) => {
+        this.all_content = data.content || [];
         this.state = data.state || { watching_now: [], watch_later: [], watched: [] };
-        this.isLoading = false;
-        this.refreshList();
+        this.is_loading = false;
+        this.RefreshList();
       },
-      error: (e) => {
-        console.error(e);
-        this.isLoading = false;
+      error: (error: any) => {
+        console.error(error);
+        this.is_loading = false;
       }
     });
   }
 
-  openSettings(): void {
-    this.isSettingsOpen = true;
-    this.cancelEdit();
-    this.cancelPasswordChange();
+  OpenSettings(): void {
+    this.is_settings_open = true;
+    this.CancelEdit();
+    this.CancelPasswordChange();
   }
 
-  closeSettings(): void {
-    this.isSettingsOpen = false;
-    this.cancelEdit();
-    this.cancelPasswordChange();
+  CloseSettings(): void {
+    this.is_settings_open = false;
+    this.CancelEdit();
+    this.CancelPasswordChange();
   }
 
-  triggerAvatarUpload(): void {
-    const fileInput = document.getElementById('avatar-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
+  TriggerAvatarUpload(): void {
+    let file_input = document.getElementById('avatar-upload') as HTMLInputElement;
+
+    if (file_input) {
+      file_input.click();
     }
   }
 
-  onAvatarSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+  OnAvatarSelected(event: Event): void {
+    let input = event.target as HTMLInputElement;
+    let file = input.files?.[0];
     input.value = '';
 
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = (e: any) => {
-      const img = new Image();
+      let img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_SIZE = 200;
+        let canvas = document.createElement('canvas');
+        let MAX_SIZE = 200;
         let width = img.width;
         let height = img.height;
 
@@ -177,7 +171,7 @@ export class Profile implements OnInit {
 
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
+        let ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob((blob) => {
@@ -185,15 +179,15 @@ export class Profile implements OnInit {
             return;
           }
 
-          const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-          const previewReader = new FileReader();
+          let compressed_file = new File([blob], file.name, { type: 'image/jpeg' });
+          let preview_reader = new FileReader();
 
-          previewReader.onload = (previewEvent: any) => {
-            this.applyAvatar(previewEvent.target.result, false);
-            this.syncAvatar(compressedFile);
+          preview_reader.onload = (preview_event: any) => {
+            this.ApplyAvatar(preview_event.target.result, false);
+            this.SyncAvatar(compressed_file);
           };
 
-          previewReader.readAsDataURL(blob);
+          preview_reader.readAsDataURL(blob);
         }, 'image/jpeg', 0.8);
       };
       img.src = e.target.result;
@@ -201,252 +195,257 @@ export class Profile implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  private syncAvatar(file: File): void {
-    this.api.uploadAvatar(file).subscribe({
-      next: (res) => {
-        const url = (res.user as CurrentUser)?.avatar || res.avatar;
+  private SyncAvatar(file: File): void {
+    this.service_get_data.UploadAvatar(file).subscribe({
+      next: (res: any) => {
+        let url = (res.user as CurrentUserModel)?.avatar || res.avatar;
         if (!url) {
-          this.closeSettings();
+          this.CloseSettings();
           return;
         }
 
-        this.applyAvatar(`${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`, true);
+        this.ApplyAvatar(`${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`, true);
       },
-      error: (err) => {
-        console.error(err);
-        this.closeSettings();
+      error: (error: any) => {
+        console.error(error);
+        this.CloseSettings();
       }
     });
   }
 
-  private applyAvatar(avatar: string, closeSettings = true): void {
-    const base = this.auth.getUser() || this.user;
+  private ApplyAvatar(avatar: string, close_settings = true): void {
+    let base = this.service_state.GetCurrentUserData() || this.user;
     if (!base) {
       return;
     }
 
-    const updated: CurrentUser = { ...base, avatar };
-    this.auth.setUser({ ...updated });
+    let updated: CurrentUserModel = { ...base, avatar };
+    this.service_state.UpdateUserData({ ...updated });
     this.user = { ...updated };
     this.cdr.detectChanges();
 
-    if (closeSettings) {
-      this.closeSettings();
+    if (close_settings) {
+      this.CloseSettings();
     }
   }
 
-  startEdit(field: 'nickname' | 'username'): void {
-
+  StartEdit(field: 'nickname' | 'username'): void {
     if (!this.user) {
       return;
     }
 
-    this.cancelPasswordChange();
-    this.editField = field;
-    this.editDraft = field === 'nickname' ? this.user.nickname : this.user.username;
-    this.editError = '';
-    this.isEditing = true;
+    this.CancelPasswordChange();
+    this.edit_field = field;
+    this.edit_draft = field === 'nickname' ? this.user.nickname : this.user.username;
+    this.edit_error = '';
+    this.is_editing = true;
   }
 
-  cancelEdit(): void {
-    this.isEditing = false;
-    this.editField = null;
-    this.editError = '';
-    this.isSaving = false;
+  CancelEdit(): void {
+    this.is_editing = false;
+    this.edit_field = null;
+    this.edit_error = '';
+    this.is_saving = false;
   }
 
-  saveEdit(): void {
-    if (!this.user || !this.editField || this.isSaving) {
+  SaveEdit(): void {
+    if (!this.user || !this.edit_field || this.is_saving) {
       return;
     }
 
-    const value = (this.editDraft || '').trim();
+    let value = (this.edit_draft || '').trim();
 
-    if (this.editField === 'nickname') {
+    if (this.edit_field === 'nickname') {
       if (value.length < 2 || value.length > 100) {
-        this.editError = 'Ник должен быть от 2 до 100 символов';
+        this.edit_error = 'Ник должен быть от 2 до 100 символов';
         return;
       }
-      if (value === this.user.nickname) return this.cancelEdit();
+      if (value === this.user.nickname) {
+        return this.CancelEdit();
+      }
     } else {
       if (value.length < 3 || value.length > 50) {
-        this.editError = 'Username должен быть от 3 до 50 символов';
+        this.edit_error = 'Username должен быть от 3 до 50 символов';
         return;
       }
       if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-        this.editError = 'Только латиница, цифры и _';
+        this.edit_error = 'Только латиница, цифры и _';
         return;
       }
       if (value === this.user.username) {
-        return this.cancelEdit();
+        return this.CancelEdit();
       }
     }
 
-    this.isSaving = true;
-    this.editError = '';
+    this.is_saving = true;
+    this.edit_error = '';
 
-    const req$ = this.editField === 'nickname'
-      ? this.api.updateNickname(value)
-      : this.api.updateUsername(value);
+    let request;
 
-    req$.subscribe({
-      next: (res) => {
-        this.auth.setUser(res.user as CurrentUser);
-        this.isSaving = false;
-        this.isEditing = false;
-        this.editField = null;
+    if (this.edit_field === 'nickname') {
+      request = this.service_get_data.UpdateNickname(value);
+    } else {
+      request = this.service_get_data.UpdateUsername(value);
+    }
+
+    request.subscribe({
+      next: (res: any) => {
+        this.service_state.UpdateUserData(res.user as CurrentUserModel);
+        this.is_saving = false;
+        this.is_editing = false;
+        this.edit_field = null;
       },
-      error: (e) => {
-        this.isSaving = false;
-        this.editError = e?.error?.error || 'Не удалось сохранить';
+      error: (error: any) => {
+        this.is_saving = false;
+        this.edit_error = error?.error?.error || 'Не удалось сохранить';
       }
     });
   }
 
-  startPasswordChange(): void {
-    this.cancelEdit();
-    this.isChangingPassword = true;
-    this.oldPassword = '';
-    this.newPassword = '';
-    this.passwordError = '';
+  StartPasswordChange(): void {
+    this.CancelEdit();
+    this.is_changing_password = true;
+    this.old_password = '';
+    this.new_password = '';
+    this.password_error = '';
   }
 
-  cancelPasswordChange(): void {
-    this.isChangingPassword = false;
-    this.oldPassword = '';
-    this.newPassword = '';
-    this.passwordError = '';
-    this.isSavingPassword = false;
+  CancelPasswordChange(): void {
+    this.is_changing_password = false;
+    this.old_password = '';
+    this.new_password = '';
+    this.password_error = '';
+    this.is_saving_password = false;
   }
 
-  savePassword(): void {
-    if (!this.oldPassword || !this.newPassword || this.isSavingPassword) {
+  SavePassword(): void {
+    if (!this.old_password || !this.new_password || this.is_saving_password) {
       return;
     }
 
-    if (this.newPassword.length < 8) {
-      this.passwordError = 'Новый пароль должен быть минимум 8 символов';
+    if (this.new_password.length < 8) {
+      this.password_error = 'Новый пароль должен быть минимум 8 символов';
       return;
     }
 
-    this.isSavingPassword = true;
-    this.passwordError = '';
+    this.is_saving_password = true;
+    this.password_error = '';
 
-    this.api.updatePassword({ old_password: this.oldPassword, new_password: this.newPassword }).subscribe({
+    this.service_get_data.UpdatePassword({ old_password: this.old_password, new_password: this.new_password }).subscribe({
       next: () => {
-        this.closeSettings();
+        this.CloseSettings();
       },
-      error: (e) => {
-        this.isSavingPassword = false;
-        this.passwordError = e?.error?.error || 'Не удалось изменить пароль';
+      error: (error: any) => {
+        this.is_saving_password = false;
+        this.password_error = error?.error?.error || 'Не удалось изменить пароль';
       }
     });
   }
 
-  setTab(tab: Tab): void {
-    this.activeTab = tab;
-    this.currentPage = 1;
+  SetTab(tab: Tab): void {
+    this.active_tab = tab;
+    this.current_page = 1;
 
     if (tab !== 'comments') {
-      this.refreshList();
+      this.RefreshList();
     }
   }
 
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePagination();
-      this.persist();
+  NextPage(): void {
+    if (this.current_page < this.total_pages) {
+      this.current_page++;
+      this.UpdatePagination();
+      this.SavePaginationState();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  backPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePagination();
-      this.persist();
+  BackPage(): void {
+    if (this.current_page > 1) {
+      this.current_page--;
+      this.UpdatePagination();
+      this.SavePaginationState();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  onOpenItem(item: ListItem): void {
+  OnOpenItem(item: ListItemModel): void {
     this.router.navigate(['/content', item.type, item.id]);
   }
 
-  openModal(state: 'logout' | 'delete'): void {
-    this.modalState = state;
-    this.closeSettings();
+  OpenModal(state: 'logout' | 'delete'): void {
+    this.modal_state = state;
+    this.CloseSettings();
   }
 
-  closeModal(): void {
-    this.modalState = 'none';
+  CloseModal(): void {
+    this.modal_state = 'none';
   }
 
-  confirmAction(): void {
-    if (this.modalState === 'logout') {
-      this.auth.logout();
+  ConfirmAction(): void {
+    if (this.modal_state === 'logout') {
+      this.service_state.LogoutFromAccount();
       this.router.navigate(['/']);
-    } else if (this.modalState === 'delete') {
-      this.api.deleteAccount().subscribe({
+    } else if (this.modal_state === 'delete') {
+      this.service_get_data.DeleteAccount().subscribe({
         next: () => {
-          this.auth.logout();
+          this.service_state.LogoutFromAccount();
           this.router.navigate(['/']);
         },
-        error: (e) => console.error(e)
+        error: (error: any) => console.error(error)
       });
     }
-    this.closeModal();
+    this.CloseModal();
   }
 
-  private persist(): void {
-    this.stateService.save({
-      activeTab: this.activeTab,
-      currentPage: this.currentPage
+  private SavePaginationState(): void {
+    this.pagination_state_service.saveState({
+      activeTab: this.active_tab,
+      currentPage: this.current_page
     });
   }
 
-  private refreshList(): void {
-    if (this.activeTab === 'comments') {
+  private RefreshList(): void {
+    if (this.active_tab === 'comments') {
       return;
     }
 
-    const tab = this.activeTab as ListTab;
-    const keys = this.state[tab] || [];
+    let list_tab = this.active_tab as ListTab;
+    let keys = this.state[list_tab] || [];
 
-    this.fullList = keys
+    this.full_list = keys
       .map((key: string) => {
-        const [typeKey, idStr] = key.split(':');
-        const id = +idStr;
-        const type = typeKey === 'movies' ? 'movie' : typeKey;
-        const found = this.allContent.find(c => c.id === id && c.type === type);
+        let [type_key, id_str] = key.split(':');
+        let item_id = +id_str;
+        let content_type = type_key === 'movies' ? 'movie' : type_key;
+        let found = this.all_content.find(c => c.id === item_id && c.type === content_type);
 
         if (!found) {
           return null;
         }
 
         return {
-          key,
+          key: key,
           id: found.id,
           name: found.name,
           year: found.year,
           poster: found.poster,
           type: found.type,
           rating: found.rating
-        } as ListItem;
+        } as ListItemModel;
       })
-      .filter((x: ListItem | null): x is ListItem => x !== null)
+      .filter((item): item is ListItemModel => item !== null)
       .reverse();
 
-    this.totalPages = Math.max(1, Math.ceil(this.fullList.length / this.itemsPerPage));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
+    this.total_pages = Math.max(1, Math.ceil(this.full_list.length / this.items_per_page));
+    if (this.current_page > this.total_pages) {
+      this.current_page = this.total_pages;
     }
-    this.updatePagination();
+    this.UpdatePagination();
   }
 
-  private updatePagination(): void {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    this.currentList = this.fullList.slice(start, start + this.itemsPerPage);
+  private UpdatePagination(): void {
+    let start_index = (this.current_page - 1) * this.items_per_page;
+    this.current_list = this.full_list.slice(start_index, start_index + this.items_per_page);
   }
 }

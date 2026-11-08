@@ -1,101 +1,71 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, shareReplay } from 'rxjs';
-import { Content } from '../Models/ContentModel';
-
-export interface ProfileData {
-  content: Content[];
-  state: {
-    watching_now: string[];
-    watch_later: string[];
-    watched: string[];
-  };
-}
-
-export interface ContentQuery {
-  type?: string;
-  page?: number;
-  limit?: number;
-  genre?: string;
-  year?: string | number;
-  country?: string;
-  director?: string;
-  actor?: string;
-  search?: string;
-  sort?: string;
-}
-
-export interface ContentResponse {
-  items: Content[];
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-}
-
-export interface FilterOptions {
-  genres: string[];
-  years: string[];
-  countries: string[];
-}
+import { ContentModel } from '../Models/ContentModel';
+import { ContentQueryModel } from '../Models/ContentQueryModel';
+import { FilterOptionsModel } from '../Models/FilterOptionsModel';
+import { ContentResponseModel } from '../Models/ContentResponseModel';
+import { ProfileDataModel } from '../Models/ProfileDataModl';
+import { PlayerResponseModel } from '../Models/PlayerResponseModel';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ServiceGetData {
-  private apiUrlBase = 'http://127.0.0.1:5001/api';
-  private profileCache$?: Observable<ProfileData>;
+  private api_url_base = 'http://127.0.0.1:5001/api';
+  private profile_cache?: Observable<ProfileDataModel>;
 
   constructor(private http: HttpClient) { }
 
-  getMovies(): Observable<Content[]> {
-    return this.http.get<Content[]>(`${this.apiUrlBase}/movies`).pipe(
-      map(items => items.map(item => ({ ...item, type: 'movie' as const })))
+  GetMovies(): Observable<ContentModel[]> {
+    return this.http.get<ContentModel[]>(`${this.api_url_base}/movies`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'movie' })))
     );
   }
 
-  getTVSeries(): Observable<Content[]> {
-    return this.http.get<Content[]>(`${this.apiUrlBase}/tv-series`).pipe(
-      map(items => items.map(item => ({ ...item, type: 'tv-series' as const })))
+  GetTVSeries(): Observable<ContentModel[]> {
+    return this.http.get<ContentModel[]>(`${this.api_url_base}/tv-series`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'tv-series' })))
     );
   }
 
-  getAnime(): Observable<Content[]> {
-    return this.http.get<Content[]>(`${this.apiUrlBase}/anime`).pipe(
-      map(items => items.map(item => ({ ...item, type: 'anime' as const })))
+  GetAnime(): Observable<ContentModel[]> {
+    return this.http.get<ContentModel[]>(`${this.api_url_base}/anime`).pipe(
+      map(items => items.map(item => ({ ...item, type: 'anime' })))
     );
   }
 
-  getContent(params: ContentQuery = {}): Observable<ContentResponse> {
-    return this.http.get<ContentResponse>(
-      `${this.apiUrlBase}/content`,
-      { params: this.buildParams(params) }
+  GetPaginatedContent(params: ContentQueryModel = {}): Observable<ContentResponseModel> {
+    return this.http.get<ContentResponseModel>(
+      `${this.api_url_base}/content`,
+      { params: this.CreateHttpParams(params) }
     );
   }
 
-  searchContent(query: string, limit: number = 7): Observable<ContentResponse> {
-    return this.getContent({ search: query, page: 1, limit });
+  SearchContent(query: string, limit: number = 10): Observable<ContentResponseModel> {
+    return this.GetPaginatedContent({ search: query, page: 1, limit });
   }
 
-  getFilterOptions(type: string = ''): Observable<FilterOptions> {
-    return this.http.get<FilterOptions>(
-      `${this.apiUrlBase}/filter-options`,
-      { params: this.buildParams({ type }) }
+  GetFilterOptions(type: string = ''): Observable<FilterOptionsModel> {
+    return this.http.get<FilterOptionsModel>(
+      `${this.api_url_base}/filter-options`,
+      { params: this.CreateHttpParams({ type }) }
     );
   }
 
-  getSuggestions(
-    field: 'director' | 'actor',
+  GetSuggestions(
+    searchCategory: 'director' | 'actor',
     query: string,
     type: string = '',
     limit: number = 5
   ): Observable<string[]> {
     return this.http.get<string[]>(
-      `${this.apiUrlBase}/suggestions`,
-      { params: this.buildParams({ field, q: query, type, limit }) }
+      `${this.api_url_base}/suggestions`,
+      { params: this.CreateHttpParams({ search_category: searchCategory, q: query, type, limit }) }
     );
   }
 
-  private buildParams(values: object): HttpParams {
+  private CreateHttpParams(values: object): HttpParams {
     let params = new HttpParams();
 
     Object.entries(values).forEach(([key, value]) => {
@@ -107,103 +77,104 @@ export class ServiceGetData {
     return params;
   }
 
-  getProfileData(): Observable<ProfileData> {
-    if (!this.profileCache$) {
-      this.profileCache$ = this.http.get<ProfileData>(`${this.apiUrlBase}/profile`).pipe(
+  GetProfileData(): Observable<ProfileDataModel> {
+    if (!this.profile_cache) {
+      this.profile_cache = this.http.get<ProfileDataModel>(`${this.api_url_base}/profile`).pipe(
         shareReplay(1)
       );
     }
-    return this.profileCache$;
+    return this.profile_cache;
   }
 
-  invalidateProfile(): void {
-    this.profileCache$ = undefined;
+  ResetProfileCache(): void {
+    this.profile_cache = undefined;
   }
 
-  getPlayerLink(id: number, source: string = 'movies'): Observable<any> {
-    return this.http.get(`${this.apiUrlBase}/get-iframe/${id}?source=${source}`);
+  GetPlayerLink(id: number, source: string = 'movies'): Observable<PlayerResponseModel> {
+    return this.http.get<PlayerResponseModel>(`${this.api_url_base}/get-iframe/${id}?source=${source}`);
   }
 
-  register(payload: { username: string; nickname: string; email: string; password: string }) {
-    return this.http.post<{ message: string }>(`${this.apiUrlBase}/register`, payload);
+  CreateUserAccount(payload: { username: string; nickname: string; email: string; password: string }) {
+    return this.http.post<{ message: string }>(`${this.api_url_base}/register`, payload);
   }
 
-  verifyEmail(payload: { email: string; code: string }) {
+  VerifyEmail(payload: { email: string; code: string }) {
     return this.http.post<{
       message: string;
       access_token: string;
       user: { id: number; nickname: string; username: string; email: string; created_at?: string };
-    }>(`${this.apiUrlBase}/verify`, payload);
+    }>(`${this.api_url_base}/verify`, payload);
   }
 
-  login(payload: { email: string; password: string }) {
+  Login(payload: { email: string; password: string }) {
     return this.http.post<{
       message: string;
       access_token: string;
       user: { id: number; nickname: string; username: string; email: string; created_at?: string };
-    }>(`${this.apiUrlBase}/login`, payload);
+    }>(`${this.api_url_base}/login`, payload);
   }
 
-  me() {
-    return this.http.get<{ user: any }>(`${this.apiUrlBase}/me`);
+  GetMyProfile() {
+    return this.http.get<{ user: any }>(`${this.api_url_base}/me`);
   }
 
-  toggleWatchingNow(key: string) {
-    this.invalidateProfile();
+  SwitchWatchingNow(key: string) {
+    this.ResetProfileCache();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/watch-now/toggle`, { key }
+      `${this.api_url_base}/watch-now/switch`, { key }
     );
   }
 
-  toggleWatchLater(key: string) {
-    this.invalidateProfile();
+  SwitchWatchLater(key: string) {
+    this.ResetProfileCache();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/watch-later/toggle`, { key }
+      `${this.api_url_base}/watch-later/switch`, { key }
     );
   }
 
-  toggleWatched(key: string) {
-    this.invalidateProfile();
+  SwitchWatched(key: string) {
+    this.ResetProfileCache();
     return this.http.post<{ active: boolean; items: string[] }>(
-      `${this.apiUrlBase}/watched/toggle`, { key }
+      `${this.api_url_base}/watched/switch`, { key }
     );
   }
 
-  getUserState() {
+  GetUserMovieLists() {
     return this.http.get<{
       watching_now: string[];
       watch_later: string[];
       watched: string[];
-    }>(`${this.apiUrlBase}/user-state`);
+    }>(`${this.api_url_base}/user_list`);
   }
 
-  deleteAccount() {
-    return this.http.delete<{ message: string }>(`${this.apiUrlBase}/delete-account`);
+  DeleteAccount() {
+    return this.http.delete<{ message: string }>(`${this.api_url_base}/delete-account`);
   }
 
-  updateNickname(nickname: string) {
+  UpdateNickname(nickname: string) {
     return this.http.patch<{
       message: string;
       user: { id: number; nickname: string; username: string; email: string; created_at?: string };
-    }>(`${this.apiUrlBase}/profile/nickname`, { nickname });
+    }>(`${this.api_url_base}/profile/nickname`, { nickname });
   }
 
-  updateUsername(username: string) {
+  UpdateUsername(username: string) {
     return this.http.patch<{
       message: string;
       user: { id: number; nickname: string; username: string; email: string; created_at?: string };
-    }>(`${this.apiUrlBase}/profile/username`, { username });
+    }>(`${this.api_url_base}/profile/username`, { username });
   }
 
-  updatePassword(payload: { old_password: string; new_password: string }) {
-    return this.http.patch<{ message: string }>(`${this.apiUrlBase}/profile/password`, payload);
+  UpdatePassword(payload: { old_password: string; new_password: string }) {
+    return this.http.patch<{ message: string }>(`${this.api_url_base}/profile/password`, payload);
   }
 
-  uploadAvatar(file: File) {
-    const formData = new FormData();
+  UploadAvatar(file: File) {
+    let formData = new FormData();
     formData.append('avatar', file);
+
     return this.http.post<{ message: string; avatar: string; user: any }>(
-      `${this.apiUrlBase}/profile/avatar`, formData
+      `${this.api_url_base}/profile/avatar`, formData
     );
   }
 }

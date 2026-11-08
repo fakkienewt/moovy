@@ -200,6 +200,10 @@
     transition: transform .2s;
 }
 
+.card:hover {
+    transform: translateY(-5px);
+}
+
 .card-info {
     display: flex;
     flex-direction: column;
@@ -608,4 +612,11 @@
     display: flex;
     gap: 8px;
     justify-content: flex-end;
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
 }

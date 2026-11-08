@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ServiceGetData } from '../../Services/service-get-data';
-import { AuthStateService } from '../../Services/auth-state-service';
+import { ServiceState } from '../../Services/service-state';
 
 @Component({
   selector: 'app-auth',
@@ -17,82 +17,82 @@ export class Authorization {
   username = '';
   email = '';
   password = '';
-  confirm = '';
+  confirm_password = '';
   code = '';
-  error = '';
-  loading = false;
+  error_message = '';
+  is_loading = false;
 
   constructor(
     private router: Router,
-    private api: ServiceGetData,
-    private auth: AuthStateService,
+    private service_get_data: ServiceGetData,
+    private service_state: ServiceState,
     private cdr: ChangeDetectorRef
   ) { }
 
-  onClose() {
+  OnClose(): void {
     this.router.navigate(['/']);
   }
 
-  onSubmit() {
-    this.error = '';
+  OnSubmit(): void {
+    this.error_message = '';
 
-    if (!this.nickname || !this.username || !this.email || !this.password || !this.confirm) {
-      this.error = 'Заполните все поля';
+    if (!this.nickname || !this.username || !this.email || !this.password || !this.confirm_password) {
+      this.error_message = 'Заполните все поля';
       this.cdr.detectChanges();
       return;
     }
 
-    if (this.password !== this.confirm) {
-      this.error = 'Пароли не совпадают';
+    if (this.password !== this.confirm_password) {
+      this.error_message = 'Пароли не совпадают';
       this.cdr.detectChanges();
       return;
     }
 
     if (this.password.length < 8) {
-      this.error = 'Пароль минимум 8 символов';
+      this.error_message = 'Пароль минимум 8 символов';
       this.cdr.detectChanges();
       return;
     }
 
-    this.loading = true;
-    this.api.register({
+    this.is_loading = true;
+    this.service_get_data.CreateUserAccount({
       username: this.username,
       nickname: this.nickname,
       email: this.email,
       password: this.password
     }).subscribe({
       next: () => {
-        this.loading = false;
+        this.is_loading = false;
         this.step = 2;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        this.loading = false;
-        this.error = err.error?.error || 'Ошибка регистрации';
+      error: (error: any) => {
+        this.is_loading = false;
+        this.error_message = error.error?.error || 'Ошибка регистрации';
         this.cdr.detectChanges();
       }
     });
   }
 
-  onVerify() {
-    this.error = '';
+  OnVerify(): void {
+    this.error_message = '';
 
     if (!this.code) {
-      this.error = 'Введите код';
+      this.error_message = 'Введите код';
       this.cdr.detectChanges();
       return;
     }
 
-    this.loading = true;
-    this.api.verifyEmail({ email: this.email, code: this.code }).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.auth.setSession(res.user, res.access_token);
+    this.is_loading = true;
+    this.service_get_data.VerifyEmail({ email: this.email, code: this.code }).subscribe({
+      next: (response: any) => {
+        this.is_loading = false;
+        this.service_state.SaveDataAndToken(response.user, response.access_token);
         this.router.navigate(['/']);
       },
-      error: (err) => {
-        this.loading = false;
-        this.error = err.error?.error || 'Ошибка подтверждения';
+      error: (error: any) => {
+        this.is_loading = false;
+        this.error_message = error.error?.error || 'Ошибка подтверждения';
         this.cdr.detectChanges();
       }
     });

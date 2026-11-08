@@ -2,13 +2,13 @@
     <div class="basic-new">
         <div class="basic-new-logo">НОВИНКИ</div>
         <div class="basic-new-container">
-            <div class="basic-new-container-arrows left" [class.disabled]="currentIndex === 0" (click)="onPrev()">
+            <div class="basic-new-container-arrows left" [class.disabled]="current_index === 0" (click)="OnPrev()">
                 <img src="/SVG/basic-new-button-svg-1.svg">
             </div>
             <div class="basic-new-section">
                 <div class="basic-new-loading">
-                    @if (isLoading || error) {
-                    @for (i of [1,2,3,4]; track i) {
+                    @if (is_loading || has_error) {
+                    @for (item of [1,2,3,4]; track item) {
                     <div class="basic-new-section-movie-poster empty">
                         <div class="basic-new-poster">
                             <div class="empty-poster"></div>
@@ -19,8 +19,8 @@
                     </div>
                     }
                     } @else {
-                    @for (movie of (isMobile ? newItems2026 : visibleMovies); track movie.id) {
-                    <div class="basic-new-section-movie-poster" (click)="onSelectMovie(movie)">
+                    @for (movie of (is_mobile ? new_items_2026 : visible_movies); track movie.id) {
+                    <div class="basic-new-section-movie-poster" (click)="OnSelectMovie(movie)">
                         <div class="basic-new-poster">
                             <img [src]="movie.poster" [alt]="movie.name">
                         </div>
@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="basic-new-container-arrows right"
-                [class.disabled]="currentIndex + itemsPerPage >= newItems2026.length" (click)="onNext()">
+                [class.disabled]="current_index + items_per_page >= new_items_2026.length" (click)="OnNext()">
                 <img src="/SVG/basic-new-button-svg-2.svg">
             </div>
         </div>

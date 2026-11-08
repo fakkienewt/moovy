@@ -3,24 +3,24 @@
     <div class="nav-container">
         <div class="nav-section">
             <div class="nav-tabs">
-                <div class="nav-tab" [class.active]="activeTab === 'movie' && !isFilterOpen"
-                    (click)="setActiveTab('movie')">Фильмы</div>
-                <div class="nav-tab" [class.active]="activeTab === 'tvSeries' && !isFilterOpen"
-                    (click)="setActiveTab('tvSeries')">Сериалы</div>
-                <div class="nav-tab" [class.active]="activeTab === 'anime' && !isFilterOpen"
-                    (click)="setActiveTab('anime')">Аниме</div>
+                <div class="nav-tab" [class.active]="active_tab === 'movie' && !is_filter_open"
+                    (click)="SetActiveTab('movie')">Фильмы</div>
+                <div class="nav-tab" [class.active]="active_tab === 'tvSeries' && !is_filter_open"
+                    (click)="SetActiveTab('tvSeries')">Сериалы</div>
+                <div class="nav-tab" [class.active]="active_tab === 'anime' && !is_filter_open"
+                    (click)="SetActiveTab('anime')">Аниме</div>
             </div>
             <div class="nav-actions">
-                <div class="nav-tab filter-trigger" [class.active]="isFilterOpen" (click)="toggleFilter()">
+                <div class="nav-tab filter-trigger" [class.active]="is_filter_open" (click)="SwitchFilter()">
                     Фильтрация
                 </div>
             </div>
         </div>
-        @if (isFilterOpen) {
+        @if (is_filter_open) {
         <div class="filter-panel">
             <div class="filter-row-full">
-                <select class="form-select" [(ngModel)]="filterType"
-                    (ngModelChange)="updateFilterOptions(); applyFilters()">
+                <select class="form-select" [(ngModel)]="filter_type"
+                    (ngModelChange)="UpdateFilterOptions(); ApplyFilters()">
                     <option value="">Все типы</option>
                     <option value="movie">Фильмы</option>
                     <option value="tv-series">Сериалы</option>
@@ -28,63 +28,68 @@
                 </select>
             </div>
             <div class="filter-grid">
-                <select class="form-select" [(ngModel)]="selectedGenre" (ngModelChange)="applyFilters()"
-                    (mousedown)="closeDropdowns()">
+                <select class="form-select" [(ngModel)]="selected_genre" (ngModelChange)="ApplyFilters()"
+                    (mousedown)="CloseDropdowns()">
                     <option value="">Все жанры</option>
-                    @for (g of genres; track g) {
-                    <option [value]="g">{{ g }}</option>
+                    @for (genre of genres; track genre) {
+                    <option [value]="genre">{{ genre }}</option>
                     }
                 </select>
-                <select class="form-select" [(ngModel)]="selectedYear" (ngModelChange)="applyFilters()"
-                    (mousedown)="closeDropdowns()">
+                <select class="form-select" [(ngModel)]="selected_year" (ngModelChange)="ApplyFilters()"
+                    (mousedown)="CloseDropdowns()">
                     <option value="">Все годы</option>
-                    @for (y of years; track y) {
-                    <option [value]="y">{{ y }}</option>
+                    @for (year of years; track year) {
+                    <option [value]="year">{{ year }}</option>
                     }
                 </select>
-                <select class="form-select" [(ngModel)]="selectedCountry" (ngModelChange)="applyFilters()"
-                    (mousedown)="closeDropdowns()">
+                <select class="form-select" [(ngModel)]="selected_country" (ngModelChange)="ApplyFilters()"
+                    (mousedown)="CloseDropdowns()">
                     <option value="">Все страны</option>
-                    @for (c of countries; track c) {
-                    <option [value]="c">{{ c }}</option>
+                    @for (country of countries; track country) {
+                    <option [value]="country">{{ country }}</option>
                     }
                 </select>
             </div>
             <div class="filter-grid input-grid">
                 <div class="input-group">
-                    <input type="text" class="form-input" placeholder="Режиссер..." [ngModel]="directorSearch"
-                        (ngModelChange)="onDirectorInput($event)" (focus)="onDirectorFocus()">
-                    @if (filteredDirectorSuggestions.length > 0) {
+                    <input type="text" class="form-input" placeholder="Режиссер..." [ngModel]="director_search"
+                        (ngModelChange)="OnDirectorInput($event)" (focus)="OnDirectorFocus()">
+                    @if (filtered_director_suggestions.length > 0) {
                     <ul class="suggestions">
-                        @for (d of filteredDirectorSuggestions; track $index) {
-                        <li (click)="selectSuggestion('director', d)">{{ d }}</li>
+                        @for (director of filtered_director_suggestions; track $index) {
+                        <li (click)="SelectSuggestion('director', director)">{{ director }}</li>
                         }
                     </ul>
                     }
                 </div>
                 <div class="input-group">
-                    <input type="text" class="form-input" placeholder="Актер..." [ngModel]="actorSearch"
-                        (ngModelChange)="onActorInput($event)" (focus)="onActorFocus()">
-                    @if (filteredActorSuggestions.length > 0) {
+                    <input type="text" class="form-input" placeholder="Актер..." [ngModel]="actor_search"
+                        (ngModelChange)="OnActorInput($event)" (focus)="OnActorFocus()">
+                    @if (filtered_actor_suggestions.length > 0) {
                     <ul class="suggestions">
-                        @for (a of filteredActorSuggestions; track $index) {
-                        <li (click)="selectSuggestion('actor', a)">{{ a }}</li>
+                        @for (actor of filtered_actor_suggestions; track $index) {
+                        <li (click)="SelectSuggestion('actor', actor)">{{ actor }}</li>
                         }
                     </ul>
                     }
                 </div>
             </div>
             <div class="filter-buttons">
-                <button class="btn-secondary" (click)="resetFilters()">Сбросить</button>
-                <button class="btn-primary" (click)="applyFilters()">Найти</button>
+                <button class="btn-secondary" (click)="ResetFilters()">Сбросить</button>
+                <button class="btn-primary" (click)="ApplyFilters()">Найти</button>
             </div>
         </div>
         }
     </div>
     <div class="content-container">
-        @if (isLoading) {
+        @if (is_loading) {
+        @if (is_filter_open) {
+        <div class="sort-bar">
+            <div class="skeleton-sort"></div>
+        </div>
+        }
         <div class="grid-layout">
-            @for (i of skeletonItems; track i) {
+            @for (item of skeleton_items; track item) {
             <div class="card skeleton">
                 <div class="card-poster">
                     <div class="skeleton-img"></div>
@@ -96,11 +101,11 @@
             </div>
             }
         </div>
-        } @else if (!isFilterOpen) {
+        } @else if (!is_filter_open) {
         <div class="grid-layout">
-            @if (currentList.length > 0) {
-            @for (item of currentList; track item.id) {
-            <div class="card" (click)="onSelectItem(item)">
+            @if (paginated_list.length > 0) {
+            @for (item of paginated_list; track item.id) {
+            <div class="card" (click)="OnSelectItem(item)">
                 <div class="card-poster">
                     <img [src]="item.poster">
                     <span class="rating-badge">{{ item.rating || '0' }}</span>
@@ -113,22 +118,22 @@
             }
             } @else {
             <div class="empty-state">
-                <p>{{ emptyMessage }}</p>
+                <p>{{ GetEmptyMessage() }}</p>
             </div>
             }
         </div>
         } @else {
-        @if (filteredResults.length > 0) {
+        @if (paginated_list.length > 0) {
         <div class="sort-bar">
-            <select class="sort-select" [(ngModel)]="sortType" (ngModelChange)="applyFilters()">
+            <select class="sort-select" [(ngModel)]="sort_type" (ngModelChange)="ApplyFilters()">
                 <option value="default">По умолчанию</option>
                 <option value="rating_desc">По возрастанию</option>
                 <option value="rating_asc">По убыванию</option>
             </select>
         </div>
         <div class="grid-layout">
-            @for (item of currentList; track item.id) {
-            <div class="card" (click)="onSelectItem(item)">
+            @for (item of paginated_list; track item.id) {
+            <div class="card" (click)="OnSelectItem(item)">
                 <div class="card-poster">
                     <img [src]="item.poster">
                     <span class="rating-badge">{{ item.rating || '0' }}</span>
@@ -147,11 +152,12 @@
         </div>
         }
         }
-        @if (totalPages > 1) {
+
+        @if (total_pages > 1 && !is_loading) {
         <div class="pagination">
-            <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
-            <span>{{ currentPage }} / {{ totalPages }}</span>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
+            <button (click)="BackPage()" [disabled]="current_page === 1">Назад</button>
+            <span>{{ current_page }} / {{ total_pages }}</span>
+            <button (click)="NextPage()" [disabled]="current_page === total_pages">Вперёд</button>
         </div>
         }
     </div>

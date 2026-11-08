@@ -1,8 +1,8 @@
 <div class="auth-page">
     <div class="auth-card">
-        <button class="auth-close" (click)="onClose()" type="button">✕</button>
+        <button class="auth-close" (click)="OnClose()" type="button">✕</button>
         <h1 class="auth-title">Вход</h1>
-        <form class="auth-form" (ngSubmit)="onSubmit()">
+        <form class="auth-form" (ngSubmit)="OnSubmit()">
             <div class="auth-field">
                 <label class="auth-label">EMAIL</label>
                 <input type="email" class="auth-input" placeholder="example@mail.com" [(ngModel)]="email" name="email">
@@ -12,9 +12,9 @@
                 <input type="password" class="auth-input" placeholder="Введите пароль" [(ngModel)]="password"
                     name="password">
             </div>
-            @if (error) { <div class="auth-error">{{ error }}</div> }
-            <button type="submit" class="auth-btn" [disabled]="loading">
-                {{ loading ? 'Вход...' : 'Войти' }}
+            @if (error_message) { <div class="auth-error">{{ error_message }}</div> }
+            <button type="submit" class="auth-btn" [disabled]="is_loading">
+                {{ is_loading ? 'Вход...' : 'Войти' }}
             </button>
         </form>
         <div class="auth-footer">

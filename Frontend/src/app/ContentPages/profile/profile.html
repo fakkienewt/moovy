@@ -15,39 +15,40 @@
                 </div>
             </div>
             <div class="profile-actions">
-                <button class="btn-settings" (click)="openSettings()">Настройки</button>
+                <button class="btn-settings" (click)="OpenSettings()">Настройки</button>
             </div>
         </header>
         <nav class="profile-tabs">
-            @for (t of tabs; track t.key) {
-            <button class="side-item" [class.active]="activeTab === t.key" (click)="setTab($any(t.key))">
-                <span>{{ t.label }}</span>
-                <span class="side-count">{{ t.count }}</span>
+            @for (tab of Tabs; track tab.key) {
+            <button class="side-item" [class.active]="active_tab === tab.key" (click)="SetTab($any(tab.key))">
+                <span>{{ tab.label }}</span>
+                <span class="side-count">{{ tab.count }}</span>
             </button>
             }
         </nav>
         <main class="shelf-area">
             <div class="shelf-card">
                 <header class="shelf-head">
-                    <h2 class="shelf-title">{{ activeTab === 'comments' ? 'Комментарии' : shelfTitle }}</h2>
-                    @if (activeTab !== 'comments') {
-                    <span class="shelf-count">{{ fullList.length }}</span>
+                    <h2 class="shelf-title">{{ ShelfTitle }}</h2>
+                    @if (active_tab !== 'comments') {
+                    <span class="shelf-count">{{ full_list.length }}</span>
                     }
                 </header>
-                @if (activeTab === 'comments') {
-                @if (userComments.length === 0) {
+
+                @if (active_tab === 'comments') {
+                @if (user_comments.length === 0) {
                 <div class="shelf-empty">
                     <div class="shelf-empty-title">Комментариев пока нет</div>
                     <div class="shelf-empty-sub">Здесь будут отображаться ваши комментарии</div>
                 </div>
                 } @else {
                 <div class="comment-list">
-                    @for (c of userComments; track c.id) { }
+                    @for (comment of user_comments; track comment.id) { }
                 </div>
                 }
-                } @else if (isLoading) {
+                } @else if (is_loading) {
                 <div class="shelf-grid">
-                    @for (i of skeletonItems; track i) {
+                    @for (item of skeleton_items; track item) {
                     <div class="card skeleton">
                         <div class="card-poster">
                             <div class="skeleton-img"></div>
@@ -59,15 +60,15 @@
                     </div>
                     }
                 </div>
-                } @else if (fullList.length === 0) {
+                } @else if (full_list.length === 0) {
                 <div class="shelf-empty">
                     <div class="shelf-empty-title">Полка пуста</div>
                     <div class="shelf-empty-sub">Добавляй контент — он появится здесь</div>
                 </div>
                 } @else {
                 <div class="shelf-grid">
-                    @for (item of currentList; track item.key) {
-                    <div class="card" (click)="onOpenItem(item)">
+                    @for (item of current_list; track item.key) {
+                    <div class="card" (click)="OnOpenItem(item)">
                         <div class="card-poster">
                             <img [src]="item.poster" loading="lazy">
                             <span class="rating-badge">{{ item.rating || '0' }}</span>
@@ -80,25 +81,26 @@
                     }
                 </div>
                 }
-                @if (activeTab !== 'comments' && !isPaginationHidden) {
+
+                @if (active_tab !== 'comments' && !IsPaginationHidden) {
                 <div class="pagination">
-                    <button (click)="backPage()" [disabled]="currentPage === 1">Назад</button>
-                    <span>{{ currentPage }} / {{ totalPages }}</span>
-                    <button (click)="nextPage()" [disabled]="currentPage === totalPages">Вперёд</button>
+                    <button (click)="BackPage()" [disabled]="current_page === 1">Назад</button>
+                    <span>{{ current_page }} / {{ total_pages }}</span>
+                    <button (click)="NextPage()" [disabled]="current_page === total_pages">Вперёд</button>
                 </div>
                 }
             </div>
         </main>
     </div>
-    @if (isSettingsOpen) {
-    <div class="modal-overlay" (click)="closeSettings()">
+    @if (is_settings_open) {
+    <div class="modal-overlay" (click)="CloseSettings()">
         <div class="modal-content settings-modal" (click)="$event.stopPropagation()">
             <div class="settings-header">
                 <h3 class="modal-title">Настройки</h3>
-                <button class="btn-close-icon" (click)="closeSettings()">✕</button>
+                <button class="btn-close-icon" (click)="CloseSettings()">✕</button>
             </div>
             <div class="settings-avatar-section">
-                <div class="settings-avatar-wrapper" (click)="triggerAvatarUpload()" title="Сменить аватарку">
+                <div class="settings-avatar-wrapper" (click)="TriggerAvatarUpload()" title="Сменить аватарку">
                     <div class="side-avatar settings-big-avatar">
                         @if (user?.avatar) {
                         <img [src]="user?.avatar" (error)="user!.avatar = undefined">
@@ -108,102 +110,102 @@
                     </div>
                 </div>
                 <input type="file" id="avatar-upload" accept="image/*" style="display: none;"
-                    (change)="onAvatarSelected($event)">
+                    (change)="OnAvatarSelected($event)">
             </div>
             <div class="settings-list">
                 <div class="settings-item">
                     <div class="settings-info">
                         <span class="settings-label">НИКНЕЙМ</span>
-                        @if (!isEditing || editField !== 'nickname') {
+                        @if (!is_editing || edit_field !== 'nickname') {
                         <span class="settings-value">{{ user?.nickname }}</span>
                         }
                     </div>
-                    @if (!isEditing || editField !== 'nickname') {
-                    <button class="btn-edit-nick" (click)="startEdit('nickname')">✎</button>
+                    @if (!is_editing || edit_field !== 'nickname') {
+                    <button class="btn-edit-nick" (click)="StartEdit('nickname')">✎</button>
                     }
-                    @if (isEditing && editField === 'nickname') {
+                    @if (is_editing && edit_field === 'nickname') {
                     <div class="settings-edit-group">
-                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="100"
-                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
+                        <input class="nickname-input" type="text" [(ngModel)]="edit_draft" maxlength="100"
+                            [disabled]="is_saving" (keydown.enter)="SaveEdit()" (keydown.escape)="CancelEdit()"
                             autofocus>
-                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
+                        <button class="btn-nick-save" [disabled]="is_saving" (click)="SaveEdit()">{{ is_saving ? '...' :
                             'OK' }}</button>
-                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                        <button class="btn-nick-cancel" [disabled]="is_saving" (click)="CancelEdit()">✕</button>
                     </div>
                     }
                 </div>
-                @if (isEditing && editField === 'nickname' && editError) {
-                <div class="nickname-error">{{ editError }}</div>
+                @if (is_editing && edit_field === 'nickname' && edit_error) {
+                <div class="nickname-error">{{ edit_error }}</div>
                 }
                 <div class="settings-item">
                     <div class="settings-info">
                         <span class="settings-label">USERNAME</span>
-                        @if (!isEditing || editField !== 'username') {
+                        @if (!is_editing || edit_field !== 'username') {
                         <span class="settings-value">&#64;{{ user?.username }}</span>
                         }
                     </div>
-                    @if (!isEditing || editField !== 'username') {
-                    <button class="btn-edit-nick" (click)="startEdit('username')">✎</button>
+                    @if (!is_editing || edit_field !== 'username') {
+                    <button class="btn-edit-nick" (click)="StartEdit('username')">✎</button>
                     }
-                    @if (isEditing && editField === 'username') {
+                    @if (is_editing && edit_field === 'username') {
                     <div class="settings-edit-group">
-                        <input class="nickname-input" type="text" [(ngModel)]="editDraft" maxlength="50"
-                            [disabled]="isSaving" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
+                        <input class="nickname-input" type="text" [(ngModel)]="edit_draft" maxlength="50"
+                            [disabled]="is_saving" (keydown.enter)="SaveEdit()" (keydown.escape)="CancelEdit()"
                             autofocus>
-                        <button class="btn-nick-save" [disabled]="isSaving" (click)="saveEdit()">{{ isSaving ? '...' :
+                        <button class="btn-nick-save" [disabled]="is_saving" (click)="SaveEdit()">{{ is_saving ? '...' :
                             'OK' }}</button>
-                        <button class="btn-nick-cancel" [disabled]="isSaving" (click)="cancelEdit()">✕</button>
+                        <button class="btn-nick-cancel" [disabled]="is_saving" (click)="CancelEdit()">✕</button>
                     </div>
                     }
                 </div>
-                @if (isEditing && editField === 'username' && editError) {
-                <div class="nickname-error">{{ editError }}</div>
+                @if (is_editing && edit_field === 'username' && edit_error) {
+                <div class="nickname-error">{{ edit_error }}</div>
                 }
                 <div class="settings-item">
                     <div class="settings-info">
                         <span class="settings-label">ПАРОЛЬ</span>
-                        @if (!isChangingPassword) {
+                        @if (!is_changing_password) {
                         <span class="settings-value">••••••••</span>
                         }
                     </div>
-                    @if (!isChangingPassword) {
-                    <button class="btn-edit-nick" (click)="startPasswordChange()">✎</button>
+                    @if (!is_changing_password) {
+                    <button class="btn-edit-nick" (click)="StartPasswordChange()">✎</button>
                     }
                 </div>
-                @if (isChangingPassword) {
+                @if (is_changing_password) {
                 <div class="settings-password-group">
-                    <input class="nickname-input" type="password" placeholder="Старый пароль" [(ngModel)]="oldPassword"
-                        [disabled]="isSavingPassword">
-                    <input class="nickname-input" type="password" placeholder="Новый пароль" [(ngModel)]="newPassword"
-                        [disabled]="isSavingPassword">
+                    <input class="nickname-input" type="password" placeholder="Старый пароль" [(ngModel)]="old_password"
+                        [disabled]="is_saving_password">
+                    <input class="nickname-input" type="password" placeholder="Новый пароль" [(ngModel)]="new_password"
+                        [disabled]="is_saving_password">
                     <div class="password-actions">
-                        <button class="btn-nick-save" [disabled]="isSavingPassword" (click)="savePassword()">{{
-                            isSavingPassword ? '...' : 'Сохранить' }}</button>
-                        <button class="btn-nick-cancel" [disabled]="isSavingPassword"
-                            (click)="cancelPasswordChange()">Отмена</button>
+                        <button class="btn-nick-save" [disabled]="is_saving_password" (click)="SavePassword()">{{
+                            is_saving_password ? '...' : 'Сохранить' }}</button>
+                        <button class="btn-nick-cancel" [disabled]="is_saving_password"
+                            (click)="CancelPasswordChange()">Отмена</button>
                     </div>
-                    @if (passwordError) { <div class="nickname-error">{{ passwordError }}</div> }
+                    @if (password_error) { <div class="nickname-error">{{ password_error }}</div> }
                 </div>
                 }
                 <div class="settings-divider"></div>
-                <button class="btn-settings-action logout" (click)="openModal('logout')">Выйти из аккаунта</button>
-                <button class="btn-settings-action delete" (click)="openModal('delete')">Удалить аккаунт</button>
+                <button class="btn-settings-action logout" (click)="OpenModal('logout')">Выйти из аккаунта</button>
+                <button class="btn-settings-action delete" (click)="OpenModal('delete')">Удалить аккаунт</button>
             </div>
         </div>
     </div>
     }
-    @if (modalState !== 'none') {
-    <div class="modal-overlay" (click)="closeModal()">
+    @if (modal_state !== 'none') {
+    <div class="modal-overlay" (click)="CloseModal()">
         <div class="modal-content" (click)="$event.stopPropagation()">
-            <h3 class="modal-title">{{ modalState === 'logout' ? 'Выход из аккаунта' : 'Удаление аккаунта' }}</h3>
+            <h3 class="modal-title">{{ modal_state === 'logout' ? 'Выход из аккаунта' : 'Удаление аккаунта' }}</h3>
             <p class="modal-text">
-                {{ modalState === 'logout' ? 'Вы уверены, что хотите выйти?' : 'Вы уверены, что хотите удалить аккаунт?
+                {{ modal_state === 'logout' ? 'Вы уверены, что хотите выйти?' : 'Вы уверены, что хотите удалить аккаунт?
                 Это действие необратимо.' }}
             </p>
             <div class="modal-actions">
-                <button class="btn-cancel" (click)="closeModal()">Отмена</button>
-                <button class="btn-confirm" [class.danger]="modalState === 'delete'" (click)="confirmAction()">
-                    {{ modalState === 'logout' ? 'Выйти' : 'Удалить' }}
+                <button class="btn-cancel" (click)="CloseModal()">Отмена</button>
+                <button class="btn-confirm" [class.danger]="modal_state === 'delete'" (click)="ConfirmAction()">
+                    {{ modal_state === 'logout' ? 'Выйти' : 'Удалить' }}
                 </button>
             </div>
         </div>

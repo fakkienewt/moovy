@@ -8,7 +8,7 @@ import { Profile } from './ContentPages/profile/profile';
 export const routes: Routes = [
     { path: '', component: Main },
     { path: 'content/:type/:id', component: ContentPage },
-    { path: 'auth', component: Authorization },
+    { path: 'authorization', component: Authorization },
     { path: 'login', component: Login },
     { path: 'profile', component: Profile },
 ];

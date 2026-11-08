@@ -5,24 +5,10 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { forkJoin, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ServiceGetData } from '../../Services/service-get-data';
-import { Content } from '../../Models/ContentModel';
+import { ContentModel } from '../../Models/ContentModel';
 import { FormsModule } from '@angular/forms';
-import { AuthStateService } from '../../Services/auth-state-service';
-
-interface AuthNotice {
-  id: number;
-  title: string;
-  text: string;
-  visible: boolean;
-  leaving: boolean;
-}
-
-interface Comment {
-  id: number;
-  author: string;
-  text: string;
-  date: string;
-}
+import { ServiceState } from '../../Services/service-state';
+import { NoticeModel } from '../../Models/NoticeModel';
 
 @Component({
   selector: 'app-content-page',
@@ -32,32 +18,28 @@ interface Comment {
   styleUrl: './content-page.scss'
 })
 export class ContentPage implements OnInit, OnDestroy {
-  content: Content | null = null;
-  similarMovies: Content[] = [];
-  isLoadingSimilar = true;
-  skeletonSimilarItems = Array.from({ length: 4 }, (_, i) => i);
-  isWatchingNow = false;
-  isLater = false;
-  isWatched = false;
+  content: ContentModel | null = null;
+  similar_movies: ContentModel[] = [];
+  is_loading_similar = true;
+  skeleton_similar_items = Array.from({ length: 4 }, (_, i) => i);
 
-  authNotices: AuthNotice[] = [];
+  is_watching_now = false;
+  is_later = false;
+  is_watched = false;
 
-  comments: Comment[] = [];
-  commentText = '';
+  notices: NoticeModel[] = [];
 
-  userName = 'Пользователь';
+  player_url: string | null = null;
+  safe_player_url: SafeResourceUrl | null = null;
+  is_player_loading = true;
 
-  playerUrl: string | null = null;
-  safePlayerUrl: SafeResourceUrl | null = null;
-  isPlayerLoading = true;
+  private navigation_subscription!: Subscription;
+  private notice_timers = new Map<number, any>();
+  private notice_id_counter = 0;
+  private cache_loaded = false;
+  private all_content_cache: ContentModel[] = [];
 
-  private navSub!: Subscription;
-  private noticeTimers = new Map<number, any>();
-  private noticeIdCounter = 0;
-  private cacheLoaded = false;
-  private allContentCache: Content[] = [];
-
-  private pendingNotice: { title: string; text: string } | null = null;
+  private pending_notice: { title: string; text: string } | null = null;
 
   private readonly NOTICE_LIMIT = 5;
   private readonly NOTICE_LIFETIME = 10000;
@@ -66,115 +48,111 @@ export class ContentPage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private contentService: ServiceGetData,
+    private service_get_data: ServiceGetData,
     private sanitizer: DomSanitizer,
-    private auth: AuthStateService
+    private service_state: ServiceState
   ) { }
 
-  onPlayerLoad(): void {
-    const iframe = document.querySelector('.content-player-iframe');
+  OnPlayerLoad(): void {
+    let iframe = document.querySelector('.content-player-iframe');
     if (iframe) {
       iframe.classList.add('loaded');
     }
     setTimeout(() => {
-      this.isPlayerLoading = false;
+      this.is_player_loading = false;
     }, 400);
   }
 
   ngOnInit(): void {
-    this.navSub = this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd)
+    this.navigation_subscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.handleRoute();
+      this.HandleRoute();
     });
 
     forkJoin({
-      movies: this.contentService.getMovies(),
-      series: this.contentService.getTVSeries(),
-      anime: this.contentService.getAnime()
+      movies: this.service_get_data.GetMovies(),
+      series: this.service_get_data.GetTVSeries(),
+      anime: this.service_get_data.GetAnime()
     }).subscribe({
-      next: (data) => {
-        this.allContentCache = [
+      next: (data: any) => {
+        this.all_content_cache = [
           ...(data.movies || []),
           ...(data.series || []),
           ...(data.anime || [])
         ];
-        this.cacheLoaded = true;
-        this.handleRoute();
+        this.cache_loaded = true;
+        this.HandleRoute();
       },
-      error: (err) => console.error('Ошибка загрузки кэша:', err)
+      error: (error: any) => console.error('Ошибка загрузки кэша:', error)
     });
   }
 
   ngOnDestroy(): void {
-    if (this.navSub) {
-      this.navSub.unsubscribe();
+    if (this.navigation_subscription) {
+      this.navigation_subscription.unsubscribe();
     }
-    this.noticeTimers.forEach(t => clearTimeout(t));
-    this.noticeTimers.clear();
+    this.notice_timers.forEach(timer => clearTimeout(timer));
+    this.notice_timers.clear();
   }
 
-  private handleRoute(): void {
-    if (!this.cacheLoaded) {
+  private HandleRoute(): void {
+    if (!this.cache_loaded) {
       return;
     }
 
-    const urlParts = this.router.url.split('/');
-    if (urlParts[1] === 'content' && urlParts[3]) {
-      const type = urlParts[2];
-      const id = +urlParts[3];
+    let url_parts = this.router.url.split('/');
+    if (url_parts[1] === 'content' && url_parts[3]) {
+      let type = url_parts[2];
+      let content_id = +url_parts[3];
 
-      if (!isNaN(id)) {
-        this.loadContent(id, type);
+      if (!isNaN(content_id)) {
+        this.LoadContent(content_id, type);
       }
     }
   }
 
-  private buildKey(type: string | undefined, id: number): string {
-    let src = 'movies';
+  private BuildKey(type: string | undefined, id: number): string {
+    let source = 'movies';
     if (type === 'tv-series') {
-      src = 'tv-series';
+      source = 'tv-series';
+    } else if (type === 'anime') {
+      source = 'anime';
     }
-    else if (type === 'anime') {
-      src = 'anime';
-    }
-    return `${src}:${id}`;
+    return `${source}:${id}`;
   }
 
-  loadContent(contentId: number, typeFromRoute: string | null): void {
+  LoadContent(content_id: number, type_from_route: string | null): void {
     window.scrollTo(0, 0);
 
-    this.noticeTimers.forEach(t => clearTimeout(t));
-    this.noticeTimers.clear();
-    this.authNotices = [];
-    this.pendingNotice = null;
-    this.comments = [];
-    this.commentText = '';
+    this.notice_timers.forEach(timer => clearTimeout(timer));
+    this.notice_timers.clear();
+    this.notices = [];
+    this.pending_notice = null;
 
-    let wantedType: 'movie' | 'tv-series' | 'anime' = 'movie';
+    let wanted_type: 'movie' | 'tv-series' | 'anime' = 'movie';
 
-    if (typeFromRoute === 'tv-series') {
-      wantedType = 'tv-series';
-    }
-    else if (typeFromRoute === 'anime') {
-      wantedType = 'anime';
+    if (type_from_route === 'tv-series') {
+      wanted_type = 'tv-series';
+    } else if (type_from_route === 'anime') {
+      wanted_type = 'anime';
     }
 
-    const foundItem = this.allContentCache.find(
-      m => m.id === contentId && m.type === wantedType
+    let found_item = this.all_content_cache.find(
+      item => item.id === content_id && item.type === wanted_type
     );
 
-    if (!foundItem) {
-      console.error(`Контент ${wantedType} с ID ${contentId} не найден`);
+    if (!found_item) {
+      console.error(`Контент ${wanted_type} с ID ${content_id} не найден`);
       this.content = null;
-      this.similarMovies = [];
-      this.isLoadingSimilar = false;
-      this.playerUrl = null;
-      this.safePlayerUrl = null;
+      this.similar_movies = [];
+      this.is_loading_similar = false;
+      this.player_url = null;
+      this.safe_player_url = null;
       return;
     }
 
-    this.content = { ...foundItem };
+    this.content = { ...found_item };
 
     if (!this.content.directors?.trim()) {
       this.content.directors = 'Неизвестно';
@@ -192,180 +170,172 @@ export class ContentPage implements OnInit, OnDestroy {
       this.content.year = 0;
     }
 
-    let apiSource = 'movies';
-    if (wantedType === 'tv-series') {
-      apiSource = 'tv-series';
+    let api_source = 'movies';
+    if (wanted_type === 'tv-series') {
+      api_source = 'tv-series';
+    } else if (wanted_type === 'anime') {
+      api_source = 'anime';
     }
-    else if (wantedType === 'anime') {
-      apiSource = 'anime';
-    }
 
-    this.loadPlayer(contentId, apiSource);
-    this.isLoadingSimilar = true;
-    this.findSimilarMovies(this.content, this.allContentCache);
+    this.LoadPlayer(content_id, api_source);
+    this.is_loading_similar = true;
+    this.FindSimilarMovies(this.content, this.all_content_cache);
 
-    this.isWatchingNow = false;
-    this.isLater = false;
-    this.isWatched = false;
+    this.is_watching_now = false;
+    this.is_later = false;
+    this.is_watched = false;
 
-    const user = this.auth.getUser();
+    let user = this.service_state.GetCurrentUserData();
     if (!user) {
       return;
     }
 
-    const key = this.buildKey(this.content.type, this.content.id);
+    let item_key = this.BuildKey(this.content.type, this.content.id);
 
-    this.contentService.getUserState().subscribe({
-      next: (state) => {
-        this.isWatchingNow = state.watching_now.includes(key);
-        this.isLater = state.watch_later.includes(key);
-        this.isWatched = state.watched.includes(key);
+    this.service_get_data.GetUserMovieLists().subscribe({
+      next: (state: any) => {
+        this.is_watching_now = state.watching_now.includes(item_key);
+        this.is_later = state.watch_later.includes(item_key);
+        this.is_watched = state.watched.includes(item_key);
       },
-      error: (err) => console.error('Не удалось получить состояние юзера:', err)
+      error: (error: any) => console.error('Не удалось получить состояние юзера:', error)
     });
   }
 
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      img.style.display = 'none';
+  HandleImageError(event: Event): void {
+    let image = event.target as HTMLImageElement;
+    if (image) {
+      image.style.display = 'none';
     }
   }
 
-  loadPlayer(contentId: number, source: string): void {
-    this.isPlayerLoading = true;
-    this.playerUrl = null;
-    this.safePlayerUrl = null;
-    this.contentService.getPlayerLink(contentId, source).subscribe({
-      next: (res) => {
-        const url = res?.primary_player ||
-          (res?.players && res.players.length > 0 ? res.players[0] : null);
+  LoadPlayer(content_id: number, source: string): void {
+    this.is_player_loading = true;
+    this.player_url = null;
+    this.safe_player_url = null;
+
+    this.service_get_data.GetPlayerLink(content_id, source).subscribe({
+      next: (response: any) => {
+        let url = response?.primary_player ||
+          (response?.players && response.players.length > 0 ? response.players[0] : null);
         if (url) {
-          this.playerUrl = url;
-          this.safePlayerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+          this.player_url = url;
+          this.safe_player_url = this.sanitizer.bypassSecurityTrustResourceUrl(url);
         } else {
-          this.playerUrl = null;
-          this.safePlayerUrl = null;
-          this.isPlayerLoading = true;
+          this.player_url = null;
+          this.safe_player_url = null;
+          this.is_player_loading = true;
         }
       },
-      error: (err) => {
-        console.error('Ошибка плеера:', err);
-        this.playerUrl = null;
-        this.safePlayerUrl = null;
-        this.isPlayerLoading = true;
+      error: (error: any) => {
+        console.error('Ошибка плеера:', error);
+        this.player_url = null;
+        this.safe_player_url = null;
+        this.is_player_loading = true;
       }
     });
   }
 
-  findSimilarMovies(currentMovie: Content, allContent: Content[]): void {
-    if (!currentMovie.genres || currentMovie.genres === 'Неизвестно') {
-      this.similarMovies = [];
-      setTimeout(() => { this.isLoadingSimilar = false; }, 500);
+  FindSimilarMovies(current_movie: ContentModel, all_content: ContentModel[]): void {
+    if (!current_movie.genres || current_movie.genres === 'Неизвестно') {
+      this.similar_movies = [];
+      setTimeout(() => { this.is_loading_similar = false; }, 500);
       return;
     }
 
-    const currentGenres = currentMovie.genres.toLowerCase().split(',').map(g => g.trim());
-    const currentType = currentMovie.type;
+    let current_genres = current_movie.genres.toLowerCase().split(',').map(genre => genre.trim());
+    let current_type = current_movie.type;
 
-    const shuffle = (array: any[]) => {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    };
-
-    const scoredMovies = allContent
-      .filter(m =>
-        m.id !== currentMovie.id &&
-        m.type === currentType &&
-        m.genres &&
-        m.genres !== 'Неизвестно'
+    let scored_movies = all_content
+      .filter(item =>
+        item.id !== current_movie.id &&
+        item.type === current_type &&
+        item.genres &&
+        item.genres !== 'Неизвестно'
       )
       .map(movie => {
-        const movieGenres = movie.genres!.toLowerCase().split(',').map(g => g.trim());
-        const matchCount = movieGenres.filter(g => currentGenres.includes(g)).length;
-        return { movie, score: matchCount };
+        let movie_genres = movie.genres!.toLowerCase().split(',').map(genre => genre.trim());
+        let match_count = movie_genres.filter(genre => current_genres.includes(genre)).length;
+        return { movie: movie, score: match_count };
       })
       .filter(item => item.score > 0);
 
-    const shuffled = shuffle(scoredMovies);
+    scored_movies.sort((a, b) => b.score - a.score);
 
     setTimeout(() => {
-      this.similarMovies = shuffled.slice(0, 4).map(item => item.movie);
-      this.isLoadingSimilar = false;
+      this.similar_movies = scored_movies.slice(0, 4).map(item => item.movie);
+      this.is_loading_similar = false;
     }, 500);
   }
 
-  toggleWatchingNow(): void {
-    const user = this.auth.getUser();
+  SwitchWatchingNow(): void {
+    let user = this.service_state.GetCurrentUserData();
     if (!user) {
-      this.showAuthNotice('Смотрю сейчас', 'Войдите в аккаунт, чтобы добавить в список.');
+      this.ShowNotice('Смотрю сейчас', 'Войдите в аккаунт, чтобы добавить в список.');
       return;
     }
     if (!this.content) {
       return;
     }
 
-    const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleWatchingNow(key).subscribe({
-      next: (res) => this.isWatchingNow = res.active,
-      error: (err) => console.error(err)
+    let item_key = this.BuildKey(this.content.type, this.content.id);
+    this.service_get_data.SwitchWatchingNow(item_key).subscribe({
+      next: (response: any) => this.is_watching_now = response.active,
+      error: (error: any) => console.error(error)
     });
   }
 
-  toggleLater(): void {
-    const user = this.auth.getUser();
+  SwitchLater(): void {
+    let user = this.service_state.GetCurrentUserData();
     if (!user) {
-      this.showAuthNotice('Смотреть позже', 'Войдите в аккаунт, чтобы отложить на вечер.');
+      this.ShowNotice('Смотреть позже', 'Войдите в аккаунт, чтобы отложить на вечер.');
       return;
     }
     if (!this.content) {
       return;
     }
 
-    const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleWatchLater(key).subscribe({
-      next: (res) => this.isLater = res.active,
-      error: (err) => console.error(err)
+    let item_key = this.BuildKey(this.content.type, this.content.id);
+    this.service_get_data.SwitchWatchLater(item_key).subscribe({
+      next: (response: any) => this.is_later = response.active,
+      error: (error: any) => console.error(error)
     });
   }
 
-  toggleWatched(event: Event): void {
+  SwitchWatched(event: Event): void {
     event.stopPropagation();
 
-    const user = this.auth.getUser();
+    let user = this.service_state.GetCurrentUserData();
     if (!user) {
-      this.showAuthNotice('Отметьте просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
+      this.ShowNotice('Отметьте просмотренным', 'Войдите в аккаунт, чтобы отметить просмотренное.');
       return;
     }
     if (!this.content) {
       return;
     }
 
-    const key = this.buildKey(this.content.type, this.content.id);
-    this.contentService.toggleWatched(key).subscribe({
-      next: (res) => this.isWatched = res.active,
-      error: (err) => console.error(err)
+    let item_key = this.BuildKey(this.content.type, this.content.id);
+    this.service_get_data.SwitchWatched(item_key).subscribe({
+      next: (response: any) => this.is_watched = response.active,
+      error: (error: any) => console.error(error)
     });
   }
 
-  toggleSendComment(): void {
-    if (!this.auth.getUser()) {
-      this.showAuthNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
+  SwitchSendComment(): void {
+    if (!this.service_state.GetCurrentUserData()) {
+      this.ShowNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
       return;
     }
   }
 
-  closeAuthNotice(id: number): void {
-    const timer = this.noticeTimers.get(id);
+  CloseNotice(notice_id: number): void {
+    let timer = this.notice_timers.get(notice_id);
     if (timer) {
       clearTimeout(timer);
-      this.noticeTimers.delete(id);
+      this.notice_timers.delete(notice_id);
     }
 
-    const notice = this.authNotices.find(n => n.id === id);
+    let notice = this.notices.find(n => n.id === notice_id);
     if (!notice || notice.leaving) {
       return;
     }
@@ -374,47 +344,46 @@ export class ContentPage implements OnInit, OnDestroy {
     notice.visible = false;
 
     setTimeout(() => {
-      this.authNotices = this.authNotices.filter(n => n.id !== id);
+      this.notices = this.notices.filter(n => n.id !== notice_id);
 
-      if (this.pendingNotice && this.authNotices.length < this.NOTICE_LIMIT) {
-        const pending = this.pendingNotice;
-        this.pendingNotice = null;
-        this.showAuthNotice(pending.title, pending.text);
+      if (this.pending_notice && this.notices.length < this.NOTICE_LIMIT) {
+        let pending = this.pending_notice;
+        this.pending_notice = null;
+        this.ShowNotice(pending.title, pending.text);
       }
     }, this.NOTICE_LEAVE_DELAY);
   }
 
-  private showAuthNotice(title: string, text: string): void {
-    if (this.authNotices.length >= this.NOTICE_LIMIT) {
-      this.pendingNotice = { title, text };
-      const oldest = this.authNotices[this.authNotices.length - 1];
+  private ShowNotice(title: string, text: string): void {
+    if (this.notices.length >= this.NOTICE_LIMIT) {
+      this.pending_notice = { title, text };
+      let oldest = this.notices[this.notices.length - 1];
       if (!oldest.leaving) {
-        this.closeAuthNotice(oldest.id);
+        this.CloseNotice(oldest.id);
       }
       return;
     }
 
-    const id = ++this.noticeIdCounter;
-    const notice: AuthNotice = { id, title, text, visible: false, leaving: false };
+    let notice_id = ++this.notice_id_counter;
+    let notice: NoticeModel = { id: notice_id, title, text, visible: false, leaving: false };
 
-    this.authNotices.unshift(notice);
+    this.notices.unshift(notice);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => { notice.visible = true; });
     });
 
-    const timer = setTimeout(() => this.closeAuthNotice(id), this.NOTICE_LIFETIME);
-    this.noticeTimers.set(id, timer);
+    let timer = setTimeout(() => this.CloseNotice(notice_id), this.NOTICE_LIFETIME);
+    this.notice_timers.set(notice_id, timer);
   }
 
-  onSelectContent(content: Content): void {
-    let type = 'movie';
+  OnSelectContent(content: ContentModel): void {
+    let content_type = 'movie';
     if (content.type === 'tv-series') {
-      type = 'tv-series';
+      content_type = 'tv-series';
+    } else if (content.type === 'anime') {
+      content_type = 'anime';
     }
-    else if (content.type === 'anime') {
-      type = 'anime';
-    }
-    this.router.navigate(['/content', type, content.id]);
+    this.router.navigate(['/content', content_type, content.id]);
   }
 }
