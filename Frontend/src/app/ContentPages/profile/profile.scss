@@ -620,3 +620,271 @@
     gap: 15px;
     width: 100%;
 }
+
+@media (max-width: 768px) {
+    .page-wrap {
+        padding: 10px 0;
+    }
+
+    .profile-layout {
+        gap: 12px;
+    }
+
+    .profile-top {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 16px;
+        gap: 8px;
+    }
+
+    .profile-user {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .side-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .side-nickname {
+        font-size: 15px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .side-username {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .btn-settings {
+        padding: 6px 12px;
+        font-size: 11px;
+        border-radius: 10px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .profile-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .side-item {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 10px;
+        font-size: 10px;
+        border-radius: 10px;
+        width: 100%;
+        gap: 4px;
+    }
+
+    .side-count {
+        min-width: 16px;
+        height: 16px;
+        font-size: 9px;
+        border-radius: 6px;
+    }
+
+    .shelf-card {
+        padding: 12px;
+        border-radius: 16px;
+        border-width: 2px;
+    }
+
+    .shelf-head {
+        margin-bottom: 10px;
+        gap: 8px;
+    }
+
+    .shelf-title {
+        font-size: 16px;
+    }
+
+    .shelf-count {
+        font-size: 11px;
+        padding: 2px 8px;
+    }
+
+    .shelf-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        min-height: 200px;
+        padding: 0;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        padding: 8px;
+        border-radius: 12px;
+        border-width: 2px;
+    }
+
+    .card-poster {
+        width: 100%;
+        margin-bottom: 8px t;
+        border-radius: 8px;
+        border-width: 1px;
+    }
+
+    .card-info {
+        margin-top: 6px;
+        width: 100%;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 11px;
+        max-height: 2.4em;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    .card-year {
+        font-size: 10px;
+    }
+
+    .rating-badge {
+        top: 4px;
+        right: 4px;
+        padding: 2px 5px;
+        font-size: 9px;
+        border-radius: 5px;
+    }
+
+    .skeleton-line.title {
+        height: 12px;
+        margin-bottom: 4px;
+    }
+
+    .skeleton-line.year {
+        height: 10px;
+        width: 60%;
+    }
+
+    .pagination {
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+
+    .pagination button,
+    .pagination span {
+        padding: 6px 12px;
+        font-size: 11px;
+        border-radius: 8px;
+    }
+
+    .modal-content {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .modal-text {
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    .btn-cancel,
+    .btn-confirm {
+        padding: 10px;
+        font-size: 12px;
+        border-radius: 10px;
+    }
+
+    .settings-modal {
+        max-width: 100%;
+    }
+
+    .settings-header {
+        margin-bottom: 12px;
+    }
+
+    .settings-big-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+
+    .settings-avatar-section {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+    }
+
+    .settings-list {
+        gap: 8px;
+    }
+
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        gap: 8px;
+        position: relative;
+    }
+
+    .settings-value {
+        font-size: 14px;
+    }
+
+    .settings-edit-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .nickname-input {
+        padding: 6px 10px;
+        font-size: 12px;
+        width: 100%;
+    }
+
+    .btn-edit-nick {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    .btn-nick-save,
+    .btn-nick-cancel {
+        height: 28px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
+
+    .btn-settings-action {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .settings-password-group {
+        padding: 10px;
+    }
+}
