@@ -9,6 +9,7 @@ import { ContentModel } from '../../Models/ContentModel';
 import { FormsModule } from '@angular/forms';
 import { ServiceState } from '../../Services/service-state';
 import { NoticeModel } from '../../Models/NoticeModel';
+import { CommentModel } from '../../Models/CommentModel';
 
 @Component({
   selector: 'app-content-page',
@@ -40,6 +41,15 @@ export class ContentPage implements OnInit, OnDestroy {
   private all_content_cache: ContentModel[] = [];
 
   private pending_notice: { title: string; text: string } | null = null;
+
+  comments: CommentModel[] = [];
+  comment_text = '';
+  comment_page = 1;
+  comments_per_page = 10;
+  editing_comment_id: string | null = null;
+  edit_comment_text = '';
+  current_user_id: number | null = null;
+  delete_comment_id: string | null = null;
 
   private readonly NOTICE_LIMIT = 5;
   private readonly NOTICE_LIFETIME = 10000;
@@ -186,11 +196,17 @@ export class ContentPage implements OnInit, OnDestroy {
     this.is_watched = false;
 
     let user = this.service_state.GetCurrentUserData();
+    let item_key = this.BuildKey(this.content.type, this.content.id);
+
+    this.LoadComments(item_key);
+    this.comment_text = '';
+    this.editing_comment_id = null;
+    this.delete_comment_id = null;
+    this.current_user_id = user ? user.id : null;
+
     if (!user) {
       return;
     }
-
-    let item_key = this.BuildKey(this.content.type, this.content.id);
 
     this.service_get_data.GetUserMovieLists().subscribe({
       next: (state: any) => {
@@ -321,13 +337,6 @@ export class ContentPage implements OnInit, OnDestroy {
     });
   }
 
-  SwitchSendComment(): void {
-    if (!this.service_state.GetCurrentUserData()) {
-      this.ShowNotice('Оставьте комментарий', 'Войдите в аккаунт, чтобы оставить комментарий.');
-      return;
-    }
-  }
-
   CloseNotice(notice_id: number): void {
     let timer = this.notice_timers.get(notice_id);
     if (timer) {
@@ -385,5 +394,100 @@ export class ContentPage implements OnInit, OnDestroy {
       content_type = 'anime';
     }
     this.router.navigate(['/content', content_type, content.id]);
+  }
+
+  get PaginatedComments(): CommentModel[] {
+    let start = (this.comment_page - 1) * this.comments_per_page;
+    return this.comments.slice(start, start + this.comments_per_page);
+  }
+
+  get TotalCommentPages(): number {
+    return Math.ceil(this.comments.length / this.comments_per_page);
+  }
+
+  LoadComments(content_key: string): void {
+    this.service_get_data.GetComments(content_key).subscribe({
+      next: (comments) => {
+        this.comments = comments;
+        this.comment_page = 1;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  SendComment(): void {
+    let user = this.service_state.GetCurrentUserData();
+    if (!user) {
+      this.ShowNotice('Ошибка', 'Войдите в аккаунт, чтобы оставить комментарий.');
+      return;
+    }
+
+    let text = this.comment_text.trim();
+    if (!text) return;
+
+    let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
+
+    this.service_get_data.AddComment(content_key, text).subscribe({
+      next: (new_comment) => {
+        this.comments.unshift(new_comment);
+        this.comment_text = '';
+        this.comment_page = 1;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  DeleteComment(comment_id: string): void {
+    this.delete_comment_id = comment_id;
+  }
+
+  CancelDeleteComment(): void {
+    this.delete_comment_id = null;
+  }
+
+  ConfirmDeleteComment(): void {
+    if (!this.delete_comment_id) return;
+
+    let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
+    this.service_get_data.DeleteComment(content_key, this.delete_comment_id).subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c.id !== this.delete_comment_id);
+        this.delete_comment_id = null;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  StartEditComment(comment: CommentModel): void {
+    this.editing_comment_id = comment.id;
+    this.edit_comment_text = comment.text;
+  }
+
+  CancelEditComment(): void {
+    this.editing_comment_id = null;
+    this.edit_comment_text = '';
+  }
+
+  SaveEditComment(comment_id: string): void {
+    let text = this.edit_comment_text.trim();
+    if (!text) return;
+
+    let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
+    this.service_get_data.UpdateComment(content_key, comment_id, text).subscribe({
+      next: (res) => {
+        let comment = this.comments.find(c => c.id === comment_id);
+        if (comment) comment.text = res.text;
+        this.editing_comment_id = null;
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  NextCommentPage(): void {
+    if (this.comment_page < this.TotalCommentPages) this.comment_page++;
+  }
+
+  PrevCommentPage(): void {
+    if (this.comment_page > 1) this.comment_page--;
   }
 }

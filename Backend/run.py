@@ -7,6 +7,7 @@ from flask import jsonify
 from DataBase.UpdateDB import db, app
 from JWT_Folder.jwt import setup_jwt
 from CORS_Folder.cors import setup_cors
+from CommentsFOLDER.comments import comments_blueprint
 
 setup_jwt(app)
 setup_cors(app)
@@ -46,6 +47,7 @@ app.register_blueprint(movies_blueprint)
 app.register_blueprint(tv_series_blueprint)
 app.register_blueprint(anime_blueprint)
 app.register_blueprint(player_blueprint)
+app.register_blueprint(comments_blueprint)
 
 @app.errorhandler(429)
 def ratelimit_handler(e):

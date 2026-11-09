@@ -7,6 +7,7 @@ import { FilterOptionsModel } from '../Models/FilterOptionsModel';
 import { ContentResponseModel } from '../Models/ContentResponseModel';
 import { ProfileDataModel } from '../Models/ProfileDataModl';
 import { PlayerResponseModel } from '../Models/PlayerResponseModel';
+import { CommentModel } from '../Models/CommentModel';
 
 @Injectable({
   providedIn: 'root',
@@ -176,5 +177,21 @@ export class ServiceGetData {
     return this.http.post<{ message: string; avatar: string; user: any }>(
       `${this.api_url_base}/profile/avatar`, formData
     );
+  }
+
+  GetComments(content_key: string): Observable<CommentModel[]> {
+    return this.http.get<CommentModel[]>(`${this.api_url_base}/comments/${content_key}`);
+  }
+
+  AddComment(content_key: string, text: string): Observable<CommentModel> {
+    return this.http.post<CommentModel>(`${this.api_url_base}/comments/${content_key}`, { text });
+  }
+
+  DeleteComment(content_key: string, comment_id: string) {
+    return this.http.delete<{ message: string }>(`${this.api_url_base}/comments/${content_key}/${comment_id}`);
+  }
+
+  UpdateComment(content_key: string, comment_id: string, text: string) {
+    return this.http.put<{ message: string; text: string }>(`${this.api_url_base}/comments/${content_key}/${comment_id}`, { text });
   }
 }

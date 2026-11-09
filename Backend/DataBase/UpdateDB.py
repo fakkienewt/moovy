@@ -79,7 +79,7 @@ class Users(db.Model):
     watched = db.Column(db.Text, nullable=False, default='')
     watching_now = db.Column(db.Text, nullable=False, default='')
     watch_later = db.Column(db.Text, nullable=False, default='')
-    comments = db.Column(db.Text, nullable=False, default='[]')
+    comments = db.Column(db.Text, nullable=False, default='{}') 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     def to_dict(self):
