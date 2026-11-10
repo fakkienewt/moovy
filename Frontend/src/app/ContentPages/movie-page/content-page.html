@@ -148,20 +148,17 @@
             }
             <div class="comments-section">
                 <h3 class="section-title">Комментарии</h3>
-
                 <div class="comment-form">
                     <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input"
                         [(ngModel)]="comment_text" (keyup.enter)="SendComment()">
                     <button type="button" class="btn-comment" (click)="SendComment()">Отправить</button>
                 </div>
-
                 @if (comments.length === 0) {
                 <div class="comments-empty">
                     <div class="comments-empty-title">Комментариев пока нет</div>
                     <div class="comments-empty-sub">Будьте первым, кто оставит отзыв!</div>
                 </div>
                 } @else {
-
                 <div class="comments-list">
                     @for (comment of PaginatedComments; track comment.id) {
                     <div class="comment-item">
@@ -177,7 +174,6 @@
                                 <span class="comment-author">{{ comment.author }}</span>
                                 <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy HH:mm' }}</span>
                             </div>
-
                             @if (editing_comment_id === comment.id) {
                             <div class="comment-edit-form">
                                 <textarea class="comment-input comment-textarea" [(ngModel)]="edit_comment_text"
@@ -189,13 +185,14 @@
                             </div>
                             } @else {
                             <div class="comment-text">{{ comment.text }}</div>
-
                             @if (comment.user_id === current_user_id) {
                             @if (delete_comment_id === comment.id) {
                             <div class="comment-delete-confirm">
                                 <span>Удалить комментарий?</span>
-                                <button class="btn-confirm-yes" (click)="ConfirmDeleteComment()">Да</button>
-                                <button class="btn-confirm-no" (click)="CancelDeleteComment()">Нет</button>
+                                <div class="delete-confirm-actions">
+                                    <button class="btn-confirm-yes" (click)="ConfirmDeleteComment()">Да</button>
+                                    <button class="btn-confirm-no" (click)="CancelDeleteComment()">Нет</button>
+                                </div>
                             </div>
                             } @else {
                             <div class="comment-actions">
@@ -206,10 +203,25 @@
                             }
                             }
                         </div>
+                        <div class="comment-votes">
+                            <button class="vote-btn" (click)="VoteComment(comment, 'like')">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path
+                                        d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z" />
+                                </svg>
+                                <span>{{ comment.likes_count || 0 }}</span>
+                            </button>
+                            <button class="vote-btn" (click)="VoteComment(comment, 'dislike')">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path
+                                        d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z" />
+                                </svg>
+                                <span>{{ comment.dislikes_count || 0 }}</span>
+                            </button>
+                        </div>
                     </div>
                     }
                 </div>
-
                 @if (TotalCommentPages > 1) {
                 <div class="pagination">
                     <button (click)="PrevCommentPage()" [disabled]="comment_page === 1">Назад</button>
@@ -221,7 +233,6 @@
             </div>
         </div>
         }
-
         <div class="notice-stack">
             @for (notice of notices; track notice.id) {
             <div class="notice" [class.show]="notice.visible" [class.leaving]="notice.leaving">

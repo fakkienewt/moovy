@@ -423,7 +423,9 @@ export class ContentPage implements OnInit, OnDestroy {
     }
 
     let text = this.comment_text.trim();
-    if (!text) return;
+    if (!text) {
+      return;
+    }
 
     let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
 
@@ -446,7 +448,9 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   ConfirmDeleteComment(): void {
-    if (!this.delete_comment_id) return;
+    if (!this.delete_comment_id) {
+      return;
+    }
 
     let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
     this.service_get_data.DeleteComment(content_key, this.delete_comment_id).subscribe({
@@ -470,7 +474,10 @@ export class ContentPage implements OnInit, OnDestroy {
 
   SaveEditComment(comment_id: string): void {
     let text = this.edit_comment_text.trim();
-    if (!text) return;
+
+    if (!text) {
+      return;
+    }
 
     let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
     this.service_get_data.UpdateComment(content_key, comment_id, text).subscribe({
@@ -484,10 +491,43 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   NextCommentPage(): void {
-    if (this.comment_page < this.TotalCommentPages) this.comment_page++;
+    if (this.comment_page < this.TotalCommentPages) {
+      this.comment_page++;
+    }
   }
 
   PrevCommentPage(): void {
-    if (this.comment_page > 1) this.comment_page--;
+    if (this.comment_page > 1) {
+      this.comment_page--;
+    }
+  }
+
+  VoteComment(comment: CommentModel, type: 'like' | 'dislike'): void {
+    let user = this.service_state.GetCurrentUserData();
+    if (!user) {
+      this.ShowNotice('Ошибка', 'Войдите в аккаунт, чтобы оценивать комментарии.');
+      return;
+    }
+
+    let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
+
+    this.service_get_data.VoteComment(content_key, comment.id, type).subscribe({
+      next: (res) => {
+        comment.likes_count = res.likes_count;
+        comment.dislikes_count = res.dislikes_count;
+
+        if (res.user_vote === 'like') {
+          if (!comment.likes.includes(user.id)) comment.likes.push(user.id);
+          comment.dislikes = comment.dislikes.filter(id => id !== user.id);
+        } else if (res.user_vote === 'dislike') {
+          if (!comment.dislikes.includes(user.id)) comment.dislikes.push(user.id);
+          comment.likes = comment.likes.filter(id => id !== user.id);
+        } else {
+          comment.likes = comment.likes.filter(id => id !== user.id);
+          comment.dislikes = comment.dislikes.filter(id => id !== user.id);
+        }
+      },
+      error: (err) => console.error(err)
+    });
   }
 }

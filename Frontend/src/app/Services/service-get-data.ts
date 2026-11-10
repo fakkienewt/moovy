@@ -194,4 +194,11 @@ export class ServiceGetData {
   UpdateComment(content_key: string, comment_id: string, text: string) {
     return this.http.put<{ message: string; text: string }>(`${this.api_url_base}/comments/${content_key}/${comment_id}`, { text });
   }
+
+  VoteComment(content_key: string, comment_id: string, vote_type: 'like' | 'dislike') {
+    return this.http.post<{ likes_count: number; dislikes_count: number; user_vote: string | null }>(
+      `${this.api_url_base}/comments/${content_key}/${comment_id}/vote`,
+      { vote_type }
+    );
+  }
 }

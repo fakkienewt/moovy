@@ -5,4 +5,8 @@ export interface CommentModel {
   avatar: string | null;
   text: string;
   date: number;
+  likes: number[];
+  dislikes: number[];
+  likes_count: number;
+  dislikes_count: number;
 }

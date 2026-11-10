@@ -1,12 +1,12 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from DataBase.UpdateDB import db, Users
 import json
 import time
 
 comments_blueprint = Blueprint('comments', __name__, url_prefix='/api/comments')
 
-@comments_blueprint.route('/<string:content_key>', methods=['GET', 'OPTIONS'])
+@comments_blueprint.route('/<path:content_key>', methods=['GET', 'OPTIONS'])
 def get_comments(content_key):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
@@ -25,20 +25,24 @@ def get_comments(content_key):
                     c['user_id'] = user.id
                     c['avatar'] = f"http://127.0.0.1:5001/api/profile/avatar/{user.id}" if user.avatar else None
                     all_comments.append(c)
-        except Exception as e:
-            print(f"Ошибка парсинга JSON у юзера {user.id}: {e}")
+        except Exception:
+            pass
             
     all_comments.sort(key=lambda x: x.get('date', 0), reverse=True)
+    
+    for c in all_comments:
+        c['likes_count'] = len(c.get('likes', []))
+        c['dislikes_count'] = len(c.get('dislikes', []))
+        
     return jsonify(all_comments), 200
 
-@comments_blueprint.route('/<string:content_key>', methods=['POST', 'OPTIONS'])
+@comments_blueprint.route('/<path:content_key>', methods=['POST', 'OPTIONS'])
 def add_comment(content_key):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
         
     verify_jwt_in_request()
-    identity_data = get_jwt_identity()
-    user_id = int(identity_data)
+    user_id = int(get_jwt_identity())
     user = db.session.get(Users, user_id)
     
     if not user:
@@ -62,7 +66,9 @@ def add_comment(content_key):
     new_comment = {
         'id': str(int(time.time() * 1000)),
         'text': text,
-        'date': int(time.time())
+        'date': int(time.time()),
+        'likes': [],
+        'dislikes': []
     }
     
     all_comments[content_key].append(new_comment)
@@ -72,17 +78,18 @@ def add_comment(content_key):
     new_comment['author'] = user.nickname
     new_comment['user_id'] = user.id
     new_comment['avatar'] = f"http://127.0.0.1:5001/api/profile/avatar/{user.id}" if user.avatar else None
+    new_comment['likes_count'] = 0
+    new_comment['dislikes_count'] = 0
     
     return jsonify(new_comment), 201
 
-@comments_blueprint.route('/<string:content_key>/<string:comment_id>', methods=['DELETE', 'OPTIONS'])
+@comments_blueprint.route('/<path:content_key>/<string:comment_id>', methods=['DELETE', 'OPTIONS'])
 def delete_comment(content_key, comment_id):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
         
     verify_jwt_in_request()
-    identity_data = get_jwt_identity()
-    user_id = int(identity_data)
+    user_id = int(get_jwt_identity())
     user = db.session.get(Users, user_id)
     
     if not user or not user.comments:
@@ -103,14 +110,13 @@ def delete_comment(content_key, comment_id):
         
     return jsonify({'error': 'Комментарий не найден'}), 404
 
-@comments_blueprint.route('/<string:content_key>/<string:comment_id>', methods=['PUT', 'OPTIONS'])
+@comments_blueprint.route('/<path:content_key>/<string:comment_id>', methods=['PUT', 'OPTIONS'])
 def edit_comment(content_key, comment_id):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
         
     verify_jwt_in_request()
-    identity_data = get_jwt_identity()
-    user_id = int(identity_data)
+    user_id = int(get_jwt_identity())
     user = db.session.get(Users, user_id)
     
     if not user or not user.comments:
@@ -137,4 +143,65 @@ def edit_comment(content_key, comment_id):
                 db.session.commit()
                 return jsonify({'message': 'Обновлено', 'text': new_text}), 200
 
+    return jsonify({'error': 'Комментарий не найден'}), 404
+
+@comments_blueprint.route('/<path:content_key>/<string:comment_id>/vote', methods=['POST', 'OPTIONS'])
+def vote_comment(content_key, comment_id):
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+        
+    verify_jwt_in_request()
+    voter_id = int(get_jwt_identity())
+    
+    data = request.get_json() or {}
+    vote_type = data.get('vote_type')
+    
+    if vote_type not in ('like', 'dislike'):
+        return jsonify({'error': 'Неверный тип голоса'}), 400
+
+    users = Users.query.all()
+    
+    for author in users:
+        if not author.comments:
+            continue
+        try:
+            all_comments = json.loads(author.comments)
+            if not isinstance(all_comments, dict) or content_key not in all_comments:
+                continue
+                
+            for c in all_comments[content_key]:
+                if c.get('id') == comment_id:
+                    likes = c.get('likes', [])
+                    dislikes = c.get('dislikes', [])
+
+                    if vote_type == 'like':
+                        if voter_id in likes:
+                            likes.remove(voter_id)
+                        else:
+                            likes.append(voter_id)
+                            if voter_id in dislikes:
+                                dislikes.remove(voter_id)
+                                
+                    elif vote_type == 'dislike':
+                        if voter_id in dislikes:
+                            dislikes.remove(voter_id)
+                        else:
+                            dislikes.append(voter_id)
+                            if voter_id in likes:
+                                likes.remove(voter_id)
+                    
+                    c['likes'] = likes
+                    c['dislikes'] = dislikes
+                    
+                    author.comments = json.dumps(all_comments)
+                    db.session.commit()
+                    
+                    return jsonify({
+                        'likes_count': len(likes),
+                        'dislikes_count': len(dislikes),
+                        'user_vote': vote_type if voter_id in (likes if vote_type == 'like' else dislikes) else None
+                    }), 200
+        except Exception:
+            continue
+            
     return jsonify({'error': 'Комментарий не найден'}), 404
