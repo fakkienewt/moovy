@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
-from DataBase.UpdateDB import db, Users
+from DataBase.UpdateDB import db, Users, Movies, TvSeries, Anime
 import json
 import time
 
@@ -35,6 +35,56 @@ def get_comments(content_key):
         c['dislikes_count'] = len(c.get('dislikes', []))
         
     return jsonify(all_comments), 200
+
+@comments_blueprint.route('/user/<int:user_id>', methods=['GET', 'OPTIONS'])
+def get_user_comments(user_id):
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+        
+    user = db.session.get(Users, user_id)
+    if not user or not user.comments:
+        return jsonify([]), 200
+
+    try:
+        all_comments = json.loads(user.comments)
+    except Exception:
+        return jsonify([]), 200
+
+    result = []
+    if isinstance(all_comments, dict):
+        for content_key, comments_list in all_comments.items():
+            try:
+                type_key, id_str = content_key.split(':')
+                item_id = int(id_str)
+                
+                model = Movies
+                if type_key == 'tv-series':
+                    model = TvSeries
+                elif type_key == 'anime':
+                    model = Anime
+                
+                content = db.session.get(model, item_id)
+                movie_name = content.name if content else 'Фильм удален'
+                movie_year = content.year if content else ''
+            except Exception:
+                movie_name = 'Фильм удален'
+                movie_year = ''
+
+            for c in comments_list:
+                c['content_key'] = content_key
+                c['movie_name'] = movie_name
+                c['movie_year'] = movie_year
+                c['likes_count'] = len(c.get('likes', []))
+                c['dislikes_count'] = len(c.get('dislikes', []))
+                result.append(c)
+                
+    result.sort(key=lambda x: x.get('date', 0), reverse=True)
+    
+    for c in result:
+        c['avatar'] = f"http://127.0.0.1:5001/api/profile/avatar/{user.id}" if user.avatar else None
+        c['author'] = user.nickname
+        
+    return jsonify(result), 200
 
 @comments_blueprint.route('/<path:content_key>', methods=['POST', 'OPTIONS'])
 def add_comment(content_key):

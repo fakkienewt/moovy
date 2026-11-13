@@ -6,7 +6,7 @@
                     @if (user?.avatar) {
                     <img [src]="user?.avatar" (error)="user!.avatar = undefined">
                     } @else {
-                    {{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
+                    {{ user?.nickname ? user!.nickname[0].toUpperCase() : '?' }}
                     }
                 </div>
                 <div class="profile-name-block">
@@ -42,9 +42,48 @@
                     <div class="shelf-empty-sub">Здесь будут отображаться ваши комментарии</div>
                 </div>
                 } @else {
-                <div class="comment-list">
-                    @for (comment of user_comments; track comment.id) { }
+                <div class="comments-list">
+                    @for (comment of paginated_comments; track comment.id) {
+                    <div class="comment-item">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <div class="comment-header-left">
+                                    <span class="comment-movie-link" (click)="OnOpenContentByKey(comment.content_key)">
+                                        {{ comment.movie_name }} @if(comment.movie_year) { ({{ comment.movie_year }}) }
+                                    </span>
+                                    <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy HH:mm'
+                                        }}</span>
+                                </div>
+                                <button class="btn-delete-svg" (click)="DeleteComment(comment.id, comment.content_key)"
+                                    title="Удалить комментарий">
+                                    <img src="/SVG/content-page-profile-button-delete.svg">
+                                </button>
+                            </div>
+                            <div class="comment-text">{{ comment.text }}</div>
+                            <div class="comment-footer">
+                                <div class="comment-votes">
+                                    <button class="vote-btn">
+                                        <img src="/SVG/like.svg">
+                                        <span>{{ comment.likes_count || 0 }}</span>
+                                    </button>
+                                    <button class="vote-btn">
+                                         <img src="/SVG/dislike.svg">
+                                        <span>{{ comment.dislikes_count || 0 }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
                 </div>
+                @if (TotalCommentPages > 1) {
+                <div class="pagination">
+                    <button (click)="PrevCommentPage()" [disabled]="current_comments_page === 1">Назад</button>
+                    <span>{{ current_comments_page }} / {{ TotalCommentPages }}</span>
+                    <button (click)="NextCommentPage()"
+                        [disabled]="current_comments_page === TotalCommentPages">Вперёд</button>
+                </div>
+                }
                 }
                 } @else if (is_loading) {
                 <div class="shelf-grid">
@@ -81,7 +120,6 @@
                     }
                 </div>
                 }
-
                 @if (active_tab !== 'comments' && !IsPaginationHidden) {
                 <div class="pagination">
                     <button (click)="BackPage()" [disabled]="current_page === 1">Назад</button>
@@ -105,7 +143,7 @@
                         @if (user?.avatar) {
                         <img [src]="user?.avatar" (error)="user!.avatar = undefined">
                         } @else {
-                        {{ user?.nickname?.charAt(0)?.toUpperCase() || '?' }}
+                        {{ user?.nickname ? user!.nickname[0].toUpperCase() : '?' }}
                         }
                     </div>
                 </div>

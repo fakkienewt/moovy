@@ -50,7 +50,10 @@ export class Profile implements OnInit {
 
   all_content: any[] = [];
   full_list: ListItemModel[] = [];
+
   user_comments: any[] = [];
+  paginated_comments: any[] = [];
+  current_comments_page = 1;
 
   get Tabs(): { key: Tab; label: string; count: number }[] {
     return [
@@ -89,6 +92,10 @@ export class Profile implements OnInit {
     return this.full_list.length <= this.items_per_page || this.is_loading;
   }
 
+  get TotalCommentPages(): number {
+    return Math.ceil(this.user_comments.length / this.items_per_page);
+  }
+
   ngOnInit(): void {
     this.user = this.service_state.GetCurrentUserData();
 
@@ -97,14 +104,33 @@ export class Profile implements OnInit {
       return;
     }
 
-    this.active_tab = 'watch_later';
-
+    const VALID_TABS: Tab[] = ['watch_later', 'watched', 'watching_now', 'comments'];
     let saved_state = this.pagination_state_service.loadState();
 
-    if (saved_state.currentPage && saved_state.currentPage > 0 && saved_state.activeTab === 'watch_later') {
+    if (saved_state.activeTab && VALID_TABS.includes(saved_state.activeTab as Tab)) {
+      this.active_tab = saved_state.activeTab as Tab;
+    } else {
+      this.active_tab = 'watch_later';
+    }
+
+    if (
+      typeof saved_state.currentPage === 'number' &&
+      Number.isInteger(saved_state.currentPage) &&
+      saved_state.currentPage > 0
+    ) {
       this.current_page = saved_state.currentPage;
     } else {
       this.current_page = 1;
+    }
+
+    if (
+      typeof saved_state.commentsPage === 'number' &&
+      Number.isInteger(saved_state.commentsPage) &&
+      saved_state.commentsPage > 0
+    ) {
+      this.current_comments_page = saved_state.commentsPage;
+    } else {
+      this.current_comments_page = 1;
     }
 
     this.service_state.user$.subscribe(user => {
@@ -117,6 +143,20 @@ export class Profile implements OnInit {
         this.state = data.state || { watching_now: [], watch_later: [], watched: [] };
         this.is_loading = false;
         this.RefreshList();
+
+        if (this.user) {
+          this.service_get_data.GetUserComments(this.user.id).subscribe(comments => {
+            this.user_comments = comments.map(c => {
+              return {
+                ...c,
+                movie_name: c.movie_name || 'Фильм удален',
+                movie_year: c.movie_year || '',
+                movie_poster: null
+              };
+            });
+            this.RefreshComments();
+          });
+        }
       },
       error: (error: any) => {
         console.error(error);
@@ -345,12 +385,17 @@ export class Profile implements OnInit {
   SetTab(tab: Tab): void {
     this.active_tab = tab;
     this.current_page = 1;
+    this.current_comments_page = 1;
+
+    this.full_list = [];
+    this.SavePaginationState();
 
     if (tab !== 'comments') {
       this.RefreshList();
+    } else {
+      this.RefreshComments();
     }
   }
-
   NextPage(): void {
     if (this.current_page < this.total_pages) {
       this.current_page++;
@@ -369,8 +414,32 @@ export class Profile implements OnInit {
     }
   }
 
+  NextCommentPage(): void {
+    if (this.current_comments_page < this.TotalCommentPages) {
+      this.current_comments_page++;
+      this.RefreshComments();
+      this.SavePaginationState();
+    }
+  }
+
+  PrevCommentPage(): void {
+    if (this.current_comments_page > 1) {
+      this.current_comments_page--;
+      this.RefreshComments();
+      this.SavePaginationState();
+    }
+  }
+
   OnOpenItem(item: ListItemModel): void {
+    this.SavePaginationState();
     this.router.navigate(['/content', item.type, item.id]);
+  }
+
+  OnOpenContentByKey(key: string): void {
+    this.SavePaginationState();
+    let [type_key, id_str] = key.split(':');
+    let type = type_key === 'movies' ? 'movie' : type_key;
+    this.router.navigate(['/content', type, id_str]);
   }
 
   OpenModal(state: 'logout' | 'delete'): void {
@@ -401,7 +470,8 @@ export class Profile implements OnInit {
   private SavePaginationState(): void {
     this.pagination_state_service.saveState({
       activeTab: this.active_tab,
-      currentPage: this.current_page
+      currentPage: this.current_page,
+      commentsPage: this.current_comments_page
     });
   }
 
@@ -444,8 +514,28 @@ export class Profile implements OnInit {
     this.UpdatePagination();
   }
 
+  private RefreshComments(): void {
+    let start = (this.current_comments_page - 1) * this.items_per_page;
+    this.paginated_comments = this.user_comments.slice(start, start + this.items_per_page);
+  }
+
   private UpdatePagination(): void {
     let start_index = (this.current_page - 1) * this.items_per_page;
     this.current_list = this.full_list.slice(start_index, start_index + this.items_per_page);
+  }
+
+  DeleteComment(comment_id: string, content_key: string): void {
+    this.service_get_data.DeleteComment(content_key, comment_id).subscribe({
+      next: () => {
+        this.user_comments = this.user_comments.filter(c => c.id !== comment_id);
+
+        if (this.paginated_comments.length === 1 && this.current_comments_page > 1) {
+          this.current_comments_page--;
+        }
+
+        this.RefreshComments();
+      },
+      error: (err) => console.error(err)
+    });
   }
 }

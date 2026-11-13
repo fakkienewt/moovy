@@ -296,7 +296,13 @@ export class ContentPage implements OnInit, OnDestroy {
 
     let item_key = this.BuildKey(this.content.type, this.content.id);
     this.service_get_data.SwitchWatchingNow(item_key).subscribe({
-      next: (response: any) => this.is_watching_now = response.active,
+      next: (response: any) => {
+        this.is_watching_now = response.active;
+        if (response.active) {
+          this.is_later = false;
+          this.is_watched = false;
+        }
+      },
       error: (error: any) => console.error(error)
     });
   }
@@ -313,7 +319,13 @@ export class ContentPage implements OnInit, OnDestroy {
 
     let item_key = this.BuildKey(this.content.type, this.content.id);
     this.service_get_data.SwitchWatchLater(item_key).subscribe({
-      next: (response: any) => this.is_later = response.active,
+      next: (response: any) => {
+        this.is_later = response.active;
+        if (response.active) {
+          this.is_watching_now = false;
+          this.is_watched = false;
+        }
+      },
       error: (error: any) => console.error(error)
     });
   }
@@ -332,7 +344,13 @@ export class ContentPage implements OnInit, OnDestroy {
 
     let item_key = this.BuildKey(this.content.type, this.content.id);
     this.service_get_data.SwitchWatched(item_key).subscribe({
-      next: (response: any) => this.is_watched = response.active,
+      next: (response: any) => {
+        this.is_watched = response.active;
+        if (response.active) {
+          this.is_later = false;
+          this.is_watching_now = false;
+        }
+      },
       error: (error: any) => console.error(error)
     });
   }

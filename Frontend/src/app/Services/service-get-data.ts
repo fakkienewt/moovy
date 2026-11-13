@@ -201,4 +201,8 @@ export class ServiceGetData {
       { vote_type }
     );
   }
+
+  GetUserComments(user_id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api_url_base}/comments/user/${user_id}`);
+  }
 }
