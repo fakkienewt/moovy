@@ -523,7 +523,7 @@ export class ContentPage implements OnInit, OnDestroy {
   VoteComment(comment: CommentModel, type: 'like' | 'dislike'): void {
     let user = this.service_state.GetCurrentUserData();
     if (!user) {
-      this.ShowNotice('Ошибка', 'Войдите в аккаунт, чтобы оценивать комментарии.');
+      this.ShowNotice('Ошибка', 'Войдите в аккаунт, чтобы оценить комментарии.');
       return;
     }
 

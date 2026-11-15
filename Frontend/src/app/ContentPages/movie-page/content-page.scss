@@ -614,6 +614,13 @@
   word-break: break-word;
 }
 
+.comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
 .comment-actions {
   display: flex;
   gap: 16px;
@@ -626,11 +633,11 @@
   font-weight: 700;
   cursor: pointer;
   padding: 0;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .comment-actions button:hover {
-  transform: translateY(-2.5px) scale(1);
+  transform: translateY(-2px);
 }
 
 .btn-edit {
@@ -645,14 +652,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 10px;
-  padding: 8px 14px;
+  padding: 4px 10px;
   background: #fff4f4;
   border: 1px solid #ffc0cb;
   border-radius: 10px;
   font-size: 13px;
   color: #d9534f;
-  width: fit-content;
 }
 
 .comment-delete-confirm span {
@@ -734,9 +739,7 @@
 .comment-votes {
   display: flex;
   flex-direction: row;
-  gap: 6px;
-  margin-left: 10px;
-  align-self: flex-start;
+  gap: 8px;
 }
 
 .vote-btn {
@@ -1093,6 +1096,7 @@
 
   .comment-text {
     font-size: 13px;
+    margin-bottom: 8px;
   }
 
   .comment-actions button {
@@ -1100,18 +1104,19 @@
   }
 
   .comment-votes {
-    flex-direction: column;
-    margin-left: 8px;
-    gap: 4px;
+    flex-direction: row;
+    gap: 6px;
   }
 
   .vote-btn {
-    padding: 4px;
-    min-width: 32px;
-    font-size: 11px;
+    padding: 4px 6px;
+    min-width: 36px;
+    font-size: 12px;
+    gap: 3px;
+    border-width: 1px;
   }
 
-  .vote-btn svg {
+  .vote-btn img {
     width: 14px;
     height: 14px;
   }
@@ -1122,7 +1127,6 @@
     align-items: stretch;
     padding: 10px 12px;
     gap: 8px;
-    width: 100%;
   }
 
   .comment-delete-confirm span {

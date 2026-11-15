@@ -185,33 +185,35 @@
                             </div>
                             } @else {
                             <div class="comment-text">{{ comment.text }}</div>
-                            @if (comment.user_id === current_user_id) {
-                            @if (delete_comment_id === comment.id) {
-                            <div class="comment-delete-confirm">
-                                <span>Удалить комментарий?</span>
-                                <div class="delete-confirm-actions">
-                                    <button class="btn-confirm-yes" (click)="ConfirmDeleteComment()">Да</button>
-                                    <button class="btn-confirm-no" (click)="CancelDeleteComment()">Нет</button>
+                            <div class="comment-footer">
+                                <div class="comment-actions">
+                                    @if (comment.user_id === current_user_id) {
+                                    @if (delete_comment_id === comment.id) {
+                                    <div class="comment-delete-confirm">
+                                        <span>Удалить?</span>
+                                        <div class="delete-confirm-actions">
+                                            <button class="btn-confirm-yes" (click)="ConfirmDeleteComment()">Да</button>
+                                            <button class="btn-confirm-no" (click)="CancelDeleteComment()">Нет</button>
+                                        </div>
+                                    </div>
+                                    } @else {
+                                    <button class="btn-edit" (click)="StartEditComment(comment)">Редактировать</button>
+                                    <button class="btn-delete" (click)="DeleteComment(comment.id)">Удалить</button>
+                                    }
+                                    }
+                                </div>
+                                <div class="comment-votes">
+                                    <button class="vote-btn" (click)="VoteComment(comment, 'like')">
+                                        <img src="/SVG/like.svg">
+                                        <span>{{ comment.likes_count || 0 }}</span>
+                                    </button>
+                                    <button class="vote-btn" (click)="VoteComment(comment, 'dislike')">
+                                        <img src="/SVG/dislike.svg">
+                                        <span>{{ comment.dislikes_count || 0 }}</span>
+                                    </button>
                                 </div>
                             </div>
-                            } @else {
-                            <div class="comment-actions">
-                                <button class="btn-edit" (click)="StartEditComment(comment)">Редактировать</button>
-                                <button class="btn-delete" (click)="DeleteComment(comment.id)">Удалить</button>
-                            </div>
                             }
-                            }
-                            }
-                        </div>
-                        <div class="comment-votes">
-                            <button class="vote-btn" (click)="VoteComment(comment, 'like')">
-                                <img src="/SVG/like.svg">
-                                <span>{{ comment.likes_count || 0 }}</span>
-                            </button>
-                            <button class="vote-btn" (click)="VoteComment(comment, 'dislike')">
-                                <img src="/SVG/dislike.svg">
-                                <span>{{ comment.dislikes_count || 0 }}</span>
-                            </button>
                         </div>
                     </div>
                     }
