@@ -45,34 +45,19 @@
                 <div class="comments-list">
                     @for (comment of paginated_comments; track comment.id) {
                     <div class="comment-item">
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <div class="comment-header-left">
-                                    <span class="comment-movie-link" (click)="OnOpenContentByKey(comment.content_key)">
-                                        {{ comment.movie_name }} @if(comment.movie_year) { ({{ comment.movie_year }}) }
-                                    </span>
-                                    <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy HH:mm'
-                                        }}</span>
-                                </div>
+                        <div class="comment-header">
+                            <span class="comment-movie-link" (click)="OnOpenContentByKey(comment.content_key)">
+                                {{ comment.movie_name }} @if(comment.movie_year) { ({{ comment.movie_year }}) }
+                            </span>
+                            <div class="comment-header-right">
+                                <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy' }}</span>
                                 <button class="btn-delete-svg" (click)="DeleteComment(comment.id, comment.content_key)"
-                                    title="Удалить комментарий">
+                                    title="Удалить">
                                     <img src="/SVG/content-page-profile-button-delete.svg">
                                 </button>
                             </div>
-                            <div class="comment-text">{{ comment.text }}</div>
-                            <div class="comment-footer">
-                                <div class="comment-votes">
-                                    <button class="vote-btn">
-                                        <img src="/SVG/like.svg">
-                                        <span>{{ comment.likes_count || 0 }}</span>
-                                    </button>
-                                    <button class="vote-btn">
-                                        <img src="/SVG/dislike.svg">
-                                        <span>{{ comment.dislikes_count || 0 }}</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
+                        <div class="comment-text">{{ comment.text }}</div>
                     </div>
                     }
                 </div>

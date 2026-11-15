@@ -647,32 +647,25 @@
 .comments-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 10px;
 }
 
 .comment-item {
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 16px 20px;
     background: #fff;
-    border: 2px solid #b3e0ff;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, .15);
+    border: 1px solid #e6f2ff;
+    border-radius: 12px;
+    transition: background 0.2s;
 }
 
 .comment-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-}
-
-.comment-header-left {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    margin-bottom: 8px;
 }
 
 .comment-movie-link {
@@ -684,64 +677,45 @@
 }
 
 .comment-movie-link:hover {
-    color: #87ceeb;
+    color: #5a9ccc;
+}
+
+.comment-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .comment-date {
-    font-size: 12px;
+    font-size: 13px;
     color: #87ceeb;
     font-weight: 600;
-}
-
-.btn-delete-svg {
-    background: none;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    cursor: pointer;
-    transition: transform 0.2s;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
-}
-
-.btn-delete-svg:hover {
-    transform: scale(1.1);
 }
 
 .comment-text {
     font-size: 14px;
     color: #5a7d9a;
     line-height: 1.5;
-    margin-bottom: 12px;
     word-break: break-word;
 }
 
-.comment-footer {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.comment-votes {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-}
-
-.vote-btn {
+.btn-delete-svg {
+    background: transparent;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    background: none;
-    border: none;
-    padding: 4px;
-    font-family: cursive;
-    font-size: 13px;
-    font-weight: 700;
-    color: #87ceeb;
-    cursor: default;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-delete-svg:hover {
+    transform: scale(1.1);
+}
+
+.btn-delete-svg img {
+    width: 18px;
+    height: 18px;
 }
 
 @media (max-width: 768px) {
@@ -797,7 +771,6 @@
         font-size: 11px;
         border-radius: 10px;
         white-space: nowrap;
-        flex-shrink: 0;
     }
 
     .profile-tabs {
@@ -850,7 +823,6 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
         min-height: 200px;
-        padding: 0;
     }
 
     .card {
@@ -1019,36 +991,44 @@
     }
 
     .comments-list {
-        margin-top: 15px;
-        gap: 10px;
+        margin-top: 10px;
+        gap: 8px;
     }
 
     .comment-item {
-        padding: 12px;
+        padding: 12px 14px;
     }
 
     .comment-header {
-        margin-bottom: 8px;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 6px;
     }
 
     .comment-movie-link {
-        font-size: 13px;
+        font-size: 14px;
+        flex: 1;
+    }
+
+    .comment-header-right {
+        gap: 8px;
     }
 
     .comment-date {
-        font-size: 11px;
+        font-size: 12px;
     }
 
     .comment-text {
         font-size: 13px;
-        margin-bottom: 10px;
     }
 
-    .comment-votes {
-        gap: 4px;
+    .btn-delete-svg {
+        opacity: 1;
     }
 
-    .vote-btn {
-        font-size: 11px;
+    .btn-delete-svg img {
+        width: 14px;
+        height: 14px;
     }
 }

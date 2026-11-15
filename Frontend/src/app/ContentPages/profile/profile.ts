@@ -24,6 +24,7 @@ export class Profile implements OnInit {
   current_list: ListItemModel[] = [];
 
   is_loading = true;
+  is_comments_loading = true;
   modal_state: 'none' | 'logout' | 'delete' = 'none';
   is_settings_open = false;
 
@@ -145,22 +146,31 @@ export class Profile implements OnInit {
         this.RefreshList();
 
         if (this.user) {
-          this.service_get_data.GetUserComments(this.user.id).subscribe(comments => {
-            this.user_comments = comments.map(c => {
-              return {
-                ...c,
-                movie_name: c.movie_name || 'Фильм удален',
-                movie_year: c.movie_year || '',
-                movie_poster: null
-              };
-            });
-            this.RefreshComments();
+          this.service_get_data.GetUserComments(this.user.id).subscribe({
+            next: (comments) => {
+              this.user_comments = comments.map(c => {
+                return {
+                  ...c,
+                  movie_name: c.movie_name || 'Фильм удален',
+                  movie_year: c.movie_year || '',
+                  movie_poster: null
+                };
+              });
+              this.is_comments_loading = false;
+              this.RefreshComments();
+            },
+            error: () => {
+              this.is_comments_loading = false;
+            }
           });
+        } else {
+          this.is_comments_loading = false;
         }
       },
       error: (error: any) => {
         console.error(error);
         this.is_loading = false;
+        this.is_comments_loading = false;
       }
     });
   }
