@@ -67,7 +67,7 @@
                                         <span>{{ comment.likes_count || 0 }}</span>
                                     </button>
                                     <button class="vote-btn">
-                                         <img src="/SVG/dislike.svg">
+                                        <img src="/SVG/dislike.svg">
                                         <span>{{ comment.dislikes_count || 0 }}</span>
                                     </button>
                                 </div>
@@ -111,6 +111,10 @@
                         <div class="card-poster">
                             <img [src]="item.poster" loading="lazy">
                             <span class="rating-badge">{{ item.rating || '0' }}</span>
+                            <button class="btn-delete-card" (click)="RemoveFromList(item, $event)"
+                                title="Удалить из списка">
+                                <img src="/SVG/content-page-profile-button-delete.svg">
+                            </button>
                         </div>
                         <div class="card-info">
                             <div class="card-title">{{ item.name }}</div>

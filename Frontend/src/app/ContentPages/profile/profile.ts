@@ -396,6 +396,7 @@ export class Profile implements OnInit {
       this.RefreshComments();
     }
   }
+
   NextPage(): void {
     if (this.current_page < this.total_pages) {
       this.current_page++;
@@ -536,6 +537,30 @@ export class Profile implements OnInit {
         this.RefreshComments();
       },
       error: (err) => console.error(err)
+    });
+  }
+
+  RemoveFromList(item: ListItemModel, event: Event): void {
+    event.stopPropagation();
+
+    let request;
+    if (this.active_tab === 'watched') {
+      request = this.service_get_data.SwitchWatched(item.key);
+    } else if (this.active_tab === 'watch_later') {
+      request = this.service_get_data.SwitchWatchLater(item.key);
+    } else if (this.active_tab === 'watching_now') {
+      request = this.service_get_data.SwitchWatchingNow(item.key);
+    } else {
+      return;
+    }
+
+    request.subscribe({
+      next: () => {
+        this.service_get_data.ResetProfileCache();
+        this.state[this.active_tab as ListTab] = this.state[this.active_tab as ListTab].filter(k => k !== item.key);
+        this.RefreshList();
+      },
+      error: (err: any) => console.error(err)
     });
   }
 }
