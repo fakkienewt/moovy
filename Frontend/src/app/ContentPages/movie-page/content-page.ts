@@ -51,6 +51,9 @@ export class ContentPage implements OnInit, OnDestroy {
   current_user_id: number | null = null;
   delete_comment_id: string | null = null;
 
+  reply_to_comment_id: string | null = null;
+  reply_to_author: string | null = null;
+
   private readonly NOTICE_LIMIT = 5;
   private readonly NOTICE_LIFETIME = 10000;
   private readonly NOTICE_LEAVE_DELAY = 280;
@@ -202,6 +205,7 @@ export class ContentPage implements OnInit, OnDestroy {
     this.comment_text = '';
     this.editing_comment_id = null;
     this.delete_comment_id = null;
+    this.CancelReply();
     this.current_user_id = user ? user.id : null;
 
     if (!user) {
@@ -415,12 +419,30 @@ export class ContentPage implements OnInit, OnDestroy {
   }
 
   get PaginatedComments(): CommentModel[] {
+    let root_comments = this.comments.filter(c => !c.reply_to_id);
     let start = (this.comment_page - 1) * this.comments_per_page;
-    return this.comments.slice(start, start + this.comments_per_page);
+    return root_comments.slice(start, start + this.comments_per_page);
   }
 
   get TotalCommentPages(): number {
-    return Math.ceil(this.comments.length / this.comments_per_page);
+    let root_comments = this.comments.filter(c => !c.reply_to_id);
+    return Math.ceil(root_comments.length / this.comments_per_page);
+  }
+
+  getReplies(parentId: string): CommentModel[] {
+    const rootId = this.findRootId(parentId);
+    return this.comments.filter(c => c.reply_to_id && this.findRootId(c.id) === rootId && c.id !== rootId).sort((a, b) => a.date - b.date);
+  }
+
+  private findRootId(commentId: string): string {
+    let current = this.comments.find(c => c.id === commentId);
+    if (!current) return commentId;
+    while (current && current.reply_to_id) {
+      const parent = this.comments.find(c => c.id === current!.reply_to_id);
+      if (!parent) break;
+      current = parent;
+    }
+    return current ? current.id : commentId;
   }
 
   LoadComments(content_key: string): void {
@@ -431,6 +453,18 @@ export class ContentPage implements OnInit, OnDestroy {
       },
       error: (err) => console.error(err)
     });
+  }
+
+  StartReply(comment: CommentModel): void {
+    this.reply_to_comment_id = comment.id;
+    this.reply_to_author = comment.author;
+    this.comment_text = '';
+    this.editing_comment_id = null;
+  }
+
+  CancelReply(): void {
+    this.reply_to_comment_id = null;
+    this.reply_to_author = null;
   }
 
   SendComment(): void {
@@ -447,11 +481,18 @@ export class ContentPage implements OnInit, OnDestroy {
 
     let content_key = this.BuildKey(this.content?.type, this.content?.id || 0);
 
-    this.service_get_data.AddComment(content_key, text).subscribe({
+    let payload = {
+      text: text,
+      reply_to_id: this.reply_to_comment_id,
+      reply_to_author: this.reply_to_author
+    };
+
+    this.service_get_data.AddComment(content_key, payload).subscribe({
       next: (new_comment) => {
         this.comments.unshift(new_comment);
         this.comment_text = '';
         this.comment_page = 1;
+        this.CancelReply();
       },
       error: (err) => console.error(err)
     });
@@ -483,6 +524,7 @@ export class ContentPage implements OnInit, OnDestroy {
   StartEditComment(comment: CommentModel): void {
     this.editing_comment_id = comment.id;
     this.edit_comment_text = comment.text;
+    this.CancelReply();
   }
 
   CancelEditComment(): void {

@@ -9,4 +9,6 @@ export interface CommentModel {
   dislikes: number[];
   likes_count: number;
   dislikes_count: number;
+  reply_to_id?: string | null;
+  reply_to_author?: string | null;
 }

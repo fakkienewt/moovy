@@ -183,8 +183,8 @@ export class ServiceGetData {
     return this.http.get<CommentModel[]>(`${this.api_url_base}/comments/${content_key}`);
   }
 
-  AddComment(content_key: string, text: string): Observable<CommentModel> {
-    return this.http.post<CommentModel>(`${this.api_url_base}/comments/${content_key}`, { text });
+  AddComment(content_key: string, payload: { text: string; reply_to_id?: string | null; reply_to_author?: string | null }): Observable<CommentModel> {
+    return this.http.post<CommentModel>(`${this.api_url_base}/comments/${content_key}`, payload);
   }
 
   DeleteComment(content_key: string, comment_id: string) {

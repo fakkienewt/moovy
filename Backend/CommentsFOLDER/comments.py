@@ -118,7 +118,9 @@ def add_comment(content_key):
         'text': text,
         'date': int(time.time()),
         'likes': [],
-        'dislikes': []
+        'dislikes': [],
+        'reply_to_id': data.get('reply_to_id'),
+        'reply_to_author': data.get('reply_to_author')
     }
     
     all_comments[content_key].append(new_comment)

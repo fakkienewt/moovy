@@ -103,9 +103,7 @@
                     @if (is_player_loading) {
                     <div class="player-loader-emulator">
                         <div class="player-emulator-play">
-                            <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff">
-                                <path d="M8 5v14l11-7z"></path>
-                            </svg>
+                            <img src="/SVG/play.svg" alt="Play">
                         </div>
                         <div class="player-loader-spinner"></div>
                     </div>
@@ -149,9 +147,13 @@
             <div class="comments-section">
                 <h3 class="section-title">Комментарии</h3>
                 <div class="comment-form">
-                    <input type="text" placeholder="Оставьте ваш комментарий..." class="comment-input"
-                        [(ngModel)]="comment_text" (keyup.enter)="SendComment()">
+                    <input type="text"
+                        [placeholder]="reply_to_author ? 'Ответить ' + reply_to_author + '...' : 'Оставьте ваш комментарий...'"
+                        class="comment-input" [(ngModel)]="comment_text" (keyup.enter)="SendComment()">
                     <button type="button" class="btn-comment" (click)="SendComment()">Отправить</button>
+                    @if (reply_to_author) {
+                    <button type="button" class="btn-cancel-reply" (click)="CancelReply()">✕</button>
+                    }
                 </div>
                 @if (comments.length === 0) {
                 <div class="comments-empty">
@@ -161,60 +163,149 @@
                 } @else {
                 <div class="comments-list">
                     @for (comment of PaginatedComments; track comment.id) {
-                    <div class="comment-item">
-                        <div class="comment-avatar">
-                            @if (comment.avatar) {
-                            <img [src]="comment.avatar" (error)="comment.avatar = null">
-                            } @else {
-                            {{ comment.author.charAt(0).toUpperCase() }}
-                            }
-                        </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author">{{ comment.author }}</span>
-                                <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy HH:mm' }}</span>
+                    <div class="comment-thread">
+                        <div class="comment-item">
+                            <div class="comment-avatar">
+                                @if (comment.avatar) {
+                                <img [src]="comment.avatar" (error)="comment.avatar = null">
+                                } @else {
+                                {{ comment.author.charAt(0).toUpperCase() }}
+                                }
                             </div>
-                            @if (editing_comment_id === comment.id) {
-                            <div class="comment-edit-form">
-                                <textarea class="comment-input comment-textarea" [(ngModel)]="edit_comment_text"
-                                    rows="1"></textarea>
-                                <div class="edit-actions">
-                                    <button class="btn-cancel" (click)="CancelEditComment()">Отмена</button>
-                                    <button class="btn-save" (click)="SaveEditComment(comment.id)">Сохранить</button>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ comment.author }}</span>
+                                    <span class="comment-date">{{ comment.date * 1000 | date:'dd.MM.yyyy HH:mm'
+                                        }}</span>
                                 </div>
+                                @if (editing_comment_id === comment.id) {
+                                <div class="comment-edit-form">
+                                    <textarea class="comment-input comment-textarea" [(ngModel)]="edit_comment_text"
+                                        rows="1"></textarea>
+                                    <div class="edit-actions">
+                                        <button class="btn-cancel" (click)="CancelEditComment()">Отмена</button>
+                                        <button class="btn-save"
+                                            (click)="SaveEditComment(comment.id)">Сохранить</button>
+                                    </div>
+                                </div>
+                                } @else {
+                                <div class="comment-text">{{ comment.text }}</div>
+                                <div class="comment-footer">
+                                    <div class="comment-actions">
+                                        @if (comment.user_id === current_user_id) {
+                                        <button class="btn-edit"
+                                            (click)="StartEditComment(comment)">Редактировать</button>
+                                        <div class="delete-btn-wrapper">
+                                            <button class="btn-delete"
+                                                (click)="DeleteComment(comment.id)">Удалить</button>
+                                            @if (delete_comment_id === comment.id) {
+                                            <div class="delete-tooltip">
+                                                <span>Удалить?</span>
+                                                <div class="tooltip-actions">
+                                                    <button class="btn-confirm-yes"
+                                                        (click)="ConfirmDeleteComment()">Да</button>
+                                                    <button class="btn-confirm-no"
+                                                        (click)="CancelDeleteComment()">Нет</button>
+                                                </div>
+                                            </div>
+                                            }
+                                        </div>
+                                        } @else {
+                                        <button class="btn-reply" (click)="StartReply(comment)">Ответить</button>
+                                        }
+                                    </div>
+                                    <div class="comment-votes">
+                                        <button class="vote-btn" (click)="VoteComment(comment, 'like')">
+                                            <img src="/SVG/like.svg"> <span>{{ comment.likes_count || 0 }}</span>
+                                        </button>
+                                        <button class="vote-btn" (click)="VoteComment(comment, 'dislike')">
+                                            <img src="/SVG/dislike.svg"> <span>{{ comment.dislikes_count || 0 }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                }
                             </div>
-                            } @else {
-                            <div class="comment-text">{{ comment.text }}</div>
-                            <div class="comment-footer">
-                                <div class="comment-actions">
-                                    @if (comment.user_id === current_user_id) {
-                                    @if (delete_comment_id === comment.id) {
-                                    <div class="comment-delete-confirm">
-                                        <span>Удалить?</span>
-                                        <div class="delete-confirm-actions">
-                                            <button class="btn-confirm-yes" (click)="ConfirmDeleteComment()">Да</button>
-                                            <button class="btn-confirm-no" (click)="CancelDeleteComment()">Нет</button>
+                        </div>
+                        @if (getReplies(comment.id).length > 0) {
+                        <div class="replies-list">
+                            @for (reply of getReplies(comment.id); track reply.id) {
+                            <div class="comment-item reply-item">
+                                <div class="reply-line-indicator">
+                                    <img src="/SVG/content-page-reply.svg">
+                                </div>
+                                <div class="comment-avatar">
+                                    @if (reply.avatar) {
+                                    <img [src]="reply.avatar" (error)="reply.avatar = null">
+                                    } @else {
+                                    {{ reply.author.charAt(0).toUpperCase() }}
+                                    }
+                                </div>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <span class="comment-author">{{ reply.author }}</span>
+                                        <span class="comment-date">{{ reply.date * 1000 | date:'dd.MM.yyyy HH:mm'
+                                            }}</span>
+                                    </div>
+                                    @if (editing_comment_id === reply.id) {
+                                    <div class="comment-edit-form">
+                                        <textarea class="comment-input comment-textarea" [(ngModel)]="edit_comment_text"
+                                            rows="1"></textarea>
+                                        <div class="edit-actions">
+                                            <button class="btn-cancel" (click)="CancelEditComment()">Отмена</button>
+                                            <button class="btn-save"
+                                                (click)="SaveEditComment(reply.id)">Сохранить</button>
                                         </div>
                                     </div>
                                     } @else {
-                                    <button class="btn-edit" (click)="StartEditComment(comment)">Редактировать</button>
-                                    <button class="btn-delete" (click)="DeleteComment(comment.id)">Удалить</button>
+                                    <div class="comment-text">
+                                        @if (reply.reply_to_author) {
+                                        <div class="reply-quote">
+                                            <img src="/SVG/content-page-reply.svg" class="reply-arrow" alt="Reply">
+                                            {{ reply.reply_to_author }}
+                                        </div>
+                                        }
+                                        {{ reply.text }}
+                                    </div>
+                                    <div class="comment-footer">
+                                        <div class="comment-actions">
+                                            @if (reply.user_id === current_user_id) {
+                                            <button class="btn-edit"
+                                                (click)="StartEditComment(reply)">Редактировать</button>
+                                            <div class="delete-btn-wrapper">
+                                                <button class="btn-delete"
+                                                    (click)="DeleteComment(reply.id)">Удалить</button>
+                                                @if (delete_comment_id === reply.id) {
+                                                <div class="delete-tooltip">
+                                                    <span>Удалить?</span>
+                                                    <div class="tooltip-actions">
+                                                        <button class="btn-confirm-yes"
+                                                            (click)="ConfirmDeleteComment()">Да</button>
+                                                        <button class="btn-confirm-no"
+                                                            (click)="CancelDeleteComment()">Нет</button>
+                                                    </div>
+                                                </div>
+                                                }
+                                            </div>
+                                            } @else {
+                                            <button class="btn-reply" (click)="StartReply(reply)">Ответить</button>
+                                            }
+                                        </div>
+                                        <div class="comment-votes">
+                                            <button class="vote-btn" (click)="VoteComment(reply, 'like')">
+                                                <img src="/SVG/like.svg"> <span>{{ reply.likes_count || 0 }}</span>
+                                            </button>
+                                            <button class="vote-btn" (click)="VoteComment(reply, 'dislike')">
+                                                <img src="/SVG/dislike.svg"> <span>{{ reply.dislikes_count || 0
+                                                    }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                     }
-                                    }
-                                </div>
-                                <div class="comment-votes">
-                                    <button class="vote-btn" (click)="VoteComment(comment, 'like')">
-                                        <img src="/SVG/like.svg">
-                                        <span>{{ comment.likes_count || 0 }}</span>
-                                    </button>
-                                    <button class="vote-btn" (click)="VoteComment(comment, 'dislike')">
-                                        <img src="/SVG/dislike.svg">
-                                        <span>{{ comment.dislikes_count || 0 }}</span>
-                                    </button>
                                 </div>
                             </div>
                             }
                         </div>
+                        }
                     </div>
                     }
                 </div>
