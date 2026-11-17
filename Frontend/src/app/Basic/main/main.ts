@@ -57,36 +57,36 @@ export class Main implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    let saved_state = this.pagination_state_service.loadState();
+    const saved_state = this.pagination_state_service.loadState();
+    const tab = saved_state?.activeTab;
 
-    if (saved_state.activeTab) {
-      this.active_tab = saved_state.activeTab;
-    }
-    if (saved_state.currentPage && saved_state.currentPage > 0) {
+    this.active_tab = (tab === 'movie' || tab === 'tvSeries' || tab === 'anime') ? tab : 'movie';
+
+    if (saved_state?.currentPage && saved_state.currentPage > 0) {
       this.current_page = saved_state.currentPage;
     }
-    if (typeof saved_state.isFilterOpen === 'boolean') {
+    if (typeof saved_state?.isFilterOpen === 'boolean') {
       this.is_filter_open = saved_state.isFilterOpen;
     }
-    if (saved_state.sortType) {
+    if (saved_state?.sortType) {
       this.sort_type = saved_state.sortType;
     }
-    if (saved_state.filterType) {
+    if (saved_state?.filterType) {
       this.filter_type = saved_state.filterType;
     }
-    if (saved_state.selectedGenre) {
+    if (saved_state?.selectedGenre) {
       this.selected_genre = saved_state.selectedGenre;
     }
-    if (saved_state.selectedYear) {
+    if (saved_state?.selectedYear) {
       this.selected_year = saved_state.selectedYear;
     }
-    if (saved_state.selectedCountry) {
+    if (saved_state?.selectedCountry) {
       this.selected_country = saved_state.selectedCountry;
     }
-    if (saved_state.directorSearch) {
+    if (saved_state?.directorSearch) {
       this.director_search = saved_state.directorSearch;
     }
-    if (saved_state.actorSearch) {
+    if (saved_state?.actorSearch) {
       this.actor_search = saved_state.actorSearch;
     }
 
@@ -331,6 +331,7 @@ export class Main implements OnInit, OnDestroy {
   }
 
   OnSelectItem(item: ContentModel): void {
+    this.is_filter_open = false;
     this.SavePageState();
     let content_type = item.type || 'movie';
 

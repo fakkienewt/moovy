@@ -8,6 +8,18 @@
     box-sizing: border-box;
 }
 
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .nav-container,
 .content-container {
     background: linear-gradient(135deg, #f0f8ff, #e6f2ff 50%, #f0f8ff);
@@ -73,18 +85,6 @@
     border: 2px solid #b3e0ff;
     border-radius: 20px;
     animation: slideDown .3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .filter-row-full,
@@ -313,7 +313,6 @@
 .skeleton-img,
 .skeleton-line {
     background: linear-gradient(135deg, #b3e0ff, #87ceeb);
-    border-radius: 10px;
 }
 
 .skeleton-img {
@@ -323,6 +322,7 @@
 }
 
 .skeleton-line {
+    border-radius: 10px;
     margin-bottom: 8px;
 }
 
@@ -481,7 +481,6 @@
         margin: 0 auto;
         padding: 10px;
         border-radius: 14px;
-        border-width: 2px;
     }
 
     .card-info {
@@ -491,7 +490,6 @@
     }
 
     .card-title {
-        margin-bottom: 4px;
         font-size: 11px;
         white-space: normal;
         word-break: break-word;
@@ -504,7 +502,6 @@
     .card-poster {
         margin-bottom: 8px;
         border-radius: 8px;
-        border-width: 2px;
     }
 
     .rating-badge {

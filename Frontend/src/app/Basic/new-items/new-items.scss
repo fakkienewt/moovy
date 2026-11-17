@@ -1,11 +1,11 @@
 :host {
     width: 100%;
+    font-family: cursive;
+    color: #4682b4;
 }
 
 .basic-new-logo {
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
-    color: #4682b4;
-    font-family: cursive;
     font-size: 20px;
     text-align: center;
     padding: 12px 30px;
@@ -22,6 +22,7 @@
     position: absolute;
     display: flex;
     justify-content: center;
+    align-items: center;
     top: 45%;
     transform: translateY(-50%);
     z-index: 20;
@@ -72,14 +73,13 @@
     border: 2px solid #b3e0ff;
     border-radius: 20px;
     padding: 15px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(135, 206, 235, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
     transition: transform 0.2s ease;
     height: 100%;
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .basic-new-section-movie-poster:hover {
@@ -122,13 +122,12 @@
 }
 
 .movie-year {
-    font-family: cursive;
     min-width: 60px;
     padding: 4px 12px;
     background: linear-gradient(135deg, #b3e0ff 0%, #87CEEB 100%);
     border-radius: 8px;
     margin: 0 auto;
-    justify-content: center;
+    text-align: center;
     color: #ffffff;
     font-size: 13px;
     font-weight: bold;
@@ -154,7 +153,6 @@
         flex-wrap: nowrap;
         gap: 10px;
         overflow-x: auto;
-        overflow-y: hidden;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 4px;
@@ -179,7 +177,6 @@
         font-size: 10px;
         padding: 2px 6px;
         min-width: 80%;
-        border-radius: 8px;
     }
 
     .empty-year {
@@ -221,6 +218,5 @@
     .movie-year {
         font-size: 9px;
         padding: 2px 4px;
-        border-radius: 8px;
     }
 }
