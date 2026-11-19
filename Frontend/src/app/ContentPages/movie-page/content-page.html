@@ -230,9 +230,6 @@
                         <div class="replies-list">
                             @for (reply of getReplies(comment.id); track reply.id) {
                             <div class="comment-item reply-item">
-                                <div class="reply-line-indicator">
-                                    <img src="/SVG/content-page-reply.svg">
-                                </div>
                                 <div class="comment-avatar">
                                     @if (reply.avatar) {
                                     <img [src]="reply.avatar" (error)="reply.avatar = null">
@@ -260,7 +257,6 @@
                                     <div class="comment-text">
                                         @if (reply.reply_to_author) {
                                         <div class="reply-quote">
-                                            <img src="/SVG/content-page-reply.svg" class="reply-arrow">
                                             {{ reply.reply_to_author }}
                                         </div>
                                         }
